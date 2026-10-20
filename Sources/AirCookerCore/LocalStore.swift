@@ -117,6 +117,28 @@ public actor LocalStore {
   private func persist(kind: EntityKind, id: UUID, payload: JSONValue, delete: Bool, device: UUID)
     throws
   {
+    if kind == .leftover {
+      let meals = try entities(kind: .meal)
+      if delete {
+        guard try LeftoverPlanning.allocated(id: id, meals: meals) == 0 else {
+          throw LeftoverError.inUse
+        }
+      } else {
+        let leftover = try decoder.decode(Leftover.self, from: encoder.encode(payload))
+        try LeftoverPlanning.validate(id: id, leftover: leftover, meals: meals)
+      }
+    }
+    if kind == .meal && !delete {
+      let meal = try decoder.decode(Meal.self, from: encoder.encode(payload))
+      if let leftoverID = meal.leftoverID {
+        guard let row = try entities(kind: .leftover).first(where: { $0.id == leftoverID }) else {
+          throw LeftoverError.unavailable
+        }
+        try LeftoverPlanning.validateBooking(
+          meal, id: leftoverID, leftover: row.decode(Leftover.self),
+          meals: entities(kind: .meal), replacing: id)
+      }
+    }
     let revision =
       Int(
         try run(
@@ -154,6 +176,69 @@ public actor LocalStore {
         try persist(
           kind: edit.kind, id: edit.id, payload: edit.payload,
           delete: edit.deleted, device: device)
+      }
+    }
+  }
+  public func planningSnapshot() throws -> PlanningSnapshot {
+    try PlanningSnapshot(
+      recipes: entities(kind: .recipe), meals: entities(kind: .meal),
+      leftovers: entities(kind: .leftover))
+  }
+  public func applySuggestions(_ preview: WeeklyPreview, selectedIDs: Set<String>) throws {
+    let device = try deviceID()
+    try transaction {
+      guard try planningSnapshot().basis() == preview.basis,
+        selectedIDs.isSubset(of: Set(preview.suggestions.map(\.id)))
+      else { throw SuggestionError.stalePreview }
+      for suggestion in preview.suggestions where selectedIDs.contains(suggestion.id) {
+        try persist(
+          kind: .meal, id: UUID(), payload: Codec.json(suggestion.meal), delete: false,
+          device: device)
+      }
+    }
+  }
+  public func setUnplannedPortions(
+    id: UUID, recipeID: UUID, producedOn: String,
+    unplanned: String, discard: Bool
+  ) throws {
+    let device = try deviceID()
+    try transaction {
+      let existing = try entities(kind: .leftover).first(where: { $0.id == id })?.decode(
+        Leftover.self)
+      guard existing == nil || existing?.recipeID == recipeID else {
+        throw SuggestionError.stalePreview
+      }
+      let total: Decimal
+      if discard {
+        guard let existing else { throw LeftoverError.unavailable }
+        total = try PortionQuantity.parse(existing.portions)
+      } else {
+        total =
+          try LeftoverPlanning.allocated(id: id, meals: entities(kind: .meal))
+          + PortionQuantity.parse(unplanned, allowZero: existing != nil)
+      }
+      let value = Leftover(
+        recipeID: recipeID, portions: NSDecimalNumber(decimal: total).stringValue,
+        producedOn: existing?.producedOn ?? producedOn, discarded: discard)
+      try persist(
+        kind: .leftover, id: id, payload: Codec.json(value), delete: false, device: device)
+    }
+  }
+  public func recordLeftovers(from item: MealOccurrence, portions: String, today: String) throws {
+    let device = try deviceID()
+    try transaction {
+      _ = try PlanningDate.parse(today)
+      guard item.date <= today, item.meal.leftoverID == nil,
+        let row = try entities(kind: .meal).first(where: { $0.id == item.entityID }),
+        try Codec.json(row.decode(Meal.self)) == Codec.json(item.meal),
+        try MealPlanning.occurrences(item.meal, from: item.date, through: item.date) == [item.date]
+      else { throw SuggestionError.stalePreview }
+      let value = Leftover(recipeID: item.meal.recipeID, portions: portions, producedOn: item.date)
+      var edits = try MealPlanning.setCooked(item, cooked: true)
+      edits.append(try LocalEdit(kind: .leftover, value: value))
+      for edit in edits {
+        try persist(
+          kind: edit.kind, id: edit.id, payload: edit.payload, delete: false, device: device)
       }
     }
   }

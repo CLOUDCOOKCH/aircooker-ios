@@ -153,6 +153,12 @@ struct HomeView: View {
           }
         }
       }
+      Section {
+        if let week = try? PlanningDate.monday(containing: model.dateString(Date())) {
+          NavigationLink("weekly_suggestions") { SuggestionsView(week: week) }
+        }
+        NavigationLink("leftovers") { LeftoversView() }
+      }
       Section("your_kitchen") {
         LabeledContent("recipes", value: String(model.recipes.count))
         LabeledContent("pending", value: String(model.pending))

@@ -15,6 +15,7 @@ import WidgetKit
   var meals: [LocalEntity] = []
   var pantry: [LocalEntity] = []
   var templates: [LocalEntity] = []
+  var leftovers: [LocalEntity] = []
   var photoRevision = 0
   var pending = 0
   var busy = false
@@ -141,6 +142,7 @@ import WidgetKit
       meals = try await store.entities(kind: .meal)
       pantry = try await store.entities(kind: .pantry)
       templates = try await store.entities(kind: .template)
+      leftovers = try await store.entities(kind: .leftover)
       pending = try await store.pendingCount()
       photoRevision += 1
       try publishWidget()
@@ -176,6 +178,125 @@ import WidgetKit
     guard let store else { return false }
     do {
       try await store.saveBatch(edits)
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      return false
+    }
+  }
+  func parsePortions(_ input: String, allowZero: Bool = false) throws -> Decimal {
+    let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    return try PortionQuantity.parse(
+      Locale.current.decimalSeparator == "," ? text.replacingOccurrences(of: ",", with: ".") : text,
+      allowZero: allowZero)
+  }
+  func planningDate(_ text: String) -> Date? {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(identifier: householdTimeZone)
+    formatter.dateFormat = "yyyy-MM-dd"
+    formatter.isLenient = false
+    return formatter.date(from: text)
+  }
+  func displayPlanningDate(_ text: String) -> String {
+    guard let date = planningDate(text) else { return text }
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.timeZone = TimeZone(identifier: householdTimeZone)
+    formatter.dateStyle = .medium
+    return formatter.string(from: date)
+  }
+  func formatPortions(_ value: Decimal) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.usesGroupingSeparator = false
+    formatter.maximumFractionDigits = 38
+    return formatter.string(from: NSDecimalNumber(decimal: value))
+      ?? NSDecimalNumber(decimal: value).stringValue
+  }
+  func defaultLeftoverPortions(_ row: LocalEntity) -> String {
+    guard let leftover = try? row.decode(Leftover.self),
+      let recipe = self.recipe(leftover.recipeID),
+      let amount = try? PortionQuantity.parse(recipe.servings),
+      let available = try? LeftoverPlanning.available(id: row.id, leftover: leftover, meals: meals)
+    else { return "1" }
+    return formatPortions(min(amount, available))
+  }
+  func availablePortions(_ row: LocalEntity) -> String {
+    guard
+      let value = try? LeftoverPlanning.available(
+        id: row.id,
+        leftover: row.decode(Leftover.self), meals: meals)
+    else { return "0" }
+    return formatPortions(value)
+  }
+  func allocatedPortions(_ row: LocalEntity) -> String {
+    let value = (try? LeftoverPlanning.allocated(id: row.id, meals: meals)) ?? 0
+    return formatPortions(value)
+  }
+  func canScheduleLeftover(_ row: LocalEntity) -> Bool {
+    guard let leftover = try? row.decode(Leftover.self), !leftover.discarded,
+      recipe(leftover.recipeID) != nil
+    else { return false }
+    return ((try? LeftoverPlanning.available(id: row.id, leftover: leftover, meals: meals)) ?? 0)
+      > 0
+  }
+  func saveLeftover(
+    existing: LocalEntity?, source: MealOccurrence?, recipeID: UUID,
+    unplanned: String, producedOn: String, discard: Bool
+  ) async -> Bool {
+    guard let store else { return false }
+    do {
+      if let source {
+        try await store.recordLeftovers(
+          from: source,
+          portions: NSDecimalNumber(decimal: parsePortions(unplanned)).stringValue,
+          today: dateString(Date()))
+      } else {
+        let canonical =
+          discard
+          ? "0"
+          : NSDecimalNumber(decimal: try parsePortions(unplanned, allowZero: existing != nil))
+            .stringValue
+        try await store.setUnplannedPortions(
+          id: existing?.id ?? UUID(), recipeID: recipeID,
+          producedOn: producedOn, unplanned: canonical, discard: discard)
+      }
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      return false
+    }
+  }
+  func scheduleLeftover(id: UUID, date: String, category: String, portions: String) async -> Bool {
+    guard let store else { return false }
+    do {
+      guard let row = try await store.entities(kind: .leftover).first(where: { $0.id == id }) else {
+        throw LeftoverError.unavailable
+      }
+      let value = try row.decode(Leftover.self)
+      var meal = Meal(
+        recipeID: value.recipeID, date: date, category: category,
+        servings: NSDecimalNumber(decimal: try parsePortions(portions)).stringValue)
+      meal.leftoverID = id
+      try await store.save(kind: .meal, id: UUID(), value: meal)
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      return false
+    }
+  }
+  func applySuggestions(_ preview: WeeklyPreview, selected: Set<String>) async -> Bool {
+    guard let store else { return false }
+    do {
+      try await store.applySuggestions(preview, selectedIDs: selected)
       await reload()
       Task { await synchronise() }
       return true
@@ -237,7 +358,19 @@ import WidgetKit
   }
   func report(_ problem: any Error) {
     switch problem {
-    case APIError.http(_, let code): error = String(localized: "server_error") + " " + code
+    case APIError.http(_, let code):
+      switch code {
+      case "insufficient_leftover_portions": error = String(localized: "leftover_reserved_error")
+      case "leftover_not_yet_produced", "leftover_produced_after_booking":
+        error = String(localized: "leftover_production_error")
+      case "leftover_in_use", "leftover_recipe_in_use":
+        error = String(localized: "leftover_in_use_error")
+      case "invalid_leftover", "leftover_not_found":
+        error = String(localized: "leftover_unavailable_error")
+      case "suggestion_preview_stale", "suggestion_slot_occupied":
+        error = String(localized: "suggestions_stale")
+      default: error = String(localized: "server_error") + " " + code
+      }
     case APIError.invalidServerURL: error = String(localized: "invalid_server")
     case APIError.incompatibleServer: error = String(localized: "incompatible_server")
     case StoreError.rejectedDeletion: error = String(localized: "tombstone_conflict")
@@ -249,6 +382,15 @@ import WidgetKit
     case PlanningError.unavailableRecipe: error = String(localized: "template_recipe_missing")
     case PlanningError.invalidTemplate, PlanningError.tooManyChanges:
       error = String(localized: "template_invalid")
+    case SuggestionError.stalePreview: error = String(localized: "suggestions_stale")
+    case SuggestionError.invalidOptions: error = String(localized: "suggestions_options_error")
+    case LeftoverError.invalidPortions: error = String(localized: "leftover_portions_error")
+    case LeftoverError.insufficientPortions: error = String(localized: "leftover_reserved_error")
+    case LeftoverError.notProduced: error = String(localized: "leftover_production_error")
+    case LeftoverError.discarded: error = String(localized: "leftover_discarded_error")
+    case LeftoverError.inUse, LeftoverError.recipeInUse:
+      error = String(localized: "leftover_in_use_error")
+    case LeftoverError.unavailable: error = String(localized: "leftover_unavailable_error")
     case StoreError.serverChanged: error = String(localized: "server_changed")
     default: error = String(localized: "operation_failed")
     }

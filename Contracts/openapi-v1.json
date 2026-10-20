@@ -1065,6 +1065,79 @@
         "title": "Setup",
         "type": "object"
       },
+      "SuggestionApply": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Basis",
+            "type": "string"
+          },
+          "monday": {
+            "format": "date",
+            "title": "Monday",
+            "type": "string"
+          },
+          "mutations": {
+            "items": {
+              "$ref": "#/components/schemas/Mutation"
+            },
+            "maxItems": 21,
+            "minItems": 1,
+            "title": "Mutations",
+            "type": "array"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "monday",
+          "basis",
+          "mutations"
+        ],
+        "title": "SuggestionApply",
+        "type": "object"
+      },
+      "SuggestionPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Basis",
+            "type": "string"
+          },
+          "meals": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklySuggestion"
+            },
+            "maxItems": 21,
+            "title": "Meals",
+            "type": "array"
+          },
+          "monday": {
+            "format": "date",
+            "title": "Monday",
+            "type": "string"
+          },
+          "preview": {
+            "const": true,
+            "default": true,
+            "title": "Preview",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "monday",
+          "basis",
+          "meals"
+        ],
+        "title": "SuggestionPreview",
+        "type": "object"
+      },
       "Template": {
         "additionalProperties": false,
         "properties": {
@@ -1211,6 +1284,86 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WeeklySuggestion": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "enum": [
+              "breakfast",
+              "lunch",
+              "dinner"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "cooked": {
+            "default": false,
+            "title": "Cooked",
+            "type": "boolean"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "leftover_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leftover Id"
+          },
+          "order": {
+            "default": 0,
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Order",
+            "type": "integer"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Reasons",
+            "type": "array"
+          },
+          "recipe_id": {
+            "format": "uuid",
+            "title": "Recipe Id",
+            "type": "string"
+          },
+          "recurrence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Recurrence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "servings": {
+            "default": "2",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Servings",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipe_id",
+          "date",
+          "category",
+          "reasons"
+        ],
+        "title": "WeeklySuggestion",
         "type": "object"
       }
     },
@@ -3253,6 +3406,53 @@
         "summary": "Setup"
       }
     },
+    "/api/v1/suggestions/apply": {
+      "post": {
+        "operationId": "approve_suggestions_api_v1_suggestions_apply_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestionApply"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MutationResult"
+                  },
+                  "title": "Response Approve Suggestions Api V1 Suggestions Apply Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Approve Suggestions"
+      }
+    },
     "/api/v1/suggestions/weekly": {
       "post": {
         "operationId": "suggestions_api_v1_suggestions_weekly_post",
@@ -3273,8 +3473,64 @@
             "required": false,
             "schema": {
               "default": 0,
+              "maximum": 2147483647,
+              "minimum": 0,
               "title": "Seed",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "categories",
+            "required": false,
+            "schema": {
+              "default": [
+                "dinner"
+              ],
+              "items": {
+                "enum": [
+                  "breakfast",
+                  "lunch",
+                  "dinner"
+                ],
+                "type": "string"
+              },
+              "maxItems": 3,
+              "minItems": 1,
+              "title": "Categories",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "allow_repeats",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Allow Repeats",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "servings",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0.0,
+                  "maximum": 100.0,
+                  "type": "number"
+                },
+                {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Servings"
             }
           }
         ],
@@ -3282,7 +3538,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionPreview"
+                }
               }
             },
             "description": "Successful Response"

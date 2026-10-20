@@ -27,3 +27,45 @@ server/network rejection may leave a partially committed remote batch while unac
 changes stay queued. This is visible as pending/error state and is not a distributed atomic
 transaction. A transactional sync-batch protocol, advanced copy destinations, leftover and
 recommendation interfaces and recovery UX remain work before full acceptance.
+
+## Leftovers
+
+`portions` is the total batch size. Every active meal referring to its UUID reserves its
+servings, including past cooked entries. The editor asks for unplanned portions and adds
+the current reservation total within one local transaction. A zero unplanned amount is
+valid when reservations remain. Decreasing total portions below bookings, changing the
+booked recipe or moving preparation after a booked meal is rejected locally and by the
+server. Moving/reducing an existing booking releases its old allocation before checking.
+
+Discarding removes the unplanned availability; already reserved calendar entries remain.
+Existing bookings can still be marked cooked or moved without increasing their portions.
+New bookings against discarded batches fail. Deleting a batch with bookings fails; use
+Discard for remaining portions instead. Existing leftovers never add recipe ingredients
+to the shopping projection again.
+
+Recording leftovers from a recurring meal detaches that occurrence and marks only that
+meal cooked. The series exception, cooked record, leftover and outgoing mutations commit
+together locally. Pending records survive restart. No freshness, expiry or nutritional
+values are invented; the preparation date is shown when choosing leftovers.
+
+## Local weekly recommendations
+
+The local engine considers ratings, explicitly marked cooked history, recent calendar
+history (including accepted suggestions), current-week occurrences and unallocated
+leftovers. A stable seed breaks ties; regeneration can vary equally suitable choices.
+Only empty selected categories are considered. Each recipe appears once by default;
+users can allow repeats and override portions. Leftovers may reuse a recipe already planned
+because they represent prepared portions. No AI service, network or credentials are needed.
+
+Generation is read-only. The user selects proposed meals and explicitly adds them. Approval
+compares the current recipe/meal/leftover snapshot with the preview inside the local write
+transaction. A stale preview is rejected without changing existing records or losing edits.
+The complete selection and outbox commit together. Device preferences are local; shared
+household recommendation preferences and acceptance-specific learning remain incomplete.
+
+Python and Swift execute the same versioned canonical fixture, pinned with the API contract.
+The server separately offers a live `/suggestions/apply` transaction with durable replay
+receipts and server snapshot checks. iOS uses its offline outbox, so its approval is locally
+atomic and remote submission still uses individual ordered mutations. Concurrent offline
+approvals on different devices may add multiple dishes to a slot; they do not overwrite
+existing entries. Cross-device plan collision UX and distributed batch approval remain work.

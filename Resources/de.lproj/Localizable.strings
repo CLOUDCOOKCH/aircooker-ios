@@ -177,3 +177,99 @@
 "template_recipe_missing" = "Ein Rezept dieser Vorlage ist nicht mehr verfügbar.";
 
 "template_invalid" = "Verwende einen Namen und höchstens 100 Mahlzeiten pro Wochenvorlage.";
+
+"leftovers" = "Reste";
+
+"no_leftovers" = "Noch keine Reste erfasst";
+
+"leftovers_empty_hint" = "Erfasse nach dem Kochen übrige Portionen und plane sie für eine weitere Mahlzeit.";
+
+"produced_date %@" = "Zubereitet am %@";
+
+"leftovers_discarded" = "Übrige Portionen entsorgt";
+
+"available_portions %@" = "%@ Portionen verfügbar";
+
+"plan_portions %@" = "%@ Portionen";
+
+"schedule_leftovers" = "Reste einplanen";
+
+"record_leftovers" = "Reste erfassen";
+
+"produced_on" = "Zubereitet am";
+
+"unplanned_portions" = "Noch nicht eingeplante Portionen";
+
+"reserved_portions %@" = "%@ Portionen bereits eingeplant";
+
+"leftovers_portion_hint" = "Gib die übrigen Portionen für weitere Mahlzeiten ein. Bereits eingeplante Portionen bleiben reserviert.";
+
+"discard_leftovers" = "Übrige Portionen entsorgen";
+
+"edit_leftovers" = "Reste bearbeiten";
+
+"discard_leftovers_question" = "Diese übrigen Portionen entsorgen?";
+
+"discard_leftovers_hint" = "Bereits geplante Mahlzeiten bleiben im Kalender. Weitere Portionen dieser Zubereitung werden nicht mehr vorgeschlagen.";
+
+"portions" = "Portionen";
+
+"leftovers_shopping_hint" = "Diese Portionen sind bereits zubereitet. Ihre Rezeptzutaten werden nicht erneut zu Bring! hinzugefügt. Prüfe vor der Verwendung, ob die Speisen noch geeignet sind.";
+
+"suggestions_local_hint" = "Vorschläge berücksichtigen gespeicherte Rezepte, Bewertungen und bisherige Mahlzeiten. Prüfe sie, bevor du sie dem Kalender hinzufügst.";
+
+"week_of %@" = "Woche ab %@";
+
+"suggestion_preferences" = "Planungswünsche";
+
+"allow_recipe_repeats" = "Rezepte mehrfach vorschlagen";
+
+"use_recipe_servings" = "Ursprüngliche Portionszahl je Rezept";
+
+"generate_suggestions" = "Vorschläge erstellen";
+
+"regenerate_suggestions" = "Andere Vorschläge erstellen";
+
+"generating_suggestions" = "Mahlzeiten werden ausgewählt …";
+
+"suggested_meals" = "Vorgeschlagene Mahlzeiten";
+
+"no_suggestions" = "Keine passenden offenen Mahlzeiten";
+
+"no_suggestions_hint" = "Die gewählten Mahlzeiten sind möglicherweise bereits geplant. Ergänze Rezepte, wähle andere Mahlzeiten oder erlaube Wiederholungen für weitere Vorschläge.";
+
+"suggestions_variety_hint" = "Jedes Rezept wird einmal vorgeschlagen, sofern Wiederholungen nicht erlaubt sind. Bereits zubereitete Reste dürfen dasselbe Rezept verwenden. Bestehende Mahlzeiten bleiben erhalten.";
+
+"weekly_suggestions" = "Wochenvorschläge";
+
+"apply_selected" = "Ausgewählte Mahlzeiten hinzufügen";
+
+"suggestion_reason_use_available_leftovers" = "Verwendet vorhandene Reste";
+
+"suggestion_reason_positively_rated" = "Eines deiner gut bewerteten Rezepte";
+
+"suggestion_reason_library_variety" = "Abwechslung aus deiner Rezeptsammlung";
+
+"suggestion_reason_not_cooked_recently" = "In letzter Zeit nicht als gekocht markiert";
+
+"suggestion_reason_not_planned_this_week" = "Diese Woche noch nicht eingeplant";
+
+"mark_cooked" = "Als gekocht markieren";
+
+"mark_uncooked" = "Als nicht gekocht markieren";
+
+"suggestions_stale" = "Der Plan wurde während der Prüfung geändert. Erstelle neue Vorschläge oder öffne die Mahlzeit erneut.";
+
+"suggestions_options_error" = "Wähle mindestens eine Mahlzeit und eine gültige Portionszahl.";
+
+"leftover_portions_error" = "Gib eine gültige Portionszahl ein. Verwende Entsorgen, wenn keine Portionen mehr übrig sind.";
+
+"leftover_reserved_error" = "Diese Portionen sind bereits eingeplant. Verringere oder entferne die Mahlzeiten, bevor du weitere Portionen verwendest.";
+
+"leftover_production_error" = "Plane Reste frühestens am Tag ihrer Zubereitung ein.";
+
+"leftover_discarded_error" = "Diese Reste wurden entsorgt. Wähle andere Reste oder ein anderes Rezept.";
+
+"leftover_in_use_error" = "Diese Reste werden bereits im Kalender verwendet. Behalte das Rezept und die eingeplanten Portionen bei.";
+
+"leftover_unavailable_error" = "Diese Reste sind nicht mehr verfügbar. Wähle eine andere Mahlzeit.";

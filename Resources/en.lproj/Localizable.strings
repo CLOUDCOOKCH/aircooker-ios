@@ -177,3 +177,99 @@
 "template_recipe_missing" = "This template refers to a recipe that is no longer available.";
 
 "template_invalid" = "Use a name and at most 100 meals in a weekly template.";
+
+"leftovers" = "Leftovers";
+
+"no_leftovers" = "No leftovers recorded";
+
+"leftovers_empty_hint" = "Record portions after cooking, then plan them for another meal.";
+
+"produced_date %@" = "Prepared on %@";
+
+"leftovers_discarded" = "Remaining portions discarded";
+
+"available_portions %@" = "%@ portions available";
+
+"plan_portions %@" = "%@ portions";
+
+"schedule_leftovers" = "Plan leftovers";
+
+"record_leftovers" = "Record leftovers";
+
+"produced_on" = "Prepared on";
+
+"unplanned_portions" = "Portions not yet planned";
+
+"reserved_portions %@" = "%@ portions already planned";
+
+"leftovers_portion_hint" = "Enter the remaining portions available for another meal. Portions already planned stay reserved.";
+
+"discard_leftovers" = "Discard remaining portions";
+
+"edit_leftovers" = "Edit leftovers";
+
+"discard_leftovers_question" = "Discard these remaining portions?";
+
+"discard_leftovers_hint" = "Existing planned meals stay in your calendar. No more portions from this batch will be suggested.";
+
+"portions" = "Portions";
+
+"leftovers_shopping_hint" = "These portions are already prepared. Their recipe ingredients will not be added to Bring! again. Check that the food is still suitable before using it.";
+
+"suggestions_local_hint" = "Suggestions use your saved recipes, ratings and meal history. Review them before adding anything to your calendar.";
+
+"week_of %@" = "Week of %@";
+
+"suggestion_preferences" = "Plan preferences";
+
+"allow_recipe_repeats" = "Allow recipes more than once";
+
+"use_recipe_servings" = "Use each recipe’s original servings";
+
+"generate_suggestions" = "Generate suggestions";
+
+"regenerate_suggestions" = "Generate different suggestions";
+
+"generating_suggestions" = "Choosing meals…";
+
+"suggested_meals" = "Suggested meals";
+
+"no_suggestions" = "No suitable open meals";
+
+"no_suggestions_hint" = "Your selected meals may already be planned. Add recipes, choose other meal categories or allow repeats to find more suggestions.";
+
+"suggestions_variety_hint" = "Each recipe is suggested once unless repeats are allowed. Prepared leftovers may reuse a recipe. Existing meals stay in place.";
+
+"weekly_suggestions" = "Weekly suggestions";
+
+"apply_selected" = "Add selected meals";
+
+"suggestion_reason_use_available_leftovers" = "Uses available leftovers";
+
+"suggestion_reason_positively_rated" = "One of your highly rated recipes";
+
+"suggestion_reason_library_variety" = "Adds variety from your recipe library";
+
+"suggestion_reason_not_cooked_recently" = "Not marked cooked recently";
+
+"suggestion_reason_not_planned_this_week" = "Not already planned this week";
+
+"mark_cooked" = "Mark as cooked";
+
+"mark_uncooked" = "Mark as not cooked";
+
+"suggestions_stale" = "This plan changed while you were reviewing it. Generate fresh suggestions or reopen the meal.";
+
+"suggestions_options_error" = "Choose at least one meal category and a valid serving count.";
+
+"leftover_portions_error" = "Enter a valid number of portions. Use Discard for a batch with no remaining portions.";
+
+"leftover_reserved_error" = "These portions are already planned. Reduce or remove those meals before using more.";
+
+"leftover_production_error" = "Plan leftovers on or after the date they were prepared.";
+
+"leftover_discarded_error" = "This batch was discarded. Choose different leftovers or another recipe.";
+
+"leftover_in_use_error" = "These leftovers are already used in your calendar. Keep their recipe and planned portions.";
+
+"leftover_unavailable_error" = "These leftovers are no longer available. Choose another meal.";

@@ -15,3 +15,6 @@ for folder in ['App','ShareExtension','WidgetExtension']:
         for key in re.findall(r'String\(localized:\s*"([^"]+)"',source.read_text()):
             assert key in en,(source.name,key)
 print(f'{len(en)} English/German keys and static localised errors verified.')
+
+for reason in ['use_available_leftovers','positively_rated','library_variety','not_cooked_recently','not_planned_this_week']:
+    assert 'suggestion_reason_'+reason in en,reason

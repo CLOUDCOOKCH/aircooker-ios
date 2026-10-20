@@ -18,6 +18,7 @@ struct CalendarView: View {
   @State private var selectedTemplateEdits: [LocalEdit]?
   @State private var recurrence: MealOccurrence?
   @State private var moving: MealOccurrence?
+  @State private var recordingLeftovers: MealOccurrence?
   var calendar: Calendar {
     var value = Calendar(identifier: .gregorian)
     value.firstWeekday = 2
@@ -60,12 +61,22 @@ struct CalendarView: View {
                     RecipePhotoView(imageID: model.recipe(item.meal.recipeID)?.imageID)
                       .frame(width: 40, height: 40).clipShape(RoundedRectangle(cornerRadius: 8))
                     Text(model.title(item.meal))
+                    if item.meal.leftoverID != nil {
+                      Image(systemName: "takeoutbag.and.cup.and.straw").accessibilityLabel(
+                        Text("leftovers"))
+                    }
                     if item.meal.recurrence != nil {
                       Image(systemName: "repeat").accessibilityLabel(Text("recurring_meal"))
                     }
                   }
                 }.draggable(item.id)
                   .contextMenu {
+                    Button(item.meal.cooked ? "mark_uncooked" : "mark_cooked") {
+                      perform { try MealPlanning.setCooked(item, cooked: !item.meal.cooked) }
+                    }.disabled(!item.meal.cooked && item.date > model.dateString(Date()))
+                    if item.meal.leftoverID == nil && item.date <= model.dateString(Date()) {
+                      Button("record_leftovers") { recordingLeftovers = item }
+                    }
                     Button("duplicate") { duplicate(item) }
                     Button("move_meal") { moving = item }
                     if item.meal.leftoverID == nil {
@@ -125,6 +136,8 @@ struct CalendarView: View {
       .environment(\.timeZone, TimeZone(identifier: model.householdTimeZone) ?? .current)
       .toolbar {
         Menu {
+          NavigationLink("weekly_suggestions") { SuggestionsView(week: week) }
+          NavigationLink("leftovers") { LeftoversView() }
           Button("copy_week_next") {
             prepare {
               try MealPlanning.copy(
@@ -159,6 +172,7 @@ struct CalendarView: View {
       .sheet(item: $preview) { value in PlanningPreview(edits: value.edits) }
       .sheet(item: $recurrence) { item in RecurrenceEditor(item: item) }
       .sheet(item: $moving) { item in MealMoveEditor(item: item) }
+      .sheet(item: $recordingLeftovers) { item in LeftoverEditor(source: item) }
       .sheet(
         isPresented: $selectingTemplate,
         onDismiss: {
@@ -200,14 +214,37 @@ struct CalendarView: View {
       }
       .sheet(isPresented: Binding(get: { assigning != nil }, set: { if !$0 { assigning = nil } })) {
         NavigationStack {
-          List(model.recipes) { row in
-            if let recipe = try? row.decode(Recipe.self) {
-              Button(recipe.title) {
-                guard let day = assigning else { return }
-                let meal = Meal(
-                  recipeID: row.id, date: model.dateString(day), category: category,
-                  servings: recipe.servings)
-                Task { if await model.save(kind: .meal, value: meal) { assigning = nil } }
+          List {
+            Section("recipes") {
+              ForEach(model.recipes) { row in
+                if let recipe = try? row.decode(Recipe.self) {
+                  Button(recipe.title) {
+                    guard let day = assigning else { return }
+                    let meal = Meal(
+                      recipeID: row.id, date: model.dateString(day), category: category,
+                      servings: recipe.servings)
+                    Task { if await model.save(kind: .meal, value: meal) { assigning = nil } }
+                  }
+                }
+              }
+            }
+            Section("leftovers") {
+              ForEach(model.leftovers.filter { model.canScheduleLeftover($0) }) { row in
+                if let leftover = try? row.decode(Leftover.self) {
+                  NavigationLink {
+                    LeftoverScheduleView(
+                      row: row,
+                      initialDate: assigning.map { model.dateString($0) }, initialCategory: category
+                    )
+                  } label: {
+                    VStack(alignment: .leading) {
+                      Text(
+                        model.recipe(leftover.recipeID)?.title
+                          ?? String(localized: "recipe_unavailable"))
+                      Text("available_portions \(model.availablePortions(row))").font(.caption)
+                    }
+                  }
+                }
               }
             }
           }.navigationTitle("choose_recipe").toolbar { Button("cancel") { assigning = nil } }
@@ -368,6 +405,8 @@ struct PantryView: View {
   @State private var search = ""
   var body: some View {
     List {
+      Section { NavigationLink("leftovers") { LeftoversView() } }
+
       Section {
         HStack {
           TextField("pantry_item", text: $name)

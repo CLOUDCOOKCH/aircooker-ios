@@ -58,7 +58,8 @@ Offline imports are stored in the shared inbox and submitted when the main app c
 No exact iOS background execution is assumed.
 
 The calendar sources include recurring occurrences, single-occurrence movement/removal,
-day/week copy previews and weekly template save/apply. See [planning semantics](docs/PLANNING.md).
+day/week copy previews, weekly templates, leftover tracking/assignment and local weekly
+suggestions with explicit review. See [planning semantics](docs/PLANNING.md).
 
 Settings allow a Home/Calendar/Recipes start screen and optional local device authentication.
 Authentication includes Face ID where available with system passcode fallback; it does not
