@@ -11,20 +11,22 @@ occurrence-aware movement/duplication, day/week copy previews, template save/app
 accessible context-menu alternatives, pantry editing, leftover recording/editing/discard/assignment,
 local suggestion preferences/review/selection, import queue/review sources, App Group
 share inbox, 14-day widget snapshots/timeline sources, deferred deep links, reminder preferences
-and opt-in notification reconciliation. English/German resources are present.
+opt-in notification reconciliation, rejected-change review and saved local draft recovery. English/German resources are present.
 
 Tested core: prepared photo + recipe + outbox atomic persistence, upload-before-recipe sync,
 replay after lost responses/restart, photo cache, v1→v2 local migration, bounded recurrence,
 exceptions, detached movement, civil dates, template validation, atomic copy batches,
 leftover reservation invariants, local recommendations, stale-preview checks, atomic approval,
-reminder dates/DST/grouping/limits, strict deep-link parsing and widget rollover/privacy/expiry.
+reminder dates/DST/grouping/limits, strict deep-link parsing and widget rollover/privacy/expiry;
+per-entity rejection isolation, server snapshots, atomic archive/copy recovery, stale-decision
+guards, coordinator exclusion and schema-v3 migration replay.
 
 Remaining: full native SDK build/Swift concurrency validation; photo quota/cleanup UI;
 arbitrary copy destinations, native leftover/suggestion lifecycle validation, shared household
 recommendation preferences and cross-device approval collision handling; import preview lifecycle
 end-to-end; provider disclosure/configuration; Apple notification delivery/permission and
 widget/deep-link lifecycle validation; remote logout/session revocation and deletion UX; recoverable sync
-conflict UI; UI tests; app icon; screenshots; demo environment; TestFlight signing/upload;
+recovery UI/device validation and controlled full resync; UI tests; app icon; screenshots; demo environment; TestFlight signing/upload;
 accessibility audit; full performance/privacy/security validation.
 
 The server repository's implementation checklist tracks the full product phases. Neither

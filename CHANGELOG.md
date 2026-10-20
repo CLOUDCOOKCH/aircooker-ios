@@ -29,3 +29,10 @@ See the implementation checklist for feature status and verification limits.
 
 - Pin the additive backend administration contract, including redacted AI settings, storage
   summaries and current-session metadata; validate the exact source commit and checksum.
+
+- Keep rejected offline changes per entity while allowing unrelated records and deltas to
+  synchronise. Preserve durable server snapshots alongside unsent local edits.
+- Archive all queued edits before accepting server state or copying a recipe to a fresh
+  identity; guard stale review decisions and in-flight sync/recovery races.
+- Add native English/German recovery/archive/sharing controls; platform validation pending.
+- Migrate the local store to schema 3 without losing outbox identities or cached photos.

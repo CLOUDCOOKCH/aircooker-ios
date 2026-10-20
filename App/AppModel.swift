@@ -18,6 +18,8 @@ import WidgetKit
   var templates: [LocalEntity] = []
   var leftovers: [LocalEntity] = []
   var photoRevision = 0
+  var syncIssues: [SyncIssue] = []
+  private var synchronising = false
   var pending = 0
   var busy = false
   var error: String?
@@ -144,17 +146,24 @@ import WidgetKit
     } catch { report(error) }
   }
   func synchronise() async {
-    guard !locked, let syncEngine else { return }
+    guard !locked, !synchronising, let syncEngine else { return }
+    synchronising = true
     busy = true
-    defer { busy = false }
+    defer {
+      synchronising = false
+      busy = false
+    }
     do {
-      try await syncEngine.synchronise()
+      var needsReview = false
+      do { try await syncEngine.synchronise() } catch StoreError.syncNeedsAttention {
+        needsReview = true
+      }
       if let settings = try await client?.household(), let timezone = settings["timezone"] {
         householdTimeZone = timezone
         UserDefaults.standard.set(timezone, forKey: "householdTimeZone")
       }
       try await submitImports()
-      error = nil
+      if needsReview { report(StoreError.syncNeedsAttention) } else { error = nil }
     } catch { report(error) }
     await reload()
   }
@@ -212,6 +221,7 @@ import WidgetKit
       let currentPantry = try await store.entities(kind: .pantry)
       let currentTemplates = try await store.entities(kind: .template)
       let currentPending = try await store.pendingCount()
+      let currentIssues = try await store.syncIssues()
       guard generation == reloadGeneration else { return }
       recipes = snapshot.recipes
       meals = snapshot.meals
@@ -219,12 +229,57 @@ import WidgetKit
       pantry = currentPantry
       templates = currentTemplates
       pending = currentPending
+      syncIssues = currentIssues
       photoRevision += 1
       if connected {
         try publishWidget()
         await refreshReminders()
       }
     } catch { report(error) }
+  }
+  func retrySyncIssue(_ issue: SyncIssue) async -> Bool {
+    guard !busy, let syncEngine else { return false }
+    do {
+      try await syncEngine.retry(issue)
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      await reload()
+      return false
+    }
+  }
+  func resolveSyncIssue(_ issue: SyncIssue, keepRecipeCopy: Bool) async -> Bool {
+    guard !busy, let syncEngine else { return false }
+    busy = true
+    defer { busy = false }
+    do {
+      _ = try await syncEngine.resolve(issue, keepRecipeCopy: keepRecipeCopy)
+      error = nil
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      await reload()
+      return false
+    }
+  }
+  func restoreArchivedRecipe(_ draft: ArchivedDraft) async -> Bool {
+    guard !busy, let syncEngine else { return false }
+    busy = true
+    defer { busy = false }
+    do {
+      _ = try await syncEngine.restoreRecipe(draft)
+      error = nil
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      return false
+    }
   }
   func save<T: Encodable & Sendable>(
     kind: EntityKind, id: UUID = UUID(), value: T, delete: Bool = false
@@ -455,6 +510,10 @@ import WidgetKit
       }
     case APIError.invalidServerURL: error = String(localized: "invalid_server")
     case APIError.incompatibleServer: error = String(localized: "incompatible_server")
+    case StoreError.syncNeedsAttention: error = String(localized: "sync_attention_hint")
+    case StoreError.recoveryChanged: error = String(localized: "sync_review_changed")
+    case StoreError.serverSnapshotUnavailable: error = String(localized: "sync_snapshot_missing")
+    case StoreError.syncInProgress: error = String(localized: "sync_in_progress")
     case StoreError.rejectedDeletion: error = String(localized: "tombstone_conflict")
     case StoreError.invalidPhoto: error = String(localized: "photo_invalid")
     case StoreError.mediaStorageLimit: error = String(localized: "photo_storage_full")

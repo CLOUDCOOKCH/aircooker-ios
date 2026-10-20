@@ -309,3 +309,59 @@
 "widget_meal_planned" = "Mahlzeit geplant";
 
 "widget_more_count %lld" = "+%lld weitere";
+
+"sync_recovery" = "Synchronisierung und Entwürfe";
+
+"sync_recovery_explanation" = "Vom Server abgelehnte Änderungen bleiben auf diesem Gerät. Andere Einträge werden weiter synchronisiert. Prüfe eine Änderung, bevor du sie wiederherstellst.";
+
+"sync_needs_review" = "Prüfung erforderlich";
+
+"sync_no_issues" = "Keine abgelehnten Änderungen zu prüfen.";
+
+"saved_local_drafts" = "Gesicherte lokale Entwürfe";
+
+"sync_archives_local_only" = "Gesicherte Entwürfe bleiben auf diesem Gerät. Sie sind nicht Teil einer Serversicherung. Exportiere wichtige Entwürfe, bevor du die App entfernst.";
+
+"local_version" = "Lokale Version";
+
+"server_version" = "Serverversion";
+
+"sync_server_version_unavailable" = "Für diesen Eintrag wurde noch keine Serverversion empfangen.";
+
+"keep_new_recipe_copy" = "Als neues Rezept behalten";
+
+"use_server_keep_draft" = "Serverversion verwenden und lokalen Entwurf sichern";
+
+"retry_same_change" = "Ursprüngliche Änderung erneut senden";
+
+"sync_recovery_archive_hint" = "Die lokale Version und ihre ausstehenden Änderungen werden zuerst gesichert. Ein neues Rezept erhält eine eigene Kennung; bestehende Mahlzeiten behalten ihre ursprüngliche Rezeptzuordnung.";
+
+"sync_review_change" = "Änderung prüfen";
+
+"sync_confirm_recovery" = "Lokalen Entwurf sichern und diese Änderung auflösen?";
+
+"sync_record_deleted" = "Eintrag gelöscht";
+
+"load_more" = "Weitere laden";
+
+"no_saved_local_drafts" = "Noch keine gesicherten lokalen Entwürfe.";
+
+"export_saved_draft" = "Gesicherten Entwurf teilen";
+
+"saved_draft_export_hint" = "Dieser Textexport enthält den Entwurf und ausstehende Änderungen, ohne Fotodateien oder Anmeldedaten. Er ist keine vollständige Haushaltssicherung.";
+
+"saved_local_draft" = "Gesicherter lokaler Entwurf";
+
+"sync_change_rejected" = "Der Server konnte diese Änderung nicht übernehmen";
+
+"sync_attention_hint" = "Prüfe abgelehnte Änderungen unter Einstellungen → Synchronisierung und Entwürfe. Deine lokalen Inhalte bleiben erhalten.";
+
+"sync_review_changed" = "Dieser Eintrag wurde nach dem Öffnen geändert. Gehe zurück und prüfe die aktuelle Version.";
+
+"sync_snapshot_missing" = "Synchronisiere, um vor dem Auflösen dieser Änderung die Serverversion zu empfangen.";
+
+"sync_in_progress" = "Warte, bis die laufende Synchronisierung beendet ist.";
+
+"weekly_templates" = "Wochenvorlagen";
+
+"saved" = "Gespeichert";

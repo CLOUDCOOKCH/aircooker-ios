@@ -309,3 +309,59 @@
 "widget_meal_planned" = "Meal planned";
 
 "widget_more_count %lld" = "+%lld more";
+
+"sync_recovery" = "Sync and saved drafts";
+
+"sync_recovery_explanation" = "Changes that the server rejects stay on this device. Other records continue to synchronise. Review a change before choosing how to recover it.";
+
+"sync_needs_review" = "Needs review";
+
+"sync_no_issues" = "No rejected changes to review.";
+
+"saved_local_drafts" = "Saved local drafts";
+
+"sync_archives_local_only" = "Recovered drafts remain on this device. They are not included in a server backup. Export important drafts before removing the app.";
+
+"local_version" = "Local version";
+
+"server_version" = "Server version";
+
+"sync_server_version_unavailable" = "No server version has been received for this record.";
+
+"keep_new_recipe_copy" = "Keep as new recipe";
+
+"use_server_keep_draft" = "Use server version and save local draft";
+
+"retry_same_change" = "Retry original change";
+
+"sync_recovery_archive_hint" = "The local version and its queued changes are archived first. A new recipe gets a separate identity; existing meals keep their original recipe reference.";
+
+"sync_review_change" = "Review change";
+
+"sync_confirm_recovery" = "Save the local draft and resolve this change?";
+
+"sync_record_deleted" = "Record deleted";
+
+"load_more" = "Load more";
+
+"no_saved_local_drafts" = "No saved local drafts yet.";
+
+"export_saved_draft" = "Share saved draft";
+
+"saved_draft_export_hint" = "This text export includes the draft and queued changes, without photo files or login secrets. It is not a full household backup.";
+
+"saved_local_draft" = "Saved local draft";
+
+"sync_change_rejected" = "The server could not accept this change";
+
+"sync_attention_hint" = "Review rejected changes in Settings → Sync and saved drafts. Your local content is preserved.";
+
+"sync_review_changed" = "This record changed after you opened it. Go back and review the current version.";
+
+"sync_snapshot_missing" = "Synchronise to receive the server version before resolving this change.";
+
+"sync_in_progress" = "Wait for the current synchronisation to finish.";
+
+"weekly_templates" = "Weekly templates";
+
+"saved" = "Saved";

@@ -4,7 +4,8 @@ import Foundation
 public enum StoreError: Error, Sendable {
   case sqlite(String)
   case invalidRecord, serverChanged, rejectedDeletion, invalidPhoto, mediaStorageLimit,
-    unsupportedSchema
+    unsupportedSchema, recoveryChanged, serverSnapshotUnavailable, syncNeedsAttention,
+    syncInProgress
 }
 // The handle is confined to LocalStore's actor after construction.
 private final class Connection: @unchecked Sendable {
@@ -40,7 +41,7 @@ public actor LocalStore {
     let version =
       sqlite3_step(versionStatement) == SQLITE_ROW ? sqlite3_column_int(versionStatement, 0) : -1
     sqlite3_finalize(versionStatement)
-    guard (0...2).contains(version) else { throw StoreError.unsupportedSchema }
+    guard (0...3).contains(version) else { throw StoreError.unsupportedSchema }
     let sql = """
       PRAGMA journal_mode=WAL;
       PRAGMA synchronous=FULL;
@@ -48,9 +49,14 @@ public actor LocalStore {
       BEGIN IMMEDIATE;
       CREATE TABLE IF NOT EXISTS entity(kind TEXT NOT NULL,id TEXT NOT NULL,revision INTEGER NOT NULL,deleted INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(kind,id));
       CREATE TABLE IF NOT EXISTS outbox(sequence INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,entity_id TEXT NOT NULL,kind TEXT NOT NULL,body TEXT NOT NULL,error TEXT);
+      CREATE INDEX IF NOT EXISTS outbox_entity_sequence ON outbox(kind,entity_id,sequence);
+      CREATE INDEX IF NOT EXISTS outbox_failed_entity ON outbox(kind,entity_id) WHERE error IS NOT NULL;
       CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS local_media(id TEXT PRIMARY KEY,data BLOB NOT NULL CHECK(length(data)>0 AND length(data)<=1048576),pending_upload INTEGER NOT NULL CHECK(pending_upload IN (0,1)));
-      PRAGMA user_version=2;
+      CREATE TABLE IF NOT EXISTS server_entity(kind TEXT NOT NULL,id TEXT NOT NULL,revision INTEGER NOT NULL,deleted INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(kind,id));
+      CREATE TABLE IF NOT EXISTS recovered_draft(sequence INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,body TEXT NOT NULL);
+      \(version < 3 ? "INSERT OR IGNORE INTO server_entity SELECT * FROM entity WHERE revision>0 AND NOT EXISTS (SELECT 1 FROM outbox WHERE outbox.kind=entity.kind AND outbox.entity_id=entity.id); DELETE FROM metadata WHERE key='cursor';" : "")
+      PRAGMA user_version=3;
       COMMIT;
       """
     guard sqlite3_exec(connection.handle, sql, nil, nil, nil) == SQLITE_OK else {
@@ -343,9 +349,17 @@ public actor LocalStore {
     }
   }
   public func pending() throws -> [Mutation] {
-    try run("SELECT body FROM outbox ORDER BY sequence LIMIT 100").map {
+    try run(
+      "SELECT body FROM outbox AS candidate WHERE error IS NULL AND NOT EXISTS (SELECT 1 FROM outbox AS failed WHERE failed.kind=candidate.kind AND failed.entity_id=candidate.entity_id AND failed.error IS NOT NULL) ORDER BY sequence LIMIT 100"
+    ).map {
       try decoder.decode(Mutation.self, from: Data(($0["body"] ?? "").utf8))
     }
+  }
+  public func isReady(_ mutation: Mutation) throws -> Bool {
+    try !run(
+      "SELECT 1 FROM outbox AS candidate WHERE id=? AND error IS NULL AND NOT EXISTS (SELECT 1 FROM outbox AS failed WHERE failed.kind=candidate.kind AND failed.entity_id=candidate.entity_id AND failed.error IS NOT NULL)",
+      [mutation.id.uuidString]
+    ).isEmpty
   }
   public func pendingCount() throws -> Int {
     Int(
@@ -354,6 +368,9 @@ public actor LocalStore {
       ).first?["count"] ?? "0") ?? 0
   }
   public func acknowledge(_ result: MutationResult, mutation: Mutation) throws {
+    guard result.mutationID == mutation.id,
+      ["accepted", "deleted", "rejected_tombstone"].contains(result.status), result.revision >= 0
+    else { throw APIError.invalidResponse }
     if result.status == "rejected_tombstone" {
       _ = try run(
         "UPDATE outbox SET error='rejected_tombstone' WHERE id=?", [mutation.id.uuidString])
@@ -368,14 +385,29 @@ public actor LocalStore {
   }
   public func apply(_ page: PullPage) throws {
     try transaction {
+      let previousCursor = try cursor()
+      var previousRevision = previousCursor
+      guard page.cursor >= previousCursor else { throw APIError.invalidResponse }
       for change in page.changes {
+        guard change.revision > previousRevision, change.revision <= page.cursor else {
+          throw APIError.invalidResponse
+        }
+        previousRevision = change.revision
+      }
+      for change in page.changes {
+        let payload = String(decoding: try encoder.encode(change.payload), as: UTF8.self)
+        _ = try run(
+          "INSERT INTO server_entity VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET revision=excluded.revision,deleted=excluded.deleted,payload=excluded.payload WHERE excluded.revision>=server_entity.revision",
+          [
+            change.kind.rawValue, change.entityID.uuidString, String(change.revision),
+            change.deleted ? "1" : "0", payload,
+          ])
         let pending = try run(
           "SELECT 1 FROM outbox WHERE kind=? AND entity_id=? LIMIT 1",
           [change.kind.rawValue, change.entityID.uuidString])
         if !pending.isEmpty { continue }  // Unsynced local content always remains recoverable.
-        let payload = String(decoding: try encoder.encode(change.payload), as: UTF8.self)
         _ = try run(
-          "INSERT INTO entity VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET revision=excluded.revision,deleted=excluded.deleted,payload=excluded.payload",
+          "INSERT INTO entity VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET revision=excluded.revision,deleted=excluded.deleted,payload=excluded.payload WHERE excluded.revision>=entity.revision",
           [
             change.kind.rawValue, change.entityID.uuidString, String(change.revision),
             change.deleted ? "1" : "0", payload,
@@ -386,4 +418,137 @@ public actor LocalStore {
         [String(page.cursor)])
     }
   }
+  public func markFailure(_ mutation: Mutation, code: String) throws {
+    // Codes are diagnostics, never arbitrary server response bodies or household content.
+    let safe = String(code.prefix(120)).filter {
+      $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "_")
+    }
+    _ = try run(
+      "UPDATE outbox SET error=? WHERE id=?",
+      [safe.isEmpty ? "mutation_rejected" : safe, mutation.id.uuidString])
+  }
+  private func recoveryRows(kind: EntityKind, id: UUID) throws -> [[[String: String]]] {
+    try [
+      run("SELECT * FROM entity WHERE kind=? AND id=?", [kind.rawValue, id.uuidString]),
+      run(
+        "SELECT * FROM outbox WHERE kind=? AND entity_id=? ORDER BY sequence",
+        [kind.rawValue, id.uuidString]),
+      run("SELECT * FROM server_entity WHERE kind=? AND id=?", [kind.rawValue, id.uuidString]),
+    ]
+  }
+  private func recoveryEntity(_ row: [String: String]?) throws -> LocalEntity? {
+    guard let row else { return nil }
+    guard let kind = EntityKind(rawValue: row["kind"] ?? ""),
+      let id = UUID(uuidString: row["id"] ?? ""), let raw = row["payload"]
+    else { throw StoreError.invalidRecord }
+    return LocalEntity(
+      id: id, kind: kind, revision: Int(row["revision"] ?? "0") ?? 0,
+      deleted: row["deleted"] == "1",
+      payload: try decoder.decode(JSONValue.self, from: Data(raw.utf8)))
+  }
+  public func syncIssues() throws -> [SyncIssue] {
+    try run(
+      "SELECT kind,entity_id,MIN(sequence) AS first FROM outbox WHERE error IS NOT NULL GROUP BY kind,entity_id ORDER BY first"
+    ).map { row in
+      guard let kind = EntityKind(rawValue: row["kind"] ?? ""),
+        let id = UUID(uuidString: row["entity_id"] ?? "")
+      else { throw StoreError.invalidRecord }
+      let rows = try recoveryRows(kind: kind, id: id)
+      guard let local = try recoveryEntity(rows[0].first),
+        let code = rows[1].compactMap({ $0["error"] }).first
+      else { throw StoreError.invalidRecord }
+      return SyncIssue(
+        kind: kind, entityID: id, code: code, mutationCount: rows[1].count, local: local,
+        server: try recoveryEntity(rows[2].first),
+        basis: try JSONSerialization.data(withJSONObject: rows, options: .sortedKeys))
+    }
+  }
+  private func validateRecovery(_ issue: SyncIssue) throws -> [[[String: String]]] {
+    let rows = try recoveryRows(kind: issue.kind, id: issue.entityID)
+    guard try JSONSerialization.data(withJSONObject: rows, options: .sortedKeys) == issue.basis,
+      rows[1].contains(where: { $0["error"] != nil })
+    else { throw StoreError.recoveryChanged }
+    return rows
+  }
+  public func retry(_ issue: SyncIssue) throws {
+    guard issue.code != "rejected_tombstone" else { throw StoreError.rejectedDeletion }
+    try transaction {
+      _ = try validateRecovery(issue)
+      _ = try run(
+        "UPDATE outbox SET error=NULL WHERE kind=? AND entity_id=?",
+        [issue.kind.rawValue, issue.entityID.uuidString])
+    }
+  }
+  @discardableResult public func resolve(_ issue: SyncIssue, keepRecipeCopy: Bool) throws -> UUID? {
+    let device = try deviceID()
+    return try transaction {
+      let rows = try validateRecovery(issue)
+      guard let local = try recoveryEntity(rows[0].first) else { throw StoreError.invalidRecord }
+      if keepRecipeCopy {
+        guard local.kind == .recipe, !local.deleted else { throw StoreError.invalidRecord }
+      }
+      // An unknown accepted server state must not be guessed. New unsaved entities may
+      // be removed locally; previously accepted entities require a pulled snapshot.
+      guard !rows[2].isEmpty || local.revision == 0 else {
+        throw StoreError.serverSnapshotUnavailable
+      }
+      let mutations = try rows[1].map {
+        try decoder.decode(Mutation.self, from: Data(($0["body"] ?? "").utf8))
+      }
+      let archive = ArchivedDraft(
+        formatVersion: 1, id: UUID(), entityID: local.id, kind: local.kind,
+        revision: local.revision,
+        deleted: local.deleted, payload: local.payload, mutations: mutations, errorCode: issue.code,
+        archivedAt: ISO8601DateFormatter().string(from: Date()))
+      _ = try run(
+        "INSERT INTO recovered_draft(id,body) VALUES (?,?)",
+        [archive.id.uuidString, String(decoding: encoder.encode(archive), as: UTF8.self)])
+      _ = try run(
+        "DELETE FROM outbox WHERE kind=? AND entity_id=?",
+        [issue.kind.rawValue, issue.entityID.uuidString])
+      if let remote = try recoveryEntity(rows[2].first) {
+        _ = try run(
+          "UPDATE entity SET revision=?,deleted=?,payload=? WHERE kind=? AND id=?",
+          [
+            String(remote.revision), remote.deleted ? "1" : "0",
+            String(decoding: encoder.encode(remote.payload), as: UTF8.self), issue.kind.rawValue,
+            issue.entityID.uuidString,
+          ])
+      } else {
+        _ = try run(
+          "UPDATE entity SET deleted=1 WHERE kind=? AND id=?",
+          [issue.kind.rawValue, issue.entityID.uuidString])
+      }
+      if keepRecipeCopy {
+        let newID = UUID()
+        try persist(kind: .recipe, id: newID, payload: local.payload, delete: false, device: device)
+        return newID
+      }
+      return nil
+    }
+  }
+  public func archivedDrafts(offset: Int = 0, limit: Int = 50) throws -> [ArchivedDraft] {
+    guard offset >= 0, (1...100).contains(limit) else { throw StoreError.invalidRecord }
+    return try run(
+      "SELECT body FROM recovered_draft ORDER BY sequence DESC LIMIT ? OFFSET ?",
+      [String(limit), String(offset)]
+    ).map {
+      try decoder.decode(ArchivedDraft.self, from: Data(($0["body"] ?? "").utf8))
+    }
+  }
+  @discardableResult public func restoreRecipe(_ draft: ArchivedDraft) throws -> UUID {
+    let device = try deviceID()
+    return try transaction {
+      guard
+        let raw = try run("SELECT body FROM recovered_draft WHERE id=?", [draft.id.uuidString])
+          .first?["body"]
+      else { throw StoreError.invalidRecord }
+      let saved = try decoder.decode(ArchivedDraft.self, from: Data(raw.utf8))
+      guard saved.kind == .recipe, !saved.deleted else { throw StoreError.invalidRecord }
+      let id = UUID()
+      try persist(kind: .recipe, id: id, payload: saved.payload, delete: false, device: device)
+      return id
+    }
+  }
+
 }

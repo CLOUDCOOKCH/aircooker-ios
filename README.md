@@ -52,8 +52,9 @@ The editor uses the system photo picker and strips metadata with ImageIO before 
 These native photo APIs still require Apple SDK/device validation.
 
 Local edits and outgoing mutations commit together in SQLite. Server-ordered changes win;
-unsent local drafts are never replaced by incoming deltas. Deleted-on-server conflicts
-remain recoverable in local storage and need an explicit recovery UI before release.
+unsent local drafts are never replaced by incoming deltas. Rejected changes pause per record and remain recoverable through the saved-draft review
+sources. Recipe recovery uses a fresh identity; see [sync recovery](docs/SYNC_RECOVERY.md).
+The core behaviour is tested; its native interface requires Apple SDK validation.
 Offline imports are stored in the shared inbox and submitted when the main app can sync.
 No exact iOS background execution is assumed.
 

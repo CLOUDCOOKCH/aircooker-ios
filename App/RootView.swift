@@ -39,10 +39,11 @@ struct RootView: View {
       if let error = model.error {
         VStack(alignment: .leading, spacing: 8) {
           Label(error, systemImage: "exclamationmark.icloud").font(.footnote)
+          if !model.syncIssues.isEmpty { Text("sync_attention_hint").font(.caption) }
           HStack {
             Text("pending_changes \(model.pending)").font(.caption)
             Spacer()
-            Button("retry") { Task { await model.synchronise() } }
+            Button("retry") { Task { await model.synchronise() } }.disabled(model.busy)
           }
         }.padding().background(.regularMaterial)
       } else if model.pending > 0 || model.busy {
@@ -205,6 +206,7 @@ struct SettingsView: View {
         Text(model.server).font(.footnote).textSelection(.enabled)
         Button("sync_now") { Task { await model.synchronise() } }
         Text("pending_changes \(model.pending)")
+        NavigationLink("sync_recovery") { SyncRecoveryView() }
       }
       Section("integrations") { Text("integration_console_hint").foregroundStyle(.secondary) }
       Section {

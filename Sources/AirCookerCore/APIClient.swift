@@ -233,6 +233,26 @@ public actor SyncEngine {
     self.store = store
     self.client = client
   }
+  public func retry(_ issue: SyncIssue) async throws {
+    guard !running else { throw StoreError.syncInProgress }
+    running = true
+    defer { running = false }
+    try await store.retry(issue)
+  }
+  @discardableResult public func resolve(_ issue: SyncIssue, keepRecipeCopy: Bool) async throws
+    -> UUID?
+  {
+    guard !running else { throw StoreError.syncInProgress }
+    running = true
+    defer { running = false }
+    return try await store.resolve(issue, keepRecipeCopy: keepRecipeCopy)
+  }
+  @discardableResult public func restoreRecipe(_ draft: ArchivedDraft) async throws -> UUID {
+    guard !running else { throw StoreError.syncInProgress }
+    running = true
+    defer { running = false }
+    return try await store.restoreRecipe(draft)
+  }
   public func synchronise() async throws {
     guard !running else { return }
     running = true
@@ -263,13 +283,25 @@ public actor SyncEngine {
           _ = try await client.uploadPhoto(photo)
           try await store.acknowledgePhoto(id: photo.id)
         }
-        let result = try await client.push(mutation)
-        try await store.acknowledge(result, mutation: mutation)
+        // Another request in this batch may have blocked this same entity.
+        guard try await store.isReady(mutation) else { continue }
+        do {
+          let result = try await client.push(mutation)
+          try await store.acknowledge(result, mutation: mutation)
+        } catch StoreError.rejectedDeletion {
+          // Durable rejection already recorded; continue other entities and pull the
+          // server tombstone so the user can review a coherent recovery decision.
+        } catch APIError.http(let status, let code)
+          where [400, 404, 409, 413, 422].contains(status)
+        {
+          try await store.markFailure(mutation, code: code)
+        }
       }
     }
     while true {
       let cursor = try await store.cursor()
       let page = try await client.pull(cursor: cursor)
+      guard !page.hasMore || page.cursor > cursor else { throw APIError.invalidResponse }
       try await store.apply(page)
       if !page.hasMore { break }
     }
@@ -278,5 +310,6 @@ public actor SyncEngine {
       let data = try await client.downloadPhoto(id: id)
       try await store.cachePhoto(id: id, data: data)
     }
+    if try await !store.syncIssues().isEmpty { throw StoreError.syncNeedsAttention }
   }
 }

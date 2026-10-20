@@ -32,7 +32,8 @@ audit. Date-only fields use the household time zone, never a floating device UTC
 Core tests exercise local restart with pending changes, incoming remote edits while a local
 mutation is pending, server tombstone rejection preserving the draft, delta application,
 backend identity changes, share-inbox durability, durable photo transfer retries, local
-schema migration and recurrence/template/copy batches. See [planning](PLANNING.md). Backend tests exercise two sessions,
+schema migration, recurrence/template/copy batches, per-entity rejected changes and atomic
+archived recovery; see [sync recovery](SYNC_RECOVERY.md). See [planning](PLANNING.md). Backend tests exercise two sessions,
 server-order conflicts, duplicate mutations, transaction rollback and migration restarts.
 A real two-device offline/reconnect scenario, authentication expiry during sync, application
 termination during submission and constrained network performance still require end-to-end
