@@ -3,7 +3,8 @@ import Foundation
 
 public enum StoreError: Error, Sendable {
   case sqlite(String)
-  case invalidRecord, serverChanged, rejectedDeletion
+  case invalidRecord, serverChanged, rejectedDeletion, invalidPhoto, mediaStorageLimit,
+    unsupportedSchema
 }
 // The handle is confined to LocalStore's actor after construction.
 private final class Connection: @unchecked Sendable {
@@ -31,14 +32,26 @@ public actor LocalStore {
     try FileManager.default.createDirectory(
       at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
     connection = try Connection(path: url.path)
+    var versionStatement: OpaquePointer?
+    guard
+      sqlite3_prepare_v2(connection.handle, "PRAGMA user_version", -1, &versionStatement, nil)
+        == SQLITE_OK
+    else { throw StoreError.sqlite("migration_failed") }
+    let version =
+      sqlite3_step(versionStatement) == SQLITE_ROW ? sqlite3_column_int(versionStatement, 0) : -1
+    sqlite3_finalize(versionStatement)
+    guard (0...2).contains(version) else { throw StoreError.unsupportedSchema }
     let sql = """
       PRAGMA journal_mode=WAL;
       PRAGMA synchronous=FULL;
       PRAGMA foreign_keys=ON;
+      BEGIN IMMEDIATE;
       CREATE TABLE IF NOT EXISTS entity(kind TEXT NOT NULL,id TEXT NOT NULL,revision INTEGER NOT NULL,deleted INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(kind,id));
       CREATE TABLE IF NOT EXISTS outbox(sequence INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,entity_id TEXT NOT NULL,kind TEXT NOT NULL,body TEXT NOT NULL,error TEXT);
       CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-      PRAGMA user_version=1;
+      CREATE TABLE IF NOT EXISTS local_media(id TEXT PRIMARY KEY,data BLOB NOT NULL CHECK(length(data)>0 AND length(data)<=1048576),pending_upload INTEGER NOT NULL CHECK(pending_upload IN (0,1)));
+      PRAGMA user_version=2;
+      COMMIT;
       """
     guard sqlite3_exec(connection.handle, sql, nil, nil, nil) == SQLITE_OK else {
       throw StoreError.sqlite("migration_failed")
@@ -101,30 +114,136 @@ public actor LocalStore {
   public func cursor() throws -> Int {
     Int(try run("SELECT value FROM metadata WHERE key='cursor'").first?["value"] ?? "0") ?? 0
   }
+  private func persist(kind: EntityKind, id: UUID, payload: JSONValue, delete: Bool, device: UUID)
+    throws
+  {
+    let revision =
+      Int(
+        try run(
+          "SELECT revision FROM entity WHERE kind=? AND id=?", [kind.rawValue, id.uuidString]
+        ).first?["revision"] ?? "0") ?? 0
+    let mutation = Mutation(
+      entityID: id, kind: kind, operation: delete ? "delete" : "upsert", baseRevision: revision,
+      payload: delete ? nil : payload, deviceID: device)
+    let raw = String(decoding: try encoder.encode(payload), as: UTF8.self)
+    _ = try run(
+      "INSERT INTO entity VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET deleted=excluded.deleted,payload=excluded.payload",
+      [kind.rawValue, id.uuidString, String(revision), delete ? "1" : "0", raw])
+    _ = try run(
+      "INSERT INTO outbox(id,entity_id,kind,body) VALUES (?,?,?,?)",
+      [
+        mutation.id.uuidString, id.uuidString, kind.rawValue,
+        String(decoding: try encoder.encode(mutation), as: UTF8.self),
+      ])
+  }
   public func save<T: Encodable & Sendable>(
     kind: EntityKind, id: UUID, value: T, delete: Bool = false
   ) throws {
     let payload = try Codec.json(value)
     let device = try deviceID()
     try transaction {
-      let revision =
-        Int(
-          try run(
-            "SELECT revision FROM entity WHERE kind=? AND id=?", [kind.rawValue, id.uuidString]
-          ).first?["revision"] ?? "0") ?? 0
-      let mutation = Mutation(
-        entityID: id, kind: kind, operation: delete ? "delete" : "upsert", baseRevision: revision,
-        payload: delete ? nil : payload, deviceID: device)
-      let raw = String(decoding: try encoder.encode(payload), as: UTF8.self)
-      _ = try run(
-        "INSERT INTO entity VALUES (?,?,?,?,?) ON CONFLICT(kind,id) DO UPDATE SET deleted=excluded.deleted,payload=excluded.payload",
-        [kind.rawValue, id.uuidString, String(revision), delete ? "1" : "0", raw])
-      _ = try run(
-        "INSERT INTO outbox(id,entity_id,kind,body) VALUES (?,?,?,?)",
-        [
-          mutation.id.uuidString, id.uuidString, kind.rawValue,
-          String(decoding: try encoder.encode(mutation), as: UTF8.self),
-        ])
+      try persist(kind: kind, id: id, payload: payload, delete: delete, device: device)
+    }
+  }
+  public func saveBatch(_ edits: [LocalEdit]) throws {
+    guard edits.count <= 100 else { throw PlanningError.tooManyChanges }
+    guard !edits.isEmpty else { return }
+    let device = try deviceID()
+    try transaction {
+      for edit in edits {
+        try persist(
+          kind: edit.kind, id: edit.id, payload: edit.payload,
+          delete: edit.deleted, device: device)
+      }
+    }
+  }
+  public func saveRecipe(id: UUID, recipe: Recipe, photo: Data?) throws {
+    let device = try deviceID()
+    var saved = recipe
+    try transaction {
+      if let photo {
+        let imageID = UUID()
+        try insertPhoto(id: imageID, data: photo, pending: true)
+        saved.imageID = imageID
+      }
+      try persist(kind: .recipe, id: id, payload: Codec.json(saved), delete: false, device: device)
+    }
+  }
+  private func insertPhoto(id: UUID, data: Data, pending: Bool) throws {
+    guard !data.isEmpty, data.count <= 1_048_576, data.starts(with: [0xff, 0xd8]),
+      data.suffix(2) == Data([0xff, 0xd9])
+    else { throw StoreError.invalidPhoto }
+    let used =
+      Int(
+        try run("SELECT COALESCE(SUM(length(data)),0) AS size FROM local_media").first?["size"]
+          ?? "0") ?? 0
+    guard used + data.count <= 268_435_456 else { throw StoreError.mediaStorageLimit }
+    var statement: OpaquePointer?
+    guard
+      sqlite3_prepare_v2(
+        connection.handle, "INSERT INTO local_media VALUES (?,?,?)", -1, &statement, nil)
+        == SQLITE_OK, let statement
+    else { throw StoreError.sqlite("media_prepare_failed") }
+    defer { sqlite3_finalize(statement) }
+    let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+    guard sqlite3_bind_text(statement, 1, id.uuidString, -1, transient) == SQLITE_OK,
+      sqlite3_bind_int(statement, 3, pending ? 1 : 0) == SQLITE_OK
+    else { throw StoreError.sqlite("media_bind_failed") }
+    let bound = data.withUnsafeBytes { bytes in
+      sqlite3_bind_blob(statement, 2, bytes.baseAddress, Int32(bytes.count), transient)
+    }
+    guard bound == SQLITE_OK, sqlite3_step(statement) == SQLITE_DONE else {
+      throw StoreError.sqlite("media_write_failed")
+    }
+  }
+  public func photoData(id: UUID) throws -> Data? {
+    var statement: OpaquePointer?
+    guard
+      sqlite3_prepare_v2(
+        connection.handle, "SELECT data FROM local_media WHERE id=?", -1, &statement, nil)
+        == SQLITE_OK, let statement
+    else { throw StoreError.sqlite("media_prepare_failed") }
+    defer { sqlite3_finalize(statement) }
+    let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+    guard sqlite3_bind_text(statement, 1, id.uuidString, -1, transient) == SQLITE_OK else {
+      throw StoreError.sqlite("media_bind_failed")
+    }
+    let status = sqlite3_step(statement)
+    if status == SQLITE_DONE { return nil }
+    guard status == SQLITE_ROW, let bytes = sqlite3_column_blob(statement, 0) else {
+      throw StoreError.invalidPhoto
+    }
+    return Data(bytes: bytes, count: Int(sqlite3_column_bytes(statement, 0)))
+  }
+  public func pendingPhoto(id: UUID) throws -> PendingPhoto? {
+    guard
+      !(try run("SELECT id FROM local_media WHERE id=? AND pending_upload=1", [id.uuidString]))
+        .isEmpty
+    else { return nil }
+    guard let data = try photoData(id: id) else { throw StoreError.invalidPhoto }
+    return PendingPhoto(id: id, data: data)
+  }
+  public func pendingPhotos() throws -> [PendingPhoto] {
+    try run("SELECT id FROM local_media WHERE pending_upload=1 ORDER BY id LIMIT 8").map { row in
+      guard let id = UUID(uuidString: row["id"] ?? ""), let data = try photoData(id: id) else {
+        throw StoreError.invalidPhoto
+      }
+      return PendingPhoto(id: id, data: data)
+    }
+  }
+  public func acknowledgePhoto(id: UUID) throws {
+    _ = try run("UPDATE local_media SET pending_upload=0 WHERE id=?", [id.uuidString])
+  }
+  public func cachePhoto(id: UUID, data: Data) throws {
+    try transaction {
+      if try photoData(id: id) != nil { return }
+      try insertPhoto(id: id, data: data, pending: false)
+    }
+  }
+  public func missingPhotos() throws -> [UUID] {
+    let references = try entities(kind: .recipe).compactMap { try $0.decode(Recipe.self).imageID }
+    return try Array(Set(references)).filter { try photoData(id: $0) == nil }.sorted {
+      $0.uuidString < $1.uuidString
     }
   }
   public func entities(kind: EntityKind) throws -> [LocalEntity] {
@@ -144,7 +263,10 @@ public actor LocalStore {
     }
   }
   public func pendingCount() throws -> Int {
-    Int(try run("SELECT COUNT(*) AS count FROM outbox").first?["count"] ?? "0") ?? 0
+    Int(
+      try run(
+        "SELECT (SELECT COUNT(*) FROM outbox)+(SELECT COUNT(*) FROM local_media WHERE pending_upload=1) AS count"
+      ).first?["count"] ?? "0") ?? 0
   }
   public func acknowledge(_ result: MutationResult, mutation: Mutation) throws {
     if result.status == "rejected_tombstone" {

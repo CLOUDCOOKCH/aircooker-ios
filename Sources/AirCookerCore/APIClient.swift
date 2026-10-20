@@ -48,7 +48,14 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate, @unchecked Se
     completionHandler: @escaping @Sendable (URLRequest?) -> Void
   ) { completionHandler(nil) }
 }
-public actor APIClient {
+public protocol SyncTransport: Sendable {
+  func info() async throws -> SystemInfo
+  func push(_ mutation: Mutation) async throws -> MutationResult
+  func pull(cursor: Int) async throws -> PullPage
+  func uploadPhoto(_ photo: PendingPhoto) async throws -> MediaInfo
+  func downloadPhoto(id: UUID) async throws -> Data
+}
+public actor APIClient: SyncTransport {
   private let baseURL: URL
   private let vault: any TokenVault
   private let session: URLSession
@@ -63,10 +70,11 @@ public actor APIClient {
     self.session =
       session ?? URLSession(configuration: .ephemeral, delegate: NoRedirects(), delegateQueue: nil)
   }
-  private func request<T: Decodable & Sendable>(
+  private func rawRequest(
     _ path: String, method: String = "GET", body: Data? = nil, authenticated: Bool = true,
-    retry: Bool = true
-  ) async throws -> T {
+    retry: Bool = true,
+    contentType: String = "application/json", expectedType: String? = nil
+  ) async throws -> Data {
     guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL, url.host == baseURL.host,
       url.scheme == "https"
     else { throw APIError.invalidServerURL }
@@ -74,7 +82,7 @@ public actor APIClient {
     request.httpMethod = method
     request.httpBody = body
     request.timeoutInterval = 30
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue(contentType, forHTTPHeaderField: "Content-Type")
     var usedAccessToken: String?
     if authenticated, let tokens = try await vault.load() {
       usedAccessToken = tokens.accessToken
@@ -91,8 +99,9 @@ public actor APIClient {
         throw APIError.http(401, "authentication_required")
       }
       if tokens.accessToken != usedAccessToken {
-        return try await self.request(
-          path, method: method, body: body, authenticated: true, retry: false)
+        return try await self.rawRequest(
+          path, method: method, body: body, authenticated: true, retry: false,
+          contentType: contentType, expectedType: expectedType)
       }
       if refreshing == nil {
         refreshing = Task {
@@ -111,14 +120,49 @@ public actor APIClient {
         refreshing = nil
         throw error
       }
-      return try await self.request(
-        path, method: method, body: body, authenticated: true, retry: false)
+      return try await self.rawRequest(
+        path, method: method, body: body, authenticated: true, retry: false,
+        contentType: contentType, expectedType: expectedType)
     }
     guard (200..<300).contains(http.statusCode) else {
       let value = try? JSONDecoder().decode([String: [String: String]].self, from: data)
       throw APIError.http(http.statusCode, value?["error"]?["code"] ?? "request_failed")
     }
-    return try JSONDecoder().decode(T.self, from: data)
+    if let expectedType {
+      guard
+        http.value(forHTTPHeaderField: "Content-Type")?.split(separator: ";").first?
+          .trimmingCharacters(in: .whitespacesAndNewlines) == expectedType, data.count <= 1_048_576
+      else { throw APIError.invalidResponse }
+    }
+    return data
+  }
+  private func request<T: Decodable & Sendable>(
+    _ path: String, method: String = "GET", body: Data? = nil, authenticated: Bool = true,
+    retry: Bool = true
+  ) async throws -> T {
+    try JSONDecoder().decode(
+      T.self,
+      from: await rawRequest(
+        path, method: method, body: body, authenticated: authenticated, retry: retry))
+  }
+  public func uploadPhoto(_ photo: PendingPhoto) async throws -> MediaInfo {
+    let boundary = "aircooker-" + UUID().uuidString
+    var body = Data(
+      "--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"photo.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n"
+        .utf8)
+    body.append(photo.data)
+    body.append(Data("\r\n--\(boundary)--\r\n".utf8))
+    let raw = try await rawRequest(
+      "/api/v1/media/" + photo.id.uuidString, method: "PUT", body: body,
+      contentType: "multipart/form-data; boundary=" + boundary)
+    let info = try JSONDecoder().decode(MediaInfo.self, from: raw)
+    guard info.id == photo.id, info.contentType == "image/jpeg",
+      (1...1_048_576).contains(info.byteCount)
+    else { throw APIError.invalidResponse }
+    return info
+  }
+  public func downloadPhoto(id: UUID) async throws -> Data {
+    try await rawRequest("/api/v1/media/" + id.uuidString, expectedType: "image/jpeg")
   }
   public func info() async throws -> SystemInfo {
     let info: SystemInfo = try await request("/api/v1/system/info", authenticated: false)
@@ -183,9 +227,9 @@ public actor APIClient {
 }
 public actor SyncEngine {
   private let store: LocalStore
-  private let client: APIClient
+  private let client: any SyncTransport
   private var running = false
-  public init(store: LocalStore, client: APIClient) {
+  public init(store: LocalStore, client: any SyncTransport) {
     self.store = store
     self.client = client
   }
@@ -196,11 +240,29 @@ public actor SyncEngine {
     let info = try await client.info()
     guard let instanceID = info.instanceID else { throw APIError.incompatibleServer }
     try await store.bind(instanceID: instanceID)
+    while true {
+      let photos = try await store.pendingPhotos()
+      if photos.isEmpty { break }
+      for photo in photos {
+        try Task.checkCancellation()
+        _ = try await client.uploadPhoto(photo)
+        try await store.acknowledgePhoto(id: photo.id)
+      }
+    }
     // Always push before pull so remote deltas cannot overwrite pending local edits.
     while true {
       let pending = try await store.pending()
       if pending.isEmpty { break }
       for mutation in pending {
+        // A photo may have been selected while an earlier network request was in flight.
+        if mutation.kind == .recipe, let payload = mutation.payload,
+          let recipe = try? JSONDecoder().decode(Recipe.self, from: JSONEncoder().encode(payload)),
+          let imageID = recipe.imageID,
+          let photo = try await store.pendingPhoto(id: imageID)
+        {
+          _ = try await client.uploadPhoto(photo)
+          try await store.acknowledgePhoto(id: photo.id)
+        }
         let result = try await client.push(mutation)
         try await store.acknowledge(result, mutation: mutation)
       }
@@ -210,6 +272,11 @@ public actor SyncEngine {
       let page = try await client.pull(cursor: cursor)
       try await store.apply(page)
       if !page.hasMore { break }
+    }
+    for id in try await store.missingPhotos() {
+      try Task.checkCancellation()
+      let data = try await client.downloadPhoto(id: id)
+      try await store.cachePhoto(id: id, data: data)
     }
   }
 }

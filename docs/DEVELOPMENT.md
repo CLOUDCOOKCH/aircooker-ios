@@ -16,7 +16,8 @@ and editable previews live in the main app; automatic background transfer is not
 Widgets read a local `today.json` snapshot and work without network access. They display
 the snapshot date to make stale cached content visible. Timeline refresh requests are
 best-effort. Small/medium/large sources exist, but extension embedding, real refresh timing,
-recurring-meal snapshots and deep-link handling still require validation/implementation.
+recurring-meal snapshots and deep-link handling still require platform validation; deep-link
+routing and date rollover are incomplete.
 
 Local notification scheduling code uses UserNotifications with a bounded request count;
 it is not fully connected to preferences/rescheduling yet. The app must not request
@@ -34,7 +35,8 @@ audit. Date-only fields use the household time zone, never a floating device UTC
 
 Core tests exercise local restart with pending changes, incoming remote edits while a local
 mutation is pending, server tombstone rejection preserving the draft, delta application,
-backend identity changes and share-inbox durability. Backend tests exercise two sessions,
+backend identity changes, share-inbox durability, durable photo transfer retries, local
+schema migration and recurrence/template/copy batches. See [planning](PLANNING.md). Backend tests exercise two sessions,
 server-order conflicts, duplicate mutations, transaction rollback and migration restarts.
 A real two-device offline/reconnect scenario, authentication expiry during sync, application
 termination during submission and constrained network performance still require end-to-end

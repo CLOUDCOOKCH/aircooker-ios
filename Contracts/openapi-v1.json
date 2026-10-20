@@ -1,6 +1,20 @@
 {
   "components": {
     "schemas": {
+      "Body_upload_photo_api_v1_media__image_id__put": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_photo_api_v1_media__image_id__put",
+        "type": "object"
+      },
       "BringConfiguration": {
         "additionalProperties": false,
         "properties": {
@@ -119,6 +133,11 @@
       "ExportEntity": {
         "additionalProperties": false,
         "properties": {
+          "deleted": {
+            "default": false,
+            "title": "Deleted",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -147,6 +166,64 @@
           "payload"
         ],
         "title": "ExportEntity",
+        "type": "object"
+      },
+      "ExportMedia": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_count": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1048576.0,
+            "title": "Byte Count",
+            "type": "integer"
+          },
+          "content_type": {
+            "default": "image/jpeg",
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "data_base64": {
+            "maxLength": 1398104,
+            "title": "Data Base64",
+            "type": "string"
+          },
+          "height": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 2048.0,
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "width": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 2048.0,
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "byte_count",
+          "width",
+          "height",
+          "created_at",
+          "data_base64"
+        ],
+        "title": "ExportMedia",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -189,8 +266,16 @@
             "title": "Household",
             "type": "object"
           },
+          "media": {
+            "items": {
+              "$ref": "#/components/schemas/ExportMedia"
+            },
+            "maxItems": 5000,
+            "title": "Media",
+            "type": "array"
+          },
           "version": {
-            "default": 1,
+            "default": 2,
             "title": "Version",
             "type": "integer"
           }
@@ -472,6 +557,58 @@
           "category"
         ],
         "title": "Meal",
+        "type": "object"
+      },
+      "MediaInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_count": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1048576.0,
+            "title": "Byte Count",
+            "type": "integer"
+          },
+          "content_type": {
+            "default": "image/jpeg",
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "height": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 2048.0,
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          },
+          "width": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 2048.0,
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "byte_count",
+          "width",
+          "height",
+          "created_at"
+        ],
+        "title": "MediaInfo",
         "type": "object"
       },
       "Mutation": {
@@ -1113,6 +1250,30 @@
         "summary": "Export Data"
       }
     },
+    "/api/v1/admin/export/archive": {
+      "get": {
+        "operationId": "download_archive_api_v1_admin_export_archive_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Download Archive"
+      }
+    },
     "/api/v1/admin/import": {
       "post": {
         "operationId": "import_data_api_v1_admin_import_post",
@@ -1152,6 +1313,38 @@
           }
         ],
         "summary": "Import Data"
+      }
+    },
+    "/api/v1/admin/import/archive": {
+      "post": {
+        "operationId": "restore_archive_api_v1_admin_import_archive_post",
+        "requestBody": {
+          "content": {
+            "application/zip": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Archive"
       }
     },
     "/api/v1/admin/jobs": {
@@ -2353,6 +2546,150 @@
           }
         ],
         "summary": "Update Entity"
+      }
+    },
+    "/api/v1/media/{image_id}": {
+      "get": {
+        "operationId": "download_photo_api_v1_media__image_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "image_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Image Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Download Photo"
+      },
+      "put": {
+        "operationId": "upload_photo_api_v1_media__image_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "image_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Image Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_photo_api_v1_media__image_id__put"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Photo"
+      }
+    },
+    "/api/v1/media/{image_id}/info": {
+      "get": {
+        "operationId": "photo_info_api_v1_media__image_id__info_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "image_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Image Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Photo Info"
       }
     },
     "/api/v1/pantry": {

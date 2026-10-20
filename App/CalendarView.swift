@@ -1,22 +1,39 @@
 import AirCookerCore
 import SwiftUI
 
+private struct PlanPreview: Identifiable {
+  let id = UUID()
+  let edits: [LocalEdit]
+}
 struct CalendarView: View {
   @Environment(AppModel.self) private var model
   @State private var weekOffset = 0
   @State private var assigning: Date?
   @State private var category = "dinner"
+  @State private var visibleMeals: [MealOccurrence] = []
+  @State private var preview: PlanPreview?
+  @State private var namingTemplate = false
+  @State private var templateName = ""
+  @State private var selectingTemplate = false
+  @State private var selectedTemplateEdits: [LocalEdit]?
+  @State private var recurrence: MealOccurrence?
+  @State private var moving: MealOccurrence?
+  var calendar: Calendar {
+    var value = Calendar(identifier: .gregorian)
+    value.firstWeekday = 2
+    value.timeZone = TimeZone(identifier: model.householdTimeZone) ?? .current
+    return value
+  }
   var days: [Date] {
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.firstWeekday = 2
-    calendar.timeZone = TimeZone(identifier: model.householdTimeZone) ?? .current
     let today = calendar.startOfDay(for: Date())
     let weekday = calendar.component(.weekday, from: today)
     let monday =
-      calendar.date(byAdding: .day, value: -((weekday + 5) % 7) + weekOffset * 7, to: today)
-      ?? today
+      calendar.date(
+        byAdding: .day,
+        value: -((weekday + 5) % 7) + weekOffset * 7, to: today) ?? today
     return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: monday) }
   }
+  var week: String { model.dateString(days.first ?? Date()) }
   var body: some View {
     List {
       Section {
@@ -29,38 +46,46 @@ struct CalendarView: View {
         }.labelStyle(.iconOnly)
       }
       ForEach(days, id: \.self) { day in
+        let date = model.dateString(day)
         Section {
           ForEach(["breakfast", "lunch", "dinner"], id: \.self) { slot in
+            let entries = visibleMeals.filter { $0.date == date && $0.meal.category == slot }
             VStack(alignment: .leading, spacing: 8) {
               Text(LocalizedStringKey(slot)).font(.caption).foregroundStyle(.secondary)
-              let entries = model.meals.filter { row in
-                guard let meal = try? row.decode(Meal.self) else { return false }
-                return meal.date == model.dateString(day) && meal.category == slot
-              }
-              ForEach(entries) { row in
-                if let meal = try? row.decode(Meal.self) {
-                  NavigationLink(model.title(meal)) { RecipeDetail(id: meal.recipeID) }
-                    .draggable(row.id.uuidString)
-                    .contextMenu {
-                      Button("duplicate") {
-                        Task { _ = await model.save(kind: .meal, value: meal) }
-                      }
-                      Button("move_tomorrow") {
-                        var moved = meal
-                        var calendar = Calendar(identifier: .gregorian)
-                        calendar.timeZone =
-                          TimeZone(identifier: model.householdTimeZone) ?? .current
-                        moved.date = model.dateString(
-                          calendar.date(byAdding: .day, value: 1, to: day) ?? day)
-                        Task { _ = await model.save(kind: .meal, id: row.id, value: moved) }
-                      }
-                      Button("remove", role: .destructive) {
-                        Task {
-                          _ = await model.save(kind: .meal, id: row.id, value: meal, delete: true)
+              ForEach(entries) { item in
+                NavigationLink {
+                  RecipeDetail(id: item.meal.recipeID)
+                } label: {
+                  HStack {
+                    RecipePhotoView(imageID: model.recipe(item.meal.recipeID)?.imageID)
+                      .frame(width: 40, height: 40).clipShape(RoundedRectangle(cornerRadius: 8))
+                    Text(model.title(item.meal))
+                    if item.meal.recurrence != nil {
+                      Image(systemName: "repeat").accessibilityLabel(Text("recurring_meal"))
+                    }
+                  }
+                }.draggable(item.id)
+                  .contextMenu {
+                    Button("duplicate") { duplicate(item) }
+                    Button("move_meal") { moving = item }
+                    if item.meal.leftoverID == nil {
+                      Button("repeat_meal") { recurrence = item }
+                    }
+                    Button("remove_occurrence", role: .destructive) {
+                      perform { [try MealPlanning.removeOccurrence(item)] }
+                    }
+                    if item.meal.recurrence != nil {
+                      Button("remove_series", role: .destructive) {
+                        perform {
+                          [
+                            try LocalEdit(
+                              kind: .meal, id: item.entityID,
+                              value: item.meal, deleted: true)
+                          ]
                         }
                       }
                     }
-                }
+                  }
               }
               Button(entries.isEmpty ? "plan_meal" : "add_meal", systemImage: "plus") {
                 category = slot
@@ -68,21 +93,111 @@ struct CalendarView: View {
               }.font(.subheadline)
             }.padding(.vertical, 6)
               .dropDestination(for: String.self) { values, _ in
-                guard let raw = values.first, let id = UUID(uuidString: raw),
-                  let row = model.meals.first(where: { $0.id == id }),
-                  var meal = try? row.decode(Meal.self)
+                guard let value = values.first,
+                  let item = visibleMeals.first(where: { $0.id == value })
                 else { return false }
-                meal.date = model.dateString(day)
-                meal.category = slot
-                Task { _ = await model.save(kind: .meal, id: id, value: meal) }
+                perform { try MealPlanning.moveOccurrence(item, to: date, category: slot) }
                 return true
               }
           }
         } header: {
-          Text(day, format: .dateTime.weekday(.wide).day().month())
+          HStack {
+            Text(day, format: .dateTime.weekday(.wide).day().month())
+            Spacer()
+            Menu {
+              Button("copy_day_tomorrow") {
+                prepare {
+                  try MealPlanning.copy(
+                    model.meals, from: date, through: date,
+                    to: PlanningDate.adding(1, to: date))
+                }
+              }
+            } label: {
+              Image(systemName: "ellipsis.circle")
+            }
+            .accessibilityLabel(Text("day_actions"))
+          }
+        } footer: {
+          if !visibleMeals.contains(where: { $0.date == date }) { Text("day_unplanned") }
         }
       }
     }.navigationTitle("calendar")
+      .environment(\.timeZone, TimeZone(identifier: model.householdTimeZone) ?? .current)
+      .toolbar {
+        Menu {
+          Button("copy_week_next") {
+            prepare {
+              try MealPlanning.copy(
+                model.meals, from: week,
+                through: PlanningDate.adding(6, to: week), to: PlanningDate.adding(7, to: week))
+            }
+          }
+          Button("save_week_template") { namingTemplate = true }
+          Button("apply_week_template") { selectingTemplate = true }
+        } label: {
+          Label("week_actions", systemImage: "ellipsis.circle")
+        }
+      }
+      .task(id: week + ":" + String(model.photoRevision)) {
+        do {
+          visibleMeals = try MealPlanning.expand(
+            model.meals, from: week,
+            through: PlanningDate.adding(6, to: week))
+        } catch { model.report(error) }
+      }
+      .alert("save_week_template", isPresented: $namingTemplate) {
+        TextField("template_name", text: $templateName)
+        Button("save") {
+          do {
+            let value = try MealPlanning.template(name: templateName, rows: model.meals, week: week)
+            Task { _ = await model.save(kind: .template, value: value) }
+            templateName = ""
+          } catch { model.report(error) }
+        }
+        Button("cancel", role: .cancel) {}
+      }
+      .sheet(item: $preview) { value in PlanningPreview(edits: value.edits) }
+      .sheet(item: $recurrence) { item in RecurrenceEditor(item: item) }
+      .sheet(item: $moving) { item in MealMoveEditor(item: item) }
+      .sheet(
+        isPresented: $selectingTemplate,
+        onDismiss: {
+          if let edits = selectedTemplateEdits {
+            selectedTemplateEdits = nil
+            preview = PlanPreview(edits: edits)
+          }
+        }
+      ) {
+        NavigationStack {
+          List {
+            if model.templates.isEmpty {
+              ContentUnavailableView("no_templates", systemImage: "calendar.badge.plus")
+            }
+            ForEach(model.templates) { row in
+              if let template = try? row.decode(MealTemplate.self) {
+                Button(template.name) {
+                  do {
+                    let edits = try MealPlanning.apply(
+                      template, week: week,
+                      availableRecipes: Set(model.recipes.map(\.id)))
+                    selectedTemplateEdits = edits
+                    selectingTemplate = false
+                  } catch { model.report(error) }
+                }.swipeActions {
+                  Button("remove", role: .destructive) {
+                    Task {
+                      _ = await model.save(
+                        kind: .template, id: row.id,
+                        value: template, delete: true)
+                    }
+                  }
+                }
+              }
+            }
+          }.navigationTitle("apply_week_template")
+            .toolbar { Button("cancel") { selectingTemplate = false } }
+        }
+      }
       .sheet(isPresented: Binding(get: { assigning != nil }, set: { if !$0 { assigning = nil } })) {
         NavigationStack {
           List(model.recipes) { row in
@@ -95,10 +210,156 @@ struct CalendarView: View {
                 Task { if await model.save(kind: .meal, value: meal) { assigning = nil } }
               }
             }
-          }
-          .navigationTitle("choose_recipe").toolbar { Button("cancel") { assigning = nil } }
+          }.navigationTitle("choose_recipe").toolbar { Button("cancel") { assigning = nil } }
         }
       }
+  }
+  private func prepare(_ work: () throws -> [LocalEdit]) {
+    do { preview = PlanPreview(edits: try work()) } catch { model.report(error) }
+  }
+  private func perform(_ work: () throws -> [LocalEdit]) {
+    do {
+      let edits = try work()
+      Task { _ = await model.saveBatch(edits) }
+    } catch { model.report(error) }
+  }
+  private func duplicate(_ item: MealOccurrence) {
+    perform {
+      guard item.meal.leftoverID == nil else { throw PlanningError.leftoverCannotBeCopied }
+      var copy = item.meal
+      copy.date = item.date
+      copy.recurrence = nil
+      copy.cooked = false
+      return [try LocalEdit(kind: .meal, value: copy)]
+    }
+  }
+}
+
+struct PlanningPreview: View {
+  @Environment(AppModel.self) private var model
+  @Environment(\.dismiss) private var dismiss
+  let edits: [LocalEdit]
+  @State private var saving = false
+  var body: some View {
+    NavigationStack {
+      List {
+        Section { Text("plan_preview_hint") }
+        ForEach(Array(edits.enumerated()), id: \.offset) { _, edit in
+          if let meal = try? JSONDecoder().decode(
+            Meal.self, from: JSONEncoder().encode(edit.payload))
+          {
+            VStack(alignment: .leading) {
+              Text(model.title(meal)).font(.headline)
+              Text(meal.date)
+              Text(LocalizedStringKey(meal.category)).foregroundStyle(.secondary)
+            }
+          }
+        }
+      }.navigationTitle("plan_preview")
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) { Button("cancel") { dismiss() } }
+          ToolbarItem(placement: .confirmationAction) {
+            Button("apply_plan") {
+              saving = true
+              Task {
+                if await model.saveBatch(edits) { dismiss() }
+                saving = false
+              }
+            }.disabled(edits.isEmpty || saving)
+          }
+        }
+    }.safeAreaInset(edge: .bottom) { OperationErrorNotice() }
+      .interactiveDismissDisabled(saving)
+  }
+}
+struct RecurrenceEditor: View {
+  @Environment(AppModel.self) private var model
+  @Environment(\.dismiss) private var dismiss
+  let item: MealOccurrence
+  @State private var interval = 1
+  @State private var end = Date()
+  var body: some View {
+    NavigationStack {
+      Form {
+        Text("recurrence_series_hint")
+        Stepper("every_weeks \(interval)", value: $interval, in: 1...52)
+        DatePicker("repeat_until", selection: $end, displayedComponents: .date)
+      }.navigationTitle("repeat_meal")
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) { Button("cancel") { dismiss() } }
+          ToolbarItem(placement: .confirmationAction) {
+            Button("save") {
+              var meal = item.meal
+              meal.recurrence = Recurrence(
+                intervalWeeks: interval, until: model.dateString(end),
+                exceptions: item.meal.recurrence?.exceptions ?? [])
+              do {
+                _ = try MealPlanning.occurrences(meal, from: item.date, through: item.date)
+                Task {
+                  if await model.save(kind: .meal, id: item.entityID, value: meal) { dismiss() }
+                }
+              } catch { model.report(error) }
+            }
+          }
+        }
+        .onAppear {
+          interval = item.meal.recurrence?.intervalWeeks ?? 1
+          end =
+            localDate(item.meal.recurrence?.until)
+            ?? Calendar.current.date(byAdding: .day, value: 28, to: localDate(item.date) ?? Date())
+            ?? Date()
+        }
+    }.safeAreaInset(edge: .bottom) { OperationErrorNotice() }
+      .environment(\.timeZone, TimeZone(identifier: model.householdTimeZone) ?? .current)
+  }
+  private func localDate(_ value: String?) -> Date? {
+    guard let value else { return nil }
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(identifier: model.householdTimeZone)
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter.date(from: value)
+  }
+}
+struct MealMoveEditor: View {
+  @Environment(AppModel.self) private var model
+  @Environment(\.dismiss) private var dismiss
+  let item: MealOccurrence
+  @State private var date = Date()
+  @State private var category = "dinner"
+  var body: some View {
+    NavigationStack {
+      Form {
+        DatePicker("meal_date", selection: $date, displayedComponents: .date)
+        Picker("meal_category", selection: $category) {
+          ForEach(["breakfast", "lunch", "dinner"], id: \.self) {
+            Text(LocalizedStringKey($0)).tag($0)
+          }
+        }
+      }.navigationTitle("move_meal")
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) { Button("cancel") { dismiss() } }
+          ToolbarItem(placement: .confirmationAction) {
+            Button("save") {
+              do {
+                let edits = try MealPlanning.moveOccurrence(
+                  item, to: model.dateString(date), category: category)
+                Task { if await model.saveBatch(edits) { dismiss() } }
+              } catch { model.report(error) }
+            }
+          }
+        }.onAppear {
+          category = item.meal.category
+          let formatter = DateFormatter()
+          formatter.calendar = Calendar(identifier: .gregorian)
+          formatter.locale = Locale(identifier: "en_US_POSIX")
+          formatter.timeZone = TimeZone(identifier: model.householdTimeZone)
+          formatter.dateFormat = "yyyy-MM-dd"
+          date = formatter.date(from: item.date) ?? Date()
+        }
+    }.safeAreaInset(edge: .bottom) { OperationErrorNotice() }
+      .environment(\.timeZone, TimeZone(identifier: model.householdTimeZone) ?? .current)
   }
 }
 struct PantryView: View {

@@ -36,7 +36,7 @@ docker run --rm -v "$PWD:/work" -w /work aircooker-swift-tests
 ```
 
 These tests validate SQLite persistence, outbox restart survival, pending-edit protection,
-tombstone rejection, backend identity pinning, decimal scaling and the share inbox.
+tombstone rejection, backend identity pinning, decimal scaling, durable photos, recurrence/template/copy operations and the share inbox.
 They do not validate Apple frameworks or demonstrate a working iOS installation.
 
 ## Using the app sources
@@ -46,11 +46,19 @@ origin, or scan a QR containing only that origin, then authenticate with the hou
 account. New-server setup uses the one-time container administrator token. URLSession never
 disables TLS validation. The server API-major/sync-protocol must match 1/1.
 
+Local edits, prepared photos and outgoing mutations commit together in SQLite. Photo uploads
+are acknowledged before a referring recipe is submitted; cached photos remain available offline.
+The editor uses the system photo picker and strips metadata with ImageIO before saving.
+These native photo APIs still require Apple SDK/device validation.
+
 Local edits and outgoing mutations commit together in SQLite. Server-ordered changes win;
 unsent local drafts are never replaced by incoming deltas. Deleted-on-server conflicts
 remain recoverable in local storage and need an explicit recovery UI before release.
 Offline imports are stored in the shared inbox and submitted when the main app can sync.
 No exact iOS background execution is assumed.
+
+The calendar sources include recurring occurrences, single-occurrence movement/removal,
+day/week copy previews and weekly template save/apply. See [planning semantics](docs/PLANNING.md).
 
 Settings allow a Home/Calendar/Recipes start screen and optional local device authentication.
 Authentication includes Face ID where available with system passcode fallback; it does not

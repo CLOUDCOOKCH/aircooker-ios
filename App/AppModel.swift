@@ -14,6 +14,8 @@ import WidgetKit
   var recipes: [LocalEntity] = []
   var meals: [LocalEntity] = []
   var pantry: [LocalEntity] = []
+  var templates: [LocalEntity] = []
+  var photoRevision = 0
   var pending = 0
   var busy = false
   var error: String?
@@ -138,7 +140,9 @@ import WidgetKit
       recipes = try await store.entities(kind: .recipe)
       meals = try await store.entities(kind: .meal)
       pantry = try await store.entities(kind: .pantry)
+      templates = try await store.entities(kind: .template)
       pending = try await store.pendingCount()
+      photoRevision += 1
       try publishWidget()
     } catch { report(error) }
   }
@@ -148,6 +152,30 @@ import WidgetKit
     guard let store else { return false }
     do {
       try await store.save(kind: kind, id: id, value: value, delete: delete)
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      return false
+    }
+  }
+  func saveRecipe(id: UUID, recipe: Recipe, photo: Data?) async -> Bool {
+    guard let store else { return false }
+    do {
+      try await store.saveRecipe(id: id, recipe: recipe, photo: photo)
+      await reload()
+      Task { await synchronise() }
+      return true
+    } catch {
+      report(error)
+      return false
+    }
+  }
+  func saveBatch(_ edits: [LocalEdit]) async -> Bool {
+    guard let store else { return false }
+    do {
+      try await store.saveBatch(edits)
       await reload()
       Task { await synchronise() }
       return true
@@ -213,6 +241,14 @@ import WidgetKit
     case APIError.invalidServerURL: error = String(localized: "invalid_server")
     case APIError.incompatibleServer: error = String(localized: "incompatible_server")
     case StoreError.rejectedDeletion: error = String(localized: "tombstone_conflict")
+    case StoreError.invalidPhoto: error = String(localized: "photo_invalid")
+    case StoreError.mediaStorageLimit: error = String(localized: "photo_storage_full")
+    case PlanningError.leftoverCannotBeCopied: error = String(localized: "leftover_copy_error")
+    case PlanningError.invalidDate, PlanningError.invalidWindow, PlanningError.invalidRecurrence:
+      error = String(localized: "planning_date_error")
+    case PlanningError.unavailableRecipe: error = String(localized: "template_recipe_missing")
+    case PlanningError.invalidTemplate, PlanningError.tooManyChanges:
+      error = String(localized: "template_invalid")
     case StoreError.serverChanged: error = String(localized: "server_changed")
     default: error = String(localized: "operation_failed")
     }
@@ -222,9 +258,8 @@ import WidgetKit
       let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
     else { return }
     let today = dateString(Date())
-    let snapshot = meals.compactMap { row -> [String: String]? in
-      guard let meal = try? row.decode(Meal.self), meal.date == today else { return nil }
-      return ["id": row.id.uuidString, "category": meal.category, "title": title(meal)]
+    let snapshot = try MealPlanning.expand(meals, from: today, through: today).map { item in
+      ["id": item.entityID.uuidString, "category": item.meal.category, "title": title(item.meal)]
     }
     try JSONEncoder().encode(["date": JSONValue.string(today), "meals": try Codec.json(snapshot)])
       .write(

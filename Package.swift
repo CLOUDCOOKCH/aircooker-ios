@@ -7,6 +7,6 @@ let package = Package(
     targets: [
         .systemLibrary(name: "CSQLite", pkgConfig: "sqlite3"),
         .target(name: "AirCookerCore", dependencies: ["CSQLite"]),
-        .testTarget(name: "AirCookerCoreTests", dependencies: ["AirCookerCore"], resources: [.copy("Fixtures")])
+        .testTarget(name: "AirCookerCoreTests", dependencies: ["AirCookerCore", "CSQLite"], resources: [.copy("Fixtures")])
     ]
 )

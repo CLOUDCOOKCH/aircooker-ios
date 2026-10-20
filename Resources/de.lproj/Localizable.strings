@@ -111,3 +111,69 @@
 "widget_open_app" = "Öffne aircooker, um deine Mahlzeiten zu speichern.";
 "your_kitchen" = "Deine Küche";
 "use_password" = "Mit Haushaltspasswort anmelden";
+
+"recipe_photo" = "Rezeptfoto";
+
+"choose_photo" = "Foto auswählen";
+
+"preparing_photo" = "Foto wird vorbereitet …";
+
+"remove_photo" = "Foto entfernen";
+
+"photo_privacy" = "Fotos bleiben bis zur Synchronisierung auf deinem Gerät. Standort- und Kameradaten werden entfernt.";
+
+"photo_invalid" = "Wähle ein einzelnes Bild unter 32 MB. Dieses Foto konnte nicht vorbereitet werden.";
+
+"photo_storage_full" = "Der Fotospeicher ist voll. Deine ausstehenden Änderungen bleiben gespeichert.";
+
+"recurring_meal" = "Wiederkehrende Mahlzeit";
+
+"move_meal" = "Mahlzeit verschieben";
+
+"repeat_meal" = "Mahlzeit wiederholen";
+
+"remove_occurrence" = "Dieses Vorkommen entfernen";
+
+"remove_series" = "Gesamte Serie entfernen";
+
+"copy_day_tomorrow" = "Tag auf morgen kopieren";
+
+"day_actions" = "Tagesaktionen";
+
+"day_unplanned" = "Ungeplanter Tag";
+
+"copy_week_next" = "Woche auf nächste Woche kopieren";
+
+"save_week_template" = "Woche als Vorlage speichern";
+
+"apply_week_template" = "Wochenvorlage anwenden";
+
+"week_actions" = "Wochenaktionen";
+
+"template_name" = "Name der Vorlage";
+
+"no_templates" = "Noch keine Wochenvorlagen";
+
+"plan_preview" = "Wochenplan prüfen";
+
+"apply_plan" = "Plan anwenden";
+
+"plan_preview_hint" = "Diese Mahlzeiten werden hinzugefügt. Bestehende Mahlzeiten bleiben erhalten.";
+
+"every_weeks %lld" = "Alle %lld Wochen";
+
+"repeat_until" = "Wiederholen bis";
+
+"recurrence_series_hint" = "Änderungen gelten für die gesamte Serie. Entfernte Vorkommen bleiben ausgeschlossen.";
+
+"meal_date" = "Datum der Mahlzeit";
+
+"meal_category" = "Mahlzeit";
+
+"leftover_copy_error" = "Reste können nicht kopiert werden. Plane ihre verfügbaren Portionen einzeln ein.";
+
+"planning_date_error" = "Wähle gültige Daten und ein Wiederholungsende innerhalb von zehn Jahren.";
+
+"template_recipe_missing" = "Ein Rezept dieser Vorlage ist nicht mehr verfügbar.";
+
+"template_invalid" = "Verwende einen Namen und höchstens 100 Mahlzeiten pro Wochenvorlage.";

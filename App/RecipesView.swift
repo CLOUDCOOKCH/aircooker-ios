@@ -1,4 +1,5 @@
 import AirCookerCore
+import PhotosUI
 import SwiftUI
 
 struct RecipesView: View {
@@ -20,10 +21,8 @@ struct RecipesView: View {
             RecipeDetail(id: row.id)
           } label: {
             HStack(spacing: 16) {
-              Image(systemName: "fork.knife").font(.title2).foregroundStyle(.green).frame(
-                width: 52, height: 64
-              ).background(.green.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
-                .accessibilityHidden(true)
+              RecipePhotoView(imageID: recipe.imageID).frame(width: 64, height: 72)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
               VStack(alignment: .leading, spacing: 6) {
                 Text(recipe.title).font(.headline)
                 Text("ingredient_count \(recipe.ingredients.count)").font(.caption).foregroundStyle(
@@ -58,6 +57,10 @@ struct RecipeDetail: View {
   var body: some View {
     if let recipe = model.recipe(id) {
       List {
+        if recipe.imageID != nil {
+          RecipePhotoView(imageID: recipe.imageID).frame(height: 220)
+            .listRowInsets(EdgeInsets()).accessibilityLabel(Text("recipe_photo"))
+        }
         Section {
           Text(recipe.title).font(.largeTitle.bold())
           if !recipe.description.isEmpty { Text(recipe.description) }
@@ -116,6 +119,11 @@ struct RecipeEditor: View {
   @State private var recipe: Recipe
   @State private var source = ""
   @State private var saving = false
+  @State private var selectedPhoto: PhotosPickerItem?
+  @State private var preparedPhoto: Data?
+  @State private var preparingPhoto = false
+  @State private var photoError: String?
+
   init(id: UUID = UUID(), initial: Recipe = Recipe()) {
     self.id = id
     _recipe = State(initialValue: initial)
@@ -131,6 +139,28 @@ struct RecipeEditor: View {
   var body: some View {
     NavigationStack {
       Form {
+        Section("recipe_photo") {
+          if let preparedPhoto, let image = UIImage(data: preparedPhoto) {
+            Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 220)
+              .accessibilityLabel(Text("recipe_photo"))
+          } else if recipe.imageID != nil {
+            RecipePhotoView(imageID: recipe.imageID).frame(height: 180)
+          }
+          PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
+            Label("choose_photo", systemImage: "photo.on.rectangle")
+          }.disabled(preparingPhoto || saving)
+          if preparingPhoto { ProgressView("preparing_photo") }
+          if let photoError { Text(photoError).foregroundStyle(.red) }
+          if preparedPhoto != nil || recipe.imageID != nil {
+            Button("remove_photo", role: .destructive) {
+              preparedPhoto = nil
+              recipe.imageID = nil
+              selectedPhoto = nil
+              photoError = nil
+            }.disabled(preparingPhoto || saving)
+          }
+          Text("photo_privacy").font(.caption).foregroundStyle(.secondary)
+        }
         Section("recipe") {
           TextField("recipe_title", text: $recipe.title)
           TextField("description", text: $recipe.description, axis: .vertical)
@@ -189,13 +219,33 @@ struct RecipeEditor: View {
               recipe.sourceURL = source.isEmpty ? nil : source
               recipe.steps.removeAll { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
               Task {
-                if await model.save(kind: .recipe, id: id, value: recipe) { dismiss() }
+                if await model.saveRecipe(id: id, recipe: recipe, photo: preparedPhoto) {
+                  dismiss()
+                }
                 saving = false
               }
-            }.disabled(!valid || saving)
+            }.disabled(!valid || saving || preparingPhoto)
           }
           ToolbarItem(placement: .bottomBar) { EditButton() }
         }
-    }.interactiveDismissDisabled(saving)
+    }.safeAreaInset(edge: .bottom) { OperationErrorNotice() }
+      .interactiveDismissDisabled(saving || preparingPhoto)
+      .task(id: selectedPhoto) {
+        guard let selectedPhoto else { return }
+        preparingPhoto = true
+        photoError = nil
+        defer { preparingPhoto = false }
+        do {
+          guard let data = try await selectedPhoto.loadTransferable(type: Data.self) else {
+            throw StoreError.invalidPhoto
+          }
+          let result = try await Task.detached(priority: .userInitiated) {
+            try PhotoPreparation.prepare(data)
+          }.value
+          try Task.checkCancellation()
+          preparedPhoto = result
+        } catch is CancellationError {
+        } catch { photoError = String(localized: "photo_invalid") }
+      }
   }
 }

@@ -3,8 +3,8 @@
   "version": "0.1.0-development",
   "api_major": 1,
   "sync_protocol": 1,
-  "sha256": "56dc4f4c419745018265e4d3adb0d083d64df16fe522e582ad6c3993f0ca1676",
+  "sha256": "4fc26c7441dd676f9ae7499f33ca74ca3ab23eaa06ea59c71d2833109e5e2dff",
   "source": "contracts/openapi-v1.json",
   "release_commit": null,
-  "source_commit": "487e02f0c429c526ff4985fe20a96315917952d2"
+  "source_commit": "1d1a4fb23b9784472f79abdd7ca733ebb709b695"
 }

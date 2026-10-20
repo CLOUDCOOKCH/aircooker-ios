@@ -111,3 +111,69 @@
 "widget_open_app" = "Open aircooker to cache your meals.";
 "your_kitchen" = "Your kitchen";
 "use_password" = "Sign in with household password";
+
+"recipe_photo" = "Recipe photo";
+
+"choose_photo" = "Choose photo";
+
+"preparing_photo" = "Preparing photo…";
+
+"remove_photo" = "Remove photo";
+
+"photo_privacy" = "Photos stay on your device until sync. Location and camera metadata are removed.";
+
+"photo_invalid" = "Choose a single image smaller than 32 MB. This photo could not be prepared.";
+
+"photo_storage_full" = "Photo storage is full. Your pending edits are still saved.";
+
+"recurring_meal" = "Recurring meal";
+
+"move_meal" = "Move meal";
+
+"repeat_meal" = "Repeat meal";
+
+"remove_occurrence" = "Remove this occurrence";
+
+"remove_series" = "Remove entire series";
+
+"copy_day_tomorrow" = "Copy day to tomorrow";
+
+"day_actions" = "Day actions";
+
+"day_unplanned" = "Unplanned day";
+
+"copy_week_next" = "Copy week to next week";
+
+"save_week_template" = "Save week as template";
+
+"apply_week_template" = "Apply weekly template";
+
+"week_actions" = "Week actions";
+
+"template_name" = "Template name";
+
+"no_templates" = "No weekly templates yet";
+
+"plan_preview" = "Review meal plan";
+
+"apply_plan" = "Apply plan";
+
+"plan_preview_hint" = "These meals will be added. Existing meals stay in place.";
+
+"every_weeks %lld" = "Every %lld weeks";
+
+"repeat_until" = "Repeat until";
+
+"recurrence_series_hint" = "Changes apply to the entire series. Removed occurrences stay excluded.";
+
+"meal_date" = "Meal date";
+
+"meal_category" = "Meal category";
+
+"leftover_copy_error" = "Leftovers cannot be copied. Schedule their available portions individually.";
+
+"planning_date_error" = "Choose valid dates and a recurrence ending within ten years.";
+
+"template_recipe_missing" = "This template refers to a recipe that is no longer available.";
+
+"template_invalid" = "Use a name and at most 100 meals in a weekly template.";

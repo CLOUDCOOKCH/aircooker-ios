@@ -134,19 +134,22 @@ struct HomeView: View {
           .secondary)
       }
       Section("today_meals") {
-        let today = model.meals.filter {
-          (try? $0.decode(Meal.self).date) == model.dateString(Date())
-        }
+        let today =
+          (try? MealPlanning.expand(
+            model.meals, from: model.dateString(Date()),
+            through: model.dateString(Date()))) ?? []
         if today.isEmpty {
           ContentUnavailableView(
             "nothing_planned", systemImage: "calendar.badge.plus",
             description: Text("plan_from_calendar"))
         }
-        ForEach(today) { row in
-          if let meal = try? row.decode(Meal.self) {
+        ForEach(today) { item in
+          NavigationLink {
+            RecipeDetail(id: item.meal.recipeID)
+          } label: {
             Label(
-              model.title(meal),
-              systemImage: meal.category == "breakfast" ? "sunrise" : "fork.knife")
+              model.title(item.meal),
+              systemImage: item.meal.category == "breakfast" ? "sunrise" : "fork.knife")
           }
         }
       }
@@ -196,5 +199,18 @@ struct SettingsView: View {
         Text("logout_keeps_local_data").font(.footnote).foregroundStyle(.secondary)
       }
     }.navigationTitle("settings")
+  }
+}
+
+// Keep errors visible when an editing sheet covers the root sync status bar.
+struct OperationErrorNotice: View {
+  @Environment(AppModel.self) private var model
+  var body: some View {
+    if let error = model.error {
+      Label(error, systemImage: "exclamationmark.triangle")
+        .font(.footnote).foregroundStyle(.red).padding()
+        .frame(maxWidth: .infinity, alignment: .leading).background(.regularMaterial)
+        .accessibilityAddTraits(.updatesFrequently)
+    }
   }
 }

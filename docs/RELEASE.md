@@ -7,7 +7,7 @@ A source tree and workflow file do not constitute a distributable iOS release.
 2. Register unique app/extension bundle IDs and one App Group on an Apple developer team.
 3. Configure signing certificates/profiles through protected CI secrets; never commit them.
 4. Complete native UI/device tests, accessibility, performance and offline scenarios.
-5. Finish media, advanced planning, backup/deletion and all checklist requirements.
+5. Finish photo cleanup/quotas, advanced planning, backup/deletion and all checklist requirements.
 6. Provide original app icons, genuine screenshots in English/German and support/privacy URLs.
 7. Provide an accessible fully functional review backend with an explicit demo account,
    or implement a complete, clearly labelled local demo. Neither currently exists.

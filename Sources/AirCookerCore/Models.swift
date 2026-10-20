@@ -99,7 +99,7 @@ public struct Meal: Codable, Sendable {
   public var servings: String
   public var order: Int = 0
   public var leftoverID: UUID? = nil
-  public var recurrence: JSONValue? = nil
+  public var recurrence: Recurrence? = nil
   public var cooked = false
   public init(recipeID: UUID, date: String, category: String, servings: String = "2") {
     self.recipeID = recipeID
@@ -218,5 +218,25 @@ public struct ImportDraft: Decodable, Identifiable, Sendable {
   enum CodingKeys: String, CodingKey {
     case id, state, recipe, warnings
     case errorCode = "error_code"
+  }
+}
+
+public struct PendingPhoto: Sendable {
+  public let id: UUID
+  public let data: Data
+}
+public struct MediaInfo: Codable, Sendable {
+  public var id: UUID
+  public var contentType: String
+  public var sha256: String
+  public var byteCount: Int
+  public var width: Int
+  public var height: Int
+  public var createdAt: String
+  enum CodingKeys: String, CodingKey {
+    case id, sha256, width, height
+    case contentType = "content_type"
+    case byteCount = "byte_count"
+    case createdAt = "created_at"
   }
 }
