@@ -3,10 +3,10 @@
   "version": "0.1.0-development",
   "api_major": 1,
   "sync_protocol": 1,
-  "sha256": "0398d981d57ad82fa2d6ab9a7e021b70c21ccb6f8239862b8dc124954d462d22",
+  "sha256": "dbefae3908af9eab277734a01b3b12578854bd6613f3b246221637407e807c8e",
   "source": "contracts/openapi-v1.json",
   "release_commit": null,
-  "source_commit": "ad7233fc184dd4079f78b5dfea7c5e7204560c05",
+  "source_commit": "9e2d453239fbfd19eab4d2fa13f3a76b7c19fa42",
   "fixtures": {
     "recommendations-v1": {
       "source": "contracts/fixtures/recommendations-v1.json",

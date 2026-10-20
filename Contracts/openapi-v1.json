@@ -1,6 +1,234 @@
 {
   "components": {
     "schemas": {
+      "AISettings": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_local_http": {
+            "default": false,
+            "title": "Allow Local Http",
+            "type": "boolean"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 8192,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key",
+            "writeOnly": true
+          },
+          "base_url": {
+            "default": "https://api.openai.com/v1",
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Base Url",
+            "type": "string"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "max_content": {
+            "default": 50000,
+            "maximum": 100000.0,
+            "minimum": 100.0,
+            "title": "Max Content",
+            "type": "integer"
+          },
+          "model": {
+            "default": "",
+            "maxLength": 200,
+            "title": "Model",
+            "type": "string"
+          },
+          "provider": {
+            "default": "openai",
+            "enum": [
+              "openai",
+              "openai-compatible",
+              "anthropic",
+              "ollama",
+              "openwebui"
+            ],
+            "title": "Provider",
+            "type": "string"
+          },
+          "requests_per_hour": {
+            "default": 20,
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Requests Per Hour",
+            "type": "integer"
+          },
+          "structured_output": {
+            "default": false,
+            "title": "Structured Output",
+            "type": "boolean"
+          },
+          "timeout": {
+            "default": 30,
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Timeout",
+            "type": "integer"
+          }
+        },
+        "title": "AISettings",
+        "type": "object"
+      },
+      "AISettingsStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_local_http": {
+            "default": false,
+            "title": "Allow Local Http",
+            "type": "boolean"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "configuration_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration Error"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "image_extraction": {
+            "default": false,
+            "title": "Image Extraction",
+            "type": "boolean"
+          },
+          "key_configured": {
+            "default": false,
+            "title": "Key Configured",
+            "type": "boolean"
+          },
+          "live_verified": {
+            "default": false,
+            "title": "Live Verified",
+            "type": "boolean"
+          },
+          "max_content": {
+            "default": 50000,
+            "title": "Max Content",
+            "type": "integer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "origin": {
+            "enum": [
+              "saved",
+              "environment",
+              "disabled"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requests_per_hour": {
+            "default": 20,
+            "title": "Requests Per Hour",
+            "type": "integer"
+          },
+          "structured_output": {
+            "default": false,
+            "title": "Structured Output",
+            "type": "boolean"
+          },
+          "text_extraction": {
+            "default": true,
+            "title": "Text Extraction",
+            "type": "boolean"
+          },
+          "timeout": {
+            "default": 30,
+            "title": "Timeout",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "origin"
+        ],
+        "title": "AISettingsStatus",
+        "type": "object"
+      },
+      "AdministrationStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "database_bytes": {
+            "title": "Database Bytes",
+            "type": "integer"
+          },
+          "disk_free_bytes": {
+            "title": "Disk Free Bytes",
+            "type": "integer"
+          },
+          "media_bytes": {
+            "title": "Media Bytes",
+            "type": "integer"
+          },
+          "pending_jobs": {
+            "title": "Pending Jobs",
+            "type": "integer"
+          },
+          "recipes": {
+            "title": "Recipes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "database_bytes",
+          "media_bytes",
+          "disk_free_bytes",
+          "pending_jobs",
+          "recipes"
+        ],
+        "title": "AdministrationStatus",
+        "type": "object"
+      },
       "Body_upload_photo_api_v1_media__image_id__put": {
         "properties": {
           "file": {
@@ -1015,6 +1243,51 @@
         "title": "Refresh",
         "type": "object"
       },
+      "SessionInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "access_expires": {
+            "title": "Access Expires",
+            "type": "number"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "refresh_expires": {
+            "title": "Refresh Expires",
+            "type": "number"
+          },
+          "revoked": {
+            "enum": [
+              0,
+              1
+            ],
+            "title": "Revoked",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "device_id",
+          "access_expires",
+          "refresh_expires",
+          "revoked",
+          "current"
+        ],
+        "title": "SessionInfo",
+        "type": "object"
+      },
       "Setup": {
         "additionalProperties": false,
         "properties": {
@@ -1380,6 +1653,91 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/ai": {
+      "get": {
+        "operationId": "ai_settings_api_v1_admin_ai_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AISettingsStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ai Settings"
+      },
+      "put": {
+        "operationId": "configure_ai_api_v1_admin_ai_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AISettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AISettingsStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Configure Ai"
+      }
+    },
+    "/api/v1/admin/ai/test": {
+      "post": {
+        "operationId": "test_ai_api_v1_admin_ai_test_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test Ai"
+      }
+    },
     "/api/v1/admin/export": {
       "get": {
         "operationId": "export_data_api_v1_admin_export_get",
@@ -1573,6 +1931,29 @@
         "summary": "Browser Logout"
       }
     },
+    "/api/v1/admin/status": {
+      "get": {
+        "operationId": "administration_status_api_v1_admin_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministrationStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Administration Status"
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
@@ -1708,7 +2089,13 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionInfo"
+                  },
+                  "title": "Response Sessions Api V1 Auth Sessions Get",
+                  "type": "array"
+                }
               }
             },
             "description": "Successful Response"

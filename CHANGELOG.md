@@ -26,3 +26,6 @@ See the implementation checklist for feature status and verification limits.
   optional recipe-name privacy; add deferred read-only app links and calendar targeting.
 - Clear derived widget/reminder state on logout while preserving offline edits; persist
   signed-out state across restart. Apple framework/runtime verification remains pending.
+
+- Pin the additive backend administration contract, including redacted AI settings, storage
+  summaries and current-session metadata; validate the exact source commit and checksum.

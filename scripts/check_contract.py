@@ -7,10 +7,12 @@ pin=json.loads((root/'Contracts'/'pin.json').read_text())
 assert hashlib.sha256(contract.read_bytes()).hexdigest()==pin['sha256'], 'Contract checksum mismatch'
 schema=json.loads(contract.read_text())
 assert schema['info']['version']=='0.1.0'
-for path in ['/api/v1/system/info','/api/v1/sync/push','/api/v1/sync/pull','/api/v1/auth/login','/api/v1/auth/refresh','/api/v1/imports','/api/v1/media/{image_id}','/api/v1/media/{image_id}/info','/api/v1/suggestions/weekly','/api/v1/suggestions/apply']:
+for path in ['/api/v1/system/info','/api/v1/sync/push','/api/v1/sync/pull','/api/v1/auth/login','/api/v1/auth/refresh','/api/v1/imports','/api/v1/media/{image_id}','/api/v1/media/{image_id}/info','/api/v1/suggestions/weekly','/api/v1/suggestions/apply','/api/v1/admin/ai','/api/v1/admin/ai/test','/api/v1/admin/status']:
     assert path in schema['paths'],path
 schemas=schema['components']['schemas']
 expected={
+'SessionInfo':{'id','device_id','access_expires','refresh_expires','revoked','current'},
+'AdministrationStatus':{'database_bytes','media_bytes','disk_free_bytes','pending_jobs','recipes'},
 'Leftover':{'recipe_id','portions','produced_on','discarded'},
 'SuggestionPreview':{'preview','monday','basis','meals'},
 'SuggestionApply':{'request_id','monday','basis','mutations'},
