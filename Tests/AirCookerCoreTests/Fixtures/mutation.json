@@ -1,0 +1,37 @@
+{
+  "mutation_id": "00000000-0000-4000-8000-000000000001",
+  "entity_id": "0bcc3b76-4cea-4aa4-81b4-845ff52ae0ee",
+  "kind": "recipe",
+  "operation": "upsert",
+  "base_revision": 0,
+  "payload": {
+    "title": "Fixture soup",
+    "description": "",
+    "source_url": null,
+    "source_platform": "manual",
+    "image_id": null,
+    "servings": "2",
+    "ingredients": [
+      {
+        "id": "9108ad96-50c4-4dc3-8423-2df4e818b227",
+        "name": "Carrots",
+        "quantity": "200",
+        "quantity_max": null,
+        "unit": "g",
+        "preparation": "",
+        "original_text": ""
+      }
+    ],
+    "steps": [
+      "Simmer"
+    ],
+    "notes": "",
+    "rating": null,
+    "nutrition": null,
+    "nutrition_source": null,
+    "provenance": {}
+  },
+  "device_id": "71184740-5c23-4ef8-8733-398d9154b5bd",
+  "client_timestamp": "2026-10-20T17:57:31.734148Z",
+  "idempotency_key": "00000000-0000-4000-8000-000000000001"
+}

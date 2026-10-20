@@ -1,0 +1,27 @@
+{
+  "title": "Fixture soup",
+  "description": "",
+  "source_url": null,
+  "source_platform": "manual",
+  "image_id": null,
+  "servings": "2",
+  "ingredients": [
+    {
+      "id": "9108ad96-50c4-4dc3-8423-2df4e818b227",
+      "name": "Carrots",
+      "quantity": "200",
+      "quantity_max": null,
+      "unit": "g",
+      "preparation": "",
+      "original_text": ""
+    }
+  ],
+  "steps": [
+    "Simmer"
+  ],
+  "notes": "",
+  "rating": null,
+  "nutrition": null,
+  "nutrition_source": null,
+  "provenance": {}
+}

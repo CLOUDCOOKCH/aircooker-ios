@@ -1,0 +1,4 @@
+FROM swift:6.2.1@sha256:0e4716bd34384d22963a63afbdbc93be3129dfd0753185aa1ded27755abdcae8
+RUN apt-get update && apt-get install -y --no-install-recommends libsqlite3-dev pkg-config && rm -rf /var/lib/apt/lists/*
+WORKDIR /work
+CMD ["swift", "test"]

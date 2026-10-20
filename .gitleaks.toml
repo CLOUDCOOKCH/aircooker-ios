@@ -1,0 +1,6 @@
+title = "aircooker source scan"
+[extend]
+useDefault = true
+[[allowlists]]
+description = "Generated build outputs and installed third-party tooling are not project source"
+paths = ['(^|/)([.]venv|[.]build|[.]git|DerivedData|build)/']
