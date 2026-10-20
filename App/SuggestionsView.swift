@@ -41,7 +41,7 @@ struct SuggestionsView: View {
           Stepper("servings_count \(servings)", value: $servings, in: 1...100)
             .onChange(of: servings) { invalidate() }
         }
-      }
+      }.disabled(generating || saving)
       Section {
         Button(
           preview == nil ? "generate_suggestions" : "regenerate_suggestions",
@@ -95,6 +95,7 @@ struct SuggestionsView: View {
         }
       }
     }.navigationTitle("weekly_suggestions")
+      .disabled(saving)
       .toolbar {
         Button("apply_selected") {
           guard let preview else { return }
