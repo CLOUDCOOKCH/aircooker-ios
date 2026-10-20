@@ -13,15 +13,11 @@ completes. The main app acknowledges the file only after backend acceptance and 
 job ID before removing the file. Duplicate submissions use the same request ID. Progress
 and editable previews live in the main app; automatic background transfer is not promised.
 
-Widgets read a local `today.json` snapshot and work without network access. They display
-the snapshot date to make stale cached content visible. Timeline refresh requests are
-best-effort. Small/medium/large sources exist, but extension embedding, real refresh timing,
-recurring-meal snapshots and deep-link handling still require platform validation; deep-link
-routing and date rollover are incomplete.
-
-Local notification scheduling code uses UserNotifications with a bounded request count;
-it is not fully connected to preferences/rescheduling yet. The app must not request
-notification permission until the user enables reminders. APNs is not required.
+Widgets read a protected 14-day `meals-widget-v1.json` snapshot with household-date timeline
+entries and expiry. Per-meal/day links use strict read-only app routes and defer navigation
+while locked or signed out. Notification preferences are opt-in; reload/edit/sync reschedules
+bounded local reminders without requesting permission automatically. See
+[reminders, widgets and required device checks](REMINDERS_WIDGETS.md).
 
 ## Localisation and accessibility
 

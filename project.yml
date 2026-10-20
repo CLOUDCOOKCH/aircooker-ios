@@ -72,6 +72,8 @@ targets:
       properties:
         com.apple.security.application-groups: [$(AIRCOOKER_APP_GROUP)]
   AirCookerWidget:
+    dependencies:
+      - package: AirCookerCore
     type: app-extension
     platform: iOS
     sources:

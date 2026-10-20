@@ -273,3 +273,39 @@
 "leftover_in_use_error" = "Diese Reste werden bereits im Kalender verwendet. Behalte das Rezept und die eingeplanten Portionen bei.";
 
 "leftover_unavailable_error" = "Diese Reste sind nicht mehr verfügbar. Wähle eine andere Mahlzeit.";
+
+"enable_meal_reminders" = "Mahlzeit-Erinnerungen";
+
+"notification_permission_denied" = "Mitteilungen sind in den Systemeinstellungen deaktiviert.";
+
+"open_system_settings" = "Systemeinstellungen öffnen";
+
+"reminder_timezone_hint" = "Erinnerungszeiten richten sich nach der Zeitzone deines Haushalts. Öffne aircooker regelmäßig, um kommende Mahlzeiten zu aktualisieren.";
+
+"reminder_times" = "Erinnerungszeiten";
+
+"reminder_time" = "Uhrzeit";
+
+"reminder_recipe_names" = "Rezeptnamen in Mitteilungen anzeigen";
+
+"reminder_names_privacy" = "Wenn aktiviert, können Rezeptnamen auf dem Sperrbildschirm erscheinen. Andernfalls enthalten Erinnerungen einen allgemeinen Text.";
+
+"scheduled_reminders" = "Geplante Erinnerungen";
+
+"widget_meal_names" = "Rezeptnamen in Widgets anzeigen";
+
+"widget_names_privacy" = "Widgets können Mahlzeiten anzeigen, während die App gesperrt ist. Deaktiviere dies, um nur geplante Mahlzeiten anzuzeigen.";
+
+"reminders_widgets" = "Erinnerungen und Widgets";
+
+"view_in_calendar" = "Im Kalender anzeigen";
+
+"meal_unavailable" = "Diese Mahlzeit wurde geändert oder entfernt";
+
+"done" = "Fertig";
+
+"widget_unplanned" = "Nicht geplant";
+
+"widget_meal_planned" = "Mahlzeit geplant";
+
+"widget_more_count %lld" = "+%lld weitere";

@@ -51,6 +51,12 @@ struct RootView: View {
         ).padding(8).frame(maxWidth: .infinity).background(.thinMaterial)
       }
     }
+    .sheet(
+      item: Binding(
+        get: { model.connected && !model.locked ? model.destination : nil },
+        set: { value in if model.connected && !model.locked { model.destination = value } }
+      )
+    ) { DestinationView(destination: $0) }
     .tint(Color(red: 0.21, green: 0.39, blue: 0.27))
   }
 }
@@ -194,6 +200,7 @@ struct SettingsView: View {
               }
             }))
       }
+      Section { NavigationLink("reminders_widgets") { ReminderSettingsView() } }
       Section("server_connection") {
         Text(model.server).font(.footnote).textSelection(.enabled)
         Button("sync_now") { Task { await model.synchronise() } }

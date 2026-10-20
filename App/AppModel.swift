@@ -2,6 +2,7 @@ import AirCookerCore
 import Foundation
 import LocalAuthentication
 import Observation
+import UserNotifications
 import WidgetKit
 
 @MainActor @Observable final class AppModel {
@@ -25,6 +26,67 @@ import WidgetKit
   var householdTimeZone =
     UserDefaults.standard.string(forKey: "householdTimeZone") ?? TimeZone.current.identifier
   var server = UserDefaults.standard.string(forKey: "server") ?? ""
+  var reminderPreferences =
+    (UserDefaults.standard.data(forKey: "mealReminders")
+      .flatMap { try? JSONDecoder().decode(ReminderPreferences.self, from: $0) })
+    ?? ReminderPreferences()
+  var reminderPermission = "not_determined"
+  var scheduledReminders = 0
+  var showWidgetNames = UserDefaults.standard.object(forKey: "showWidgetNames") as? Bool ?? true
+  var destination: AppDestination?
+  private let reminders = MealReminders()
+  private var reloadGeneration = 0
+  private var notificationRouter: NotificationRouter?
+  init() {
+    let router = NotificationRouter { [weak self] url in self?.openDestination(url) }
+    notificationRouter = router
+    UNUserNotificationCenter.current().delegate = router
+  }
+  func openDestination(_ url: URL) {
+    if let value = AppDestination(url: url) { destination = value }
+  }
+  func setRemindersEnabled(_ value: Bool) async {
+    do {
+      if value {
+        let permitted = try await reminders.requestPermission()
+        if !permitted {
+          reminderPermission = await reminders.permission()
+          return
+        }
+      }
+      var preferences = reminderPreferences
+      preferences.enabled = value
+      updateReminderPreferences(preferences)
+    } catch { report(error) }
+  }
+  func updateReminderPreferences(_ preferences: ReminderPreferences) {
+    do {
+      let data = try JSONEncoder().encode(preferences)
+      UserDefaults.standard.set(data, forKey: "mealReminders")
+      reminderPreferences = preferences
+      Task { await refreshReminders() }
+    } catch { report(error) }
+  }
+  func refreshReminderStatus() async {
+    reminderPermission = await reminders.permission()
+    scheduledReminders = await reminders.count()
+  }
+  func refreshReminders() async {
+    guard let store else { return }
+    do {
+      let snapshot = try await store.planningSnapshot()
+      let plan = try MealPresentation.reminders(
+        snapshot: snapshot, preferences: reminderPreferences,
+        timeZone: householdTimeZone, now: Date())
+      try await reminders.reconcile(plan, showRecipeNames: reminderPreferences.showRecipeNames)
+      await refreshReminderStatus()
+    } catch { report(error) }
+  }
+  func setWidgetNames(_ value: Bool) {
+    showWidgetNames = value
+    UserDefaults.standard.set(value, forKey: "showWidgetNames")
+    do { try publishWidget() } catch { report(error) }
+  }
   private var vault: KeychainVault?
   func start() async {
     do {
@@ -39,9 +101,13 @@ import WidgetKit
         inbox = try ShareInbox(directory: shared)
       }
       store = try LocalStore(url: directory.appending(path: "aircooker.sqlite3"))
-      if !server.isEmpty {
+      if !server.isEmpty && !UserDefaults.standard.bool(forKey: "signedOut") {
         try configureClient()
         connected = true
+      }
+      if !connected {
+        clearWidget()
+        try await reminders.reconcile([], showRecipeNames: false)
       }
       await reload()
       if UserDefaults.standard.bool(forKey: "biometricLock") {
@@ -72,6 +138,7 @@ import WidgetKit
       try await client.login(username: username, password: password, deviceID: deviceID)
       UserDefaults.standard.set(server, forKey: "server")
       connected = true
+      UserDefaults.standard.set(false, forKey: "signedOut")
       error = nil
       await synchronise()
     } catch { report(error) }
@@ -109,6 +176,7 @@ import WidgetKit
       try await store.bind(instanceID: instance)
       UserDefaults.standard.set(server, forKey: "server")
       connected = true
+      UserDefaults.standard.set(false, forKey: "signedOut")
       await synchronise()
     } catch { report(error) }
   }
@@ -137,15 +205,25 @@ import WidgetKit
   }
   func reload() async {
     guard let store else { return }
+    reloadGeneration += 1
+    let generation = reloadGeneration
     do {
-      recipes = try await store.entities(kind: .recipe)
-      meals = try await store.entities(kind: .meal)
-      pantry = try await store.entities(kind: .pantry)
-      templates = try await store.entities(kind: .template)
-      leftovers = try await store.entities(kind: .leftover)
-      pending = try await store.pendingCount()
+      let snapshot = try await store.planningSnapshot()
+      let currentPantry = try await store.entities(kind: .pantry)
+      let currentTemplates = try await store.entities(kind: .template)
+      let currentPending = try await store.pendingCount()
+      guard generation == reloadGeneration else { return }
+      recipes = snapshot.recipes
+      meals = snapshot.meals
+      leftovers = snapshot.leftovers
+      pantry = currentPantry
+      templates = currentTemplates
+      pending = currentPending
       photoRevision += 1
-      try publishWidget()
+      if connected {
+        try publishWidget()
+        await refreshReminders()
+      }
     } catch { report(error) }
   }
   func save<T: Encodable & Sendable>(
@@ -351,7 +429,11 @@ import WidgetKit
     // Preserve cached content and unsent edits. Server session revocation is available in the console.
     do {
       try await vault?.clear()
+      UserDefaults.standard.set(true, forKey: "signedOut")
       connected = false
+      destination = nil
+      try await reminders.reconcile([], showRecipeNames: false)
+      clearWidget()
       client = nil
       syncEngine = nil
     } catch { report(error) }
@@ -395,18 +477,26 @@ import WidgetKit
     default: error = String(localized: "operation_failed")
     }
   }
+  func clearWidget() {
+    guard let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
+      let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
+    else { return }
+    for name in ["today.json", "meals-widget-v1.json"] {
+      try? FileManager.default.removeItem(at: directory.appending(path: name))
+    }
+    WidgetCenter.shared.reloadAllTimelines()
+  }
   func publishWidget() throws {
     guard let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
       let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
     else { return }
-    let today = dateString(Date())
-    let snapshot = try MealPlanning.expand(meals, from: today, through: today).map { item in
-      ["id": item.entityID.uuidString, "category": item.meal.category, "title": title(item.meal)]
-    }
-    try JSONEncoder().encode(["date": JSONValue.string(today), "meals": try Codec.json(snapshot)])
-      .write(
-        to: directory.appending(path: "today.json"),
-        options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+    let snapshot = try MealWidgetSnapshot.build(
+      snapshot: PlanningSnapshot(recipes: recipes, meals: meals, leftovers: leftovers),
+      timeZone: householdTimeZone, now: Date(), showNames: showWidgetNames)
+    try JSONEncoder().encode(snapshot).write(
+      to: directory.appending(path: "meals-widget-v1.json"),
+      options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+    try? FileManager.default.removeItem(at: directory.appending(path: "today.json"))
     WidgetCenter.shared.reloadAllTimelines()
   }
 }

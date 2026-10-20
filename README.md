@@ -61,6 +61,11 @@ The calendar sources include recurring occurrences, single-occurrence movement/r
 day/week copy previews, weekly templates, leftover tracking/assignment and local weekly
 suggestions with explicit review. See [planning semantics](docs/PLANNING.md).
 
+Settings include per-category local meal reminders and widget-name privacy. Widgets consume
+a 14-day offline cache and links open a meal or its calendar date. Notification delivery,
+widget rendering and routing still need Apple SDK/device validation; see
+[behaviour and checks](docs/REMINDERS_WIDGETS.md).
+
 Settings allow a Home/Calendar/Recipes start screen and optional local device authentication.
 Authentication includes Face ID where available with system passcode fallback; it does not
 replace backend login. Tokens are in Keychain. Signing out preserves local data and pending

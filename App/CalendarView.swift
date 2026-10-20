@@ -7,6 +7,10 @@ private struct PlanPreview: Identifiable {
 }
 struct CalendarView: View {
   @Environment(AppModel.self) private var model
+  let initialDate: String?
+  init(initialDate: String? = nil) { self.initialDate = initialDate }
+  @State private var focusedInitialDate = false
+  @State private var scrolledInitialDate = false
   @State private var weekOffset = 0
   @State private var assigning: Date?
   @State private var category = "dinner"
@@ -36,183 +40,205 @@ struct CalendarView: View {
   }
   var week: String { model.dateString(days.first ?? Date()) }
   var body: some View {
-    List {
-      Section {
-        HStack {
-          Button("previous_week", systemImage: "chevron.left") { weekOffset -= 1 }
-          Spacer()
-          Button("this_week") { weekOffset = 0 }
-          Spacer()
-          Button("next_week", systemImage: "chevron.right") { weekOffset += 1 }
-        }.labelStyle(.iconOnly)
-      }
-      ForEach(days, id: \.self) { day in
-        let date = model.dateString(day)
+    ScrollViewReader { proxy in
+      List {
         Section {
-          ForEach(["breakfast", "lunch", "dinner"], id: \.self) { slot in
-            let entries = visibleMeals.filter { $0.date == date && $0.meal.category == slot }
-            VStack(alignment: .leading, spacing: 8) {
-              Text(LocalizedStringKey(slot)).font(.caption).foregroundStyle(.secondary)
-              ForEach(entries) { item in
-                NavigationLink {
-                  RecipeDetail(id: item.meal.recipeID)
-                } label: {
-                  HStack {
-                    RecipePhotoView(imageID: model.recipe(item.meal.recipeID)?.imageID)
-                      .frame(width: 40, height: 40).clipShape(RoundedRectangle(cornerRadius: 8))
-                    Text(model.title(item.meal))
-                    if item.meal.leftoverID != nil {
-                      Image(systemName: "takeoutbag.and.cup.and.straw").accessibilityLabel(
-                        Text("leftovers"))
+          HStack {
+            Button("previous_week", systemImage: "chevron.left") { weekOffset -= 1 }
+            Spacer()
+            Button("this_week") { weekOffset = 0 }
+            Spacer()
+            Button("next_week", systemImage: "chevron.right") { weekOffset += 1 }
+          }.labelStyle(.iconOnly)
+        }
+        ForEach(days, id: \.self) { day in
+          let date = model.dateString(day)
+          Section {
+            ForEach(["breakfast", "lunch", "dinner"], id: \.self) { slot in
+              let entries = visibleMeals.filter { $0.date == date && $0.meal.category == slot }
+              VStack(alignment: .leading, spacing: 8) {
+                Text(LocalizedStringKey(slot)).font(.caption).foregroundStyle(.secondary)
+                ForEach(entries) { item in
+                  NavigationLink {
+                    RecipeDetail(id: item.meal.recipeID)
+                  } label: {
+                    HStack {
+                      RecipePhotoView(imageID: model.recipe(item.meal.recipeID)?.imageID)
+                        .frame(width: 40, height: 40).clipShape(RoundedRectangle(cornerRadius: 8))
+                      Text(model.title(item.meal))
+                      if item.meal.leftoverID != nil {
+                        Image(systemName: "takeoutbag.and.cup.and.straw").accessibilityLabel(
+                          Text("leftovers"))
+                      }
+                      if item.meal.recurrence != nil {
+                        Image(systemName: "repeat").accessibilityLabel(Text("recurring_meal"))
+                      }
                     }
-                    if item.meal.recurrence != nil {
-                      Image(systemName: "repeat").accessibilityLabel(Text("recurring_meal"))
-                    }
-                  }
-                }.draggable(item.id)
-                  .contextMenu {
-                    Button(item.meal.cooked ? "mark_uncooked" : "mark_cooked") {
-                      perform { try MealPlanning.setCooked(item, cooked: !item.meal.cooked) }
-                    }.disabled(!item.meal.cooked && item.date > model.dateString(Date()))
-                    if item.meal.leftoverID == nil && item.date <= model.dateString(Date()) {
-                      Button("record_leftovers") { recordingLeftovers = item }
-                    }
-                    Button("duplicate") { duplicate(item) }
-                    Button("move_meal") { moving = item }
-                    if item.meal.leftoverID == nil {
-                      Button("repeat_meal") { recurrence = item }
-                    }
-                    Button("remove_occurrence", role: .destructive) {
-                      perform { [try MealPlanning.removeOccurrence(item)] }
-                    }
-                    if item.meal.recurrence != nil {
-                      Button("remove_series", role: .destructive) {
-                        perform {
-                          [
-                            try LocalEdit(
-                              kind: .meal, id: item.entityID,
-                              value: item.meal, deleted: true)
-                          ]
+                  }.draggable(item.id)
+                    .contextMenu {
+                      Button(item.meal.cooked ? "mark_uncooked" : "mark_cooked") {
+                        perform { try MealPlanning.setCooked(item, cooked: !item.meal.cooked) }
+                      }.disabled(!item.meal.cooked && item.date > model.dateString(Date()))
+                      if item.meal.leftoverID == nil && item.date <= model.dateString(Date()) {
+                        Button("record_leftovers") { recordingLeftovers = item }
+                      }
+                      Button("duplicate") { duplicate(item) }
+                      Button("move_meal") { moving = item }
+                      if item.meal.leftoverID == nil {
+                        Button("repeat_meal") { recurrence = item }
+                      }
+                      Button("remove_occurrence", role: .destructive) {
+                        perform { [try MealPlanning.removeOccurrence(item)] }
+                      }
+                      if item.meal.recurrence != nil {
+                        Button("remove_series", role: .destructive) {
+                          perform {
+                            [
+                              try LocalEdit(
+                                kind: .meal, id: item.entityID,
+                                value: item.meal, deleted: true)
+                            ]
+                          }
                         }
                       }
                     }
-                  }
-              }
-              Button(entries.isEmpty ? "plan_meal" : "add_meal", systemImage: "plus") {
-                category = slot
-                assigning = day
-              }.font(.subheadline)
-            }.padding(.vertical, 6)
-              .dropDestination(for: String.self) { values, _ in
-                guard let value = values.first,
-                  let item = visibleMeals.first(where: { $0.id == value })
-                else { return false }
-                perform { try MealPlanning.moveOccurrence(item, to: date, category: slot) }
-                return true
-              }
-          }
-        } header: {
-          HStack {
-            Text(day, format: .dateTime.weekday(.wide).day().month())
-            Spacer()
-            Menu {
-              Button("copy_day_tomorrow") {
-                prepare {
-                  try MealPlanning.copy(
-                    model.meals, from: date, through: date,
-                    to: PlanningDate.adding(1, to: date))
                 }
+                Button(entries.isEmpty ? "plan_meal" : "add_meal", systemImage: "plus") {
+                  category = slot
+                  assigning = day
+                }.font(.subheadline)
+              }.padding(.vertical, 6)
+                .dropDestination(for: String.self) { values, _ in
+                  guard let value = values.first,
+                    let item = visibleMeals.first(where: { $0.id == value })
+                  else { return false }
+                  perform { try MealPlanning.moveOccurrence(item, to: date, category: slot) }
+                  return true
+                }
+            }
+          } header: {
+            HStack {
+              Text(day, format: .dateTime.weekday(.wide).day().month())
+              Spacer()
+              Menu {
+                Button("copy_day_tomorrow") {
+                  prepare {
+                    try MealPlanning.copy(
+                      model.meals, from: date, through: date,
+                      to: PlanningDate.adding(1, to: date))
+                  }
+                }
+              } label: {
+                Image(systemName: "ellipsis.circle")
               }
-            } label: {
-              Image(systemName: "ellipsis.circle")
+              .accessibilityLabel(Text("day_actions"))
             }
-            .accessibilityLabel(Text("day_actions"))
-          }
-        } footer: {
-          if !visibleMeals.contains(where: { $0.date == date }) { Text("day_unplanned") }
+          } footer: {
+            if !visibleMeals.contains(where: { $0.date == date }) { Text("day_unplanned") }
+          }.id(date)
         }
-      }
-    }.navigationTitle("calendar")
-      .environment(\.timeZone, TimeZone(identifier: model.householdTimeZone) ?? .current)
-      .toolbar {
-        Menu {
-          NavigationLink("weekly_suggestions") { SuggestionsView(week: week) }
-          NavigationLink("leftovers") { LeftoversView() }
-          Button("copy_week_next") {
-            prepare {
-              try MealPlanning.copy(
-                model.meals, from: week,
-                through: PlanningDate.adding(6, to: week), to: PlanningDate.adding(7, to: week))
+      }.navigationTitle("calendar")
+        .onAppear {
+          if !focusedInitialDate, let initialDate,
+            let current = try? PlanningDate.monday(containing: model.dateString(Date())),
+            let target = try? PlanningDate.monday(containing: initialDate),
+            let distance = try? PlanningDate.distance(from: current, to: target)
+          {
+            weekOffset = distance / 7
+          }
+          focusedInitialDate = true
+        }
+        .environment(\.timeZone, TimeZone(identifier: model.householdTimeZone) ?? .current)
+        .task(id: week) {
+          if !scrolledInitialDate, let initialDate,
+            (try? PlanningDate.monday(containing: initialDate)) == week
+          {
+            scrolledInitialDate = true
+            await Task.yield()
+            proxy.scrollTo(initialDate, anchor: .top)
+          }
+        }
+        .toolbar {
+          Menu {
+            NavigationLink("weekly_suggestions") { SuggestionsView(week: week) }
+            NavigationLink("leftovers") { LeftoversView() }
+            Button("copy_week_next") {
+              prepare {
+                try MealPlanning.copy(
+                  model.meals, from: week,
+                  through: PlanningDate.adding(6, to: week), to: PlanningDate.adding(7, to: week))
+              }
             }
+            Button("save_week_template") { namingTemplate = true }
+            Button("apply_week_template") { selectingTemplate = true }
+          } label: {
+            Label("week_actions", systemImage: "ellipsis.circle")
           }
-          Button("save_week_template") { namingTemplate = true }
-          Button("apply_week_template") { selectingTemplate = true }
-        } label: {
-          Label("week_actions", systemImage: "ellipsis.circle")
         }
-      }
-      .task(id: week + ":" + String(model.photoRevision)) {
-        do {
-          visibleMeals = try MealPlanning.expand(
-            model.meals, from: week,
-            through: PlanningDate.adding(6, to: week))
-        } catch { model.report(error) }
-      }
-      .alert("save_week_template", isPresented: $namingTemplate) {
-        TextField("template_name", text: $templateName)
-        Button("save") {
+        .task(id: week + ":" + String(model.photoRevision)) {
           do {
-            let value = try MealPlanning.template(name: templateName, rows: model.meals, week: week)
-            Task { _ = await model.save(kind: .template, value: value) }
-            templateName = ""
+            visibleMeals = try MealPlanning.expand(
+              model.meals, from: week,
+              through: PlanningDate.adding(6, to: week))
           } catch { model.report(error) }
         }
-        Button("cancel", role: .cancel) {}
-      }
-      .sheet(item: $preview) { value in PlanningPreview(edits: value.edits) }
-      .sheet(item: $recurrence) { item in RecurrenceEditor(item: item) }
-      .sheet(item: $moving) { item in MealMoveEditor(item: item) }
-      .sheet(item: $recordingLeftovers) { item in LeftoverEditor(source: item) }
-      .sheet(
-        isPresented: $selectingTemplate,
-        onDismiss: {
-          if let edits = selectedTemplateEdits {
-            selectedTemplateEdits = nil
-            preview = PlanPreview(edits: edits)
+        .alert("save_week_template", isPresented: $namingTemplate) {
+          TextField("template_name", text: $templateName)
+          Button("save") {
+            do {
+              let value = try MealPlanning.template(
+                name: templateName, rows: model.meals, week: week)
+              Task { _ = await model.save(kind: .template, value: value) }
+              templateName = ""
+            } catch { model.report(error) }
           }
+          Button("cancel", role: .cancel) {}
         }
-      ) {
-        NavigationStack {
-          List {
-            if model.templates.isEmpty {
-              ContentUnavailableView("no_templates", systemImage: "calendar.badge.plus")
+        .sheet(item: $preview) { value in PlanningPreview(edits: value.edits) }
+        .sheet(item: $recurrence) { item in RecurrenceEditor(item: item) }
+        .sheet(item: $moving) { item in MealMoveEditor(item: item) }
+        .sheet(item: $recordingLeftovers) { item in LeftoverEditor(source: item) }
+        .sheet(
+          isPresented: $selectingTemplate,
+          onDismiss: {
+            if let edits = selectedTemplateEdits {
+              selectedTemplateEdits = nil
+              preview = PlanPreview(edits: edits)
             }
-            ForEach(model.templates) { row in
-              if let template = try? row.decode(MealTemplate.self) {
-                Button(template.name) {
-                  do {
-                    let edits = try MealPlanning.apply(
-                      template, week: week,
-                      availableRecipes: Set(model.recipes.map(\.id)))
-                    selectedTemplateEdits = edits
-                    selectingTemplate = false
-                  } catch { model.report(error) }
-                }.swipeActions {
-                  Button("remove", role: .destructive) {
-                    Task {
-                      _ = await model.save(
-                        kind: .template, id: row.id,
-                        value: template, delete: true)
+          }
+        ) {
+          NavigationStack {
+            List {
+              if model.templates.isEmpty {
+                ContentUnavailableView("no_templates", systemImage: "calendar.badge.plus")
+              }
+              ForEach(model.templates) { row in
+                if let template = try? row.decode(MealTemplate.self) {
+                  Button(template.name) {
+                    do {
+                      let edits = try MealPlanning.apply(
+                        template, week: week,
+                        availableRecipes: Set(model.recipes.map(\.id)))
+                      selectedTemplateEdits = edits
+                      selectingTemplate = false
+                    } catch { model.report(error) }
+                  }.swipeActions {
+                    Button("remove", role: .destructive) {
+                      Task {
+                        _ = await model.save(
+                          kind: .template, id: row.id,
+                          value: template, delete: true)
+                      }
                     }
                   }
                 }
               }
-            }
-          }.navigationTitle("apply_week_template")
-            .toolbar { Button("cancel") { selectingTemplate = false } }
+            }.navigationTitle("apply_week_template")
+              .toolbar { Button("cancel") { selectingTemplate = false } }
+          }
         }
-      }
-      .sheet(isPresented: Binding(get: { assigning != nil }, set: { if !$0 { assigning = nil } })) {
+        .sheet(isPresented: Binding(get: { assigning != nil }, set: { if !$0 { assigning = nil } }))
+      {
         NavigationStack {
           List {
             Section("recipes") {
@@ -250,6 +276,7 @@ struct CalendarView: View {
           }.navigationTitle("choose_recipe").toolbar { Button("cancel") { assigning = nil } }
         }
       }
+    }
   }
   private func prepare(_ work: () throws -> [LocalEdit]) {
     do { preview = PlanPreview(edits: try work()) } catch { model.report(error) }

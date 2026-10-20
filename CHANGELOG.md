@@ -18,3 +18,11 @@ See the implementation checklist for feature status and verification limits.
   explicit selection and snapshot-checked approval preserve existing plans.
 - Add native leftover/suggestion interfaces and English/German strings (Apple SDK unverified).
 - Verify Python/Swift recommendation equivalence with a pinned canonical fixture.
+
+- Add household-zone reminder planning with recurrence, cooked-meal suppression, grouped
+  slots, DST rules and chronological scheduling limits.
+- Wire opt-in native reminder settings/reconciliation and notification tap routes.
+- Replace the single-day widget file with a bounded 14-day timeline cache, expiry and
+  optional recipe-name privacy; add deferred read-only app links and calendar targeting.
+- Clear derived widget/reminder state on logout while preserving offline edits; persist
+  signed-out state across restart. Apple framework/runtime verification remains pending.

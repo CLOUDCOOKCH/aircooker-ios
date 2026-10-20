@@ -273,3 +273,39 @@
 "leftover_in_use_error" = "These leftovers are already used in your calendar. Keep their recipe and planned portions.";
 
 "leftover_unavailable_error" = "These leftovers are no longer available. Choose another meal.";
+
+"enable_meal_reminders" = "Meal reminders";
+
+"notification_permission_denied" = "Notifications are disabled in system settings.";
+
+"open_system_settings" = "Open system settings";
+
+"reminder_timezone_hint" = "Reminder times follow your household time zone. Open aircooker regularly to refresh upcoming meals.";
+
+"reminder_times" = "Reminder times";
+
+"reminder_time" = "Time";
+
+"reminder_recipe_names" = "Show recipe names in notifications";
+
+"reminder_names_privacy" = "Recipe names can appear on your Lock Screen when enabled. Otherwise reminders use a general message.";
+
+"scheduled_reminders" = "Upcoming reminders";
+
+"widget_meal_names" = "Show recipe names in widgets";
+
+"widget_names_privacy" = "Widgets can show meal details while the app is locked. Turn this off to show only planned meal categories.";
+
+"reminders_widgets" = "Reminders and widgets";
+
+"view_in_calendar" = "View in calendar";
+
+"meal_unavailable" = "This meal changed or was removed";
+
+"done" = "Done";
+
+"widget_unplanned" = "Unplanned";
+
+"widget_meal_planned" = "Meal planned";
+
+"widget_more_count %lld" = "+%lld more";

@@ -1,6 +1,6 @@
 # Native validation evidence — 2026-10-20
 
-**34 Swift core tests pass**, compiled with Swift 6.2.1 in Linux Docker with SQLite headers.
+**40 Swift core tests pass**, compiled with Swift 6.2.1 in Linux Docker with SQLite headers.
 Tests cover local restart/outbox identity, preservation of unsent drafts, tombstone rejection,
 delta acknowledgement, backend identity pinning, share-inbox restart/acknowledgement,
 decimal/non-numeric scaling and canonical recipe/mutation codecs. New tests cover atomic
@@ -9,9 +9,12 @@ restart, cached photos, schema upgrades/future-schema rejection, civil dates acr
 boundaries, bounded recurrence/exceptions, detached moves, templates and atomic copy batches. New tests enforce leftover
 reservations, decimal input validation, discard semantics, occurrence-specific cooked history,
 local stale-preview rejection, selected approval/outbox restart, approval rollback and
-Python/Swift equivalence across three canonical recommendation cases.
+Python/Swift equivalence across three canonical recommendation cases. Presentation tests cover
+strict route parsing, household date boundaries, spring gaps/autumn repeated hours, cooked
+meal suppression, chronological reminder limits, meal grouping, widget recurrence/rollover,
+expiry, name privacy and malformed-cache bounds.
 
-Pinned OpenAPI SHA-256, required route/property sets, 194 English/German localisation keys,
+Pinned OpenAPI SHA-256, required route/property sets, 212 English/German localisation keys,
 static error lookups, Swift formatting and native-source syntax parsing pass. Source secret
 scanning reports no findings. Workflow YAML and export configuration parse successfully.
 
