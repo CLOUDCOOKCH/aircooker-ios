@@ -20,10 +20,8 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Require production Xcode 27
-        run: |
-          xcodebuild -version
-          xcodebuild -showsdks | grep -E 'iphoneos27'
+      - name: Verify installed Apple toolchain
+        run: python3 scripts/check_apple_toolchain.py
       - name: Generate native project with pinned tool
         run: |
           brew install mint
@@ -34,3 +32,8 @@ jobs:
         run: xcodebuild -project aircooker.xcodeproj -scheme aircooker -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
       - name: Run onboarding UI checks on available simulator
         run: python3 scripts/run_simulator_tests.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: native-test-results
+          path: build/NativeTests.xcresult

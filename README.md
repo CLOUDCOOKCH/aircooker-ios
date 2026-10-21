@@ -10,8 +10,10 @@ Face ID/device authentication, camera and notifications need macOS/Xcode validat
 ## Build
 
 The project targets iOS 26 and later (current/preceding major generation at research time).
-Use production Xcode 27 on a supported macOS version. Verify Apple's current requirements
-before releasing. No signing certificate or developer account is embedded.
+Use a production Xcode toolchain with an iOS 26+ SDK on supported macOS. CI records the
+selected toolchain and uses the latest available supported iPhone runtime; its first runner
+provided Xcode 26.6. Verify Apple's current requirements before releasing. No signing
+certificate or developer account is embedded.
 
 The repository uses a local Swift package for the core and an XcodeGen specification for
 app/extension targets. Install the pinned generator using Mint, then generate locally:

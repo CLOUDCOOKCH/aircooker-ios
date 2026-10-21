@@ -3,7 +3,7 @@ options:
   bundleIdPrefix: ch.cloudcook
   deploymentTarget:
     iOS: "26.0"
-  xcodeVersion: "27.0"
+  xcodeVersion: "26.0"
 settings:
   base:
     SWIFT_VERSION: "6.0"

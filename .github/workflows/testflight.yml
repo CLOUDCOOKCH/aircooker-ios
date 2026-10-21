@@ -22,7 +22,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
           python3 -c 'import os; assert os.environ["GITHUB_REF"] == "refs/tags/v"+os.environ["RELEASE_VERSION"]'
-          xcodebuild -showsdks | grep -E 'iphoneos27'
+          python3 scripts/check_apple_toolchain.py
       - name: Configure signing and App Store Connect credentials
         env:
           SIGNING_P12_BASE64: ${{ secrets.SIGNING_P12_BASE64 }}

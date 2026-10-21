@@ -3,7 +3,8 @@
 No application has been signed, archived, uploaded or submitted from this environment.
 A source tree and workflow file do not constitute a distributable iOS release.
 
-1. Build all native targets using current production Xcode 27 and verify iOS 26 and 27.
+1. Build all native targets using current production Xcode with iOS 26+ SDK. Verify the
+   minimum supported OS and current shipping OS on available simulators and physical devices.
 2. Register unique app/extension bundle IDs and one App Group on an Apple developer team.
 3. Configure signing certificates/profiles through protected CI secrets; never commit them.
 4. Complete native UI/device tests, accessibility, performance and offline scenarios.

@@ -39,5 +39,8 @@ recovery UI/device validation and reference-safe restoration beyond recipes; UI 
 accessibility audit; full performance/privacy/security validation.
 
 The server repository's implementation checklist tracks the full product phases. Neither
-repository is declared complete, production-ready or App Store-ready. No remote repository
-or release has been published. Intended owner: CLOUDCOOKCH.
+repository is declared complete, production-ready or App Store-ready. Both independent
+repositories are published under CLOUDCOOKCH; no stable release has been published. The
+first GitHub run passed core tests/secret scanning but stopped before native compilation
+because the runner had Xcode 26.6 rather than the previously hard-coded version 27.
+CI now checks actual iOS 26+ capability; a successful native run is still required.
