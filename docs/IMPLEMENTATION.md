@@ -4,14 +4,16 @@
 onboarding and English/German copy are updated; bundle IDs, App Groups, Keychain, paths and
 build targets remain compatible. The original supplied peach icon/wordmark PNG files are
 not accessible in the cloud workspace, so their installation is still pending. Native
-development remains retained for later; name-only source edits do not prove Apple rendering.
+development remains retained for later. Name/keyboard source at 805d043 passed Xcode 26.6,
+90 core tests and simulator flows in run 39590881768; physical devices/artwork remain open.
 
 Delivery direction changed to PWA-first by explicit user choice on 2026-10-21. Native
 feature development is paused; keep the tested sources available for later. The web client
 is implemented in the independent aircooker-server repository, not in a third repository.
 Native signing/TestFlight/device gates remain deferred and are not considered PWA blockers.
-The latest native source validation at f165c36 passes 90 core tests, all three native targets,
-and demo/onboarding/localisation simulator workflows on Xcode 26.6 (run 39566779970).
+The latest native source validation at 805d043 passes 90 core tests, all three native targets,
+and demo/onboarding/localisation simulator workflows on Xcode 26.6 (run 39590881768).
+See validation/github-mealf-name.json for exact evidence and the preceding UI failure.
 The historical evidence below retains its original scope.
 
 The Swift core is compiled and tested on Linux using Swift 6.2.1. Earlier runs used Docker;

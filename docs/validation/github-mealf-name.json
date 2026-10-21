@@ -1,0 +1,40 @@
+{
+  "format": "mealf-native-name-github-validation",
+  "version": 1,
+  "date": "2026-10-21",
+  "repository": "CLOUDCOOKCH/aircooker-ios",
+  "commit": "805d0436fe7a9df4c474ceda7cada6c3285c89b4",
+  "run_id": 39590881768,
+  "url": "https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39590881768",
+  "conclusion": "success",
+  "xcode": "26.6",
+  "simulator": "iPhone Air, iOS 26.5",
+  "core_tests": 90,
+  "jobs": [
+    {
+      "id": 119191227573,
+      "name": "core",
+      "conclusion": "success"
+    },
+    {
+      "id": 119191227845,
+      "name": "native",
+      "conclusion": "success"
+    }
+  ],
+  "verified": [
+    "App, Share and Widget target compilation with mealf display names",
+    "Swift contract/localisation/format/core and secret checks",
+    "Simulator demo recipe create/edit/restart, onboarding and German light/dark navigation"
+  ],
+  "prior_attempt": {
+    "commit": "4b62f11f339396d808c8afaa6cd4a9ba3b820b47",
+    "run_id": 39588842276,
+    "scope": "Build/core passed; recipe UI test failed without keyboard focus on a fresh hosted simulator. Bounded keyboard readiness correction and hardware keyboard setting are in the successful commit."
+  },
+  "limits": [
+    "No physical iPhone, signing, TestFlight, live services or original artwork verified",
+    "Original peach/wordmark PNG files remain unavailable",
+    "Native is retained for later; primary delivery is PWA"
+  ]
+}

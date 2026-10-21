@@ -191,3 +191,13 @@ native routes are unchanged; the server contract adds diagnostics models/routes 
 the admin jobs response. Native editor fields now accept punctuation, show validation and
 normalise before the existing offline save. Native build/UI results for this change are
 pending. See RECIPE_EDITING.md for bounds, precision and unmeasured-text semantics.
+
+## mealf name and simulator keyboard readiness, 2026-10-21
+
+Source 805d043 passed both jobs in run 39590881768: 90 core tests, contract/localisation/
+format/secret gates, Xcode 26.6 compilation of app/Share/Widget and iPhone Air iOS 26.5
+simulator recipe persistence/onboarding/German light and dark navigation. The preceding
+4b62f11 run built successfully but its recipe UI test had no ready keyboard. The bounded
+focus check/hardware-keyboard setting correction was rerun successfully; this does not make
+the earlier run green. Exact IDs and platform limits: validation/github-mealf-name.json.
+Original supplied artwork, physical devices, signing and live integrations remain open.
