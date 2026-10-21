@@ -1,1 +1,3 @@
-"NSFaceIDUsageDescription" = "Unlock your recipes and meal plan.";
+"CFBundleDisplayName" = "aircooker";
+"NSCameraUsageDescription" = "Scan a QR code containing your server address.";
+"NSFaceIDUsageDescription" = "Unlock your household recipes and meal plan.";

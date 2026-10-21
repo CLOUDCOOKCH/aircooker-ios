@@ -18,10 +18,15 @@ jobs:
         run: docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 dir /repo --config /repo/.gitleaks.toml --redact
   native:
     runs-on: macos-26
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Verify installed Apple toolchain
         run: python3 scripts/check_apple_toolchain.py
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.mint
+          key: mint-${{ runner.os }}-${{ runner.arch }}-xcodegen-2.44.1
       - name: Generate native project with pinned tool
         run: |
           brew install mint

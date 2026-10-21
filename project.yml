@@ -60,6 +60,7 @@ targets:
     info:
       path: Config/Share-Info.plist
       properties:
+        CFBundleDisplayName: aircooker
         AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.share-services
@@ -83,6 +84,7 @@ targets:
     info:
       path: Config/Widget-Info.plist
       properties:
+        CFBundleDisplayName: aircooker
         AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
