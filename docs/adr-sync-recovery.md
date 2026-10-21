@@ -18,7 +18,8 @@ The schema-v3 upgrade replays retained deltas without replacing optimistic edits
 newer accepted cache revisions. Archives are private to the device, retain photo references,
 and can be shared as versioned text. They are not silently purged or advertised as server
 backups. This adds SQLite storage and requires native lifecycle tests and future archive/media
-retention design. Controlled recovery after a server history rollback remains separate work.
+retention design. The schema-4 extension adds explicit durable full-resync staging after a history rollback;
+see SYNC_RECOVERY.md and server ADR 007. Native lifecycle checks remain required.
 
 Rejected alternatives: dropping an invalid envelope loses edits; retrying a tombstoned UUID
 cannot succeed; device-clock precedence conflicts with the accepted policy; accepting a

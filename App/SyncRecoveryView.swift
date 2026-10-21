@@ -3,8 +3,39 @@ import SwiftUI
 
 struct SyncRecoveryView: View {
   @Environment(AppModel.self) private var model
+  @State private var confirmRebuild = false
   var body: some View {
     List {
+      if model.resyncRequired || model.resyncRebuilding {
+        Section("server_recovery") {
+          Text("server_history_recovery_explanation").foregroundStyle(.secondary)
+          Text("recovery_cached_records \(model.cachedRecordCount)")
+          Text("pending_changes \(model.pending)")
+          if model.resyncRebuilding {
+            Text("recovery_staged_records \(model.resyncStagedCount)").font(.caption)
+          }
+          Button {
+            if model.resyncRebuilding {
+              Task { await model.rebuildFromServer() }
+            } else {
+              confirmRebuild = true
+            }
+          } label: {
+            if model.resyncRebuilding {
+              Text("resume_server_recovery")
+            } else {
+              Text("rebuild_from_server")
+            }
+          }.disabled(model.busy)
+          if model.busy { ProgressView("recovery_working") }
+        }
+      }
+      if model.authenticationExpired {
+        Section {
+          Text("recovery_sign_in_hint").foregroundStyle(.secondary)
+          Button("sign_in_again") { model.beginPasswordUnlock() }.disabled(model.busy)
+        }
+      }
       Section {
         Text("sync_recovery_explanation").foregroundStyle(.secondary)
         Button("sync_now") { Task { await model.synchronise() } }.disabled(model.busy)
@@ -32,6 +63,14 @@ struct SyncRecoveryView: View {
     }
     .navigationTitle("sync_recovery")
     .task { await model.reload() }
+    .confirmationDialog(
+      "confirm_server_recovery", isPresented: $confirmRebuild, titleVisibility: .visible
+    ) {
+      Button("rebuild_from_server") { Task { await model.rebuildFromServer() } }
+      Button("cancel", role: .cancel) {}
+    } message: {
+      Text("server_history_recovery_explanation")
+    }
   }
 }
 
@@ -72,7 +111,7 @@ private struct SyncIssueView: View {
       OperationErrorNotice()
     }
     .navigationTitle("sync_review_change")
-    .disabled(model.busy)
+    .disabled(model.busy || model.resyncRequired)
     .confirmationDialog(
       "sync_confirm_recovery",
       isPresented: Binding(get: { choice != nil }, set: { if !$0 { choice = nil } }),
@@ -176,7 +215,8 @@ private struct ArchivedDraftView: View {
       Section { RecoveryPayload(payload: draft.payload, kind: draft.kind, deleted: draft.deleted) }
       Section {
         if draft.kind == .recipe && !draft.deleted {
-          Button("keep_new_recipe_copy") { confirmCopy = true }.disabled(model.busy || copied)
+          Button("keep_new_recipe_copy") { confirmCopy = true }.disabled(
+            model.busy || model.resyncRequired || copied)
           if copied { Label("saved", systemImage: "checkmark") }
         }
         if let json = try? draft.exportJSON() { ShareLink("export_saved_draft", item: json) }

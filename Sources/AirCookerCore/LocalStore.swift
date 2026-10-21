@@ -5,7 +5,7 @@ public enum StoreError: Error, Sendable {
   case sqlite(String)
   case invalidRecord, serverChanged, rejectedDeletion, invalidPhoto, mediaStorageLimit,
     unsupportedSchema, recoveryChanged, serverSnapshotUnavailable, syncNeedsAttention,
-    syncInProgress
+    syncInProgress, fullResyncRequired
 }
 // The handle is confined to LocalStore's actor after construction.
 private final class Connection: @unchecked Sendable {
@@ -41,7 +41,7 @@ public actor LocalStore {
     let version =
       sqlite3_step(versionStatement) == SQLITE_ROW ? sqlite3_column_int(versionStatement, 0) : -1
     sqlite3_finalize(versionStatement)
-    guard (0...3).contains(version) else { throw StoreError.unsupportedSchema }
+    guard (0...4).contains(version) else { throw StoreError.unsupportedSchema }
     let sql = """
       PRAGMA journal_mode=WAL;
       PRAGMA synchronous=FULL;
@@ -56,7 +56,8 @@ public actor LocalStore {
       CREATE TABLE IF NOT EXISTS server_entity(kind TEXT NOT NULL,id TEXT NOT NULL,revision INTEGER NOT NULL,deleted INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(kind,id));
       CREATE TABLE IF NOT EXISTS recovered_draft(sequence INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,body TEXT NOT NULL);
       \(version < 3 ? "INSERT OR IGNORE INTO server_entity SELECT * FROM entity WHERE revision>0 AND NOT EXISTS (SELECT 1 FROM outbox WHERE outbox.kind=entity.kind AND outbox.entity_id=entity.id); DELETE FROM metadata WHERE key='cursor';" : "")
-      PRAGMA user_version=3;
+      CREATE TABLE IF NOT EXISTS resync_entity(kind TEXT NOT NULL,id TEXT NOT NULL,revision INTEGER NOT NULL,deleted INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(kind,id));
+      PRAGMA user_version=4;
       COMMIT;
       """
     guard sqlite3_exec(connection.handle, sql, nil, nil, nil) == SQLITE_OK else {
@@ -371,12 +372,20 @@ public actor LocalStore {
     guard result.mutationID == mutation.id,
       ["accepted", "deleted", "rejected_tombstone"].contains(result.status), result.revision >= 0
     else { throw APIError.invalidResponse }
+    if let token = result.revisionToken {
+      guard SyncAnchor(cursor: result.revision, token: token).valid else {
+        throw APIError.invalidResponse
+      }
+    }
     if result.status == "rejected_tombstone" {
       _ = try run(
         "UPDATE outbox SET error='rejected_tombstone' WHERE id=?", [mutation.id.uuidString])
       throw StoreError.rejectedDeletion
     }
     try transaction {
+      if let token = result.revisionToken {
+        try observe(SyncAnchor(cursor: result.revision, token: token))
+      }
       _ = try run("DELETE FROM outbox WHERE id=?", [result.mutationID.uuidString])
       _ = try run(
         "UPDATE entity SET revision=? WHERE kind=? AND id=?",
@@ -386,6 +395,9 @@ public actor LocalStore {
   public func apply(_ page: PullPage) throws {
     try transaction {
       let previousCursor = try cursor()
+      if let token = page.cursorToken, !SyncAnchor(cursor: page.cursor, token: token).valid {
+        throw APIError.invalidResponse
+      }
       var previousRevision = previousCursor
       guard page.cursor >= previousCursor else { throw APIError.invalidResponse }
       for change in page.changes {
@@ -416,6 +428,12 @@ public actor LocalStore {
       _ = try run(
         "INSERT INTO metadata VALUES ('cursor',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
         [String(page.cursor)])
+      if let token = page.cursorToken {
+        try observe(SyncAnchor(cursor: page.cursor, token: token))
+        _ = try run("INSERT OR REPLACE INTO metadata VALUES ('cursor_token',?)", [token])
+      } else {
+        _ = try run("DELETE FROM metadata WHERE key='cursor_token'")
+      }
     }
   }
   public func markFailure(_ mutation: Mutation, code: String) throws {
@@ -473,6 +491,7 @@ public actor LocalStore {
   public func retry(_ issue: SyncIssue) throws {
     guard issue.code != "rejected_tombstone" else { throw StoreError.rejectedDeletion }
     try transaction {
+      try requireNoResync()
       _ = try validateRecovery(issue)
       _ = try run(
         "UPDATE outbox SET error=NULL WHERE kind=? AND entity_id=?",
@@ -482,6 +501,7 @@ public actor LocalStore {
   @discardableResult public func resolve(_ issue: SyncIssue, keepRecipeCopy: Bool) throws -> UUID? {
     let device = try deviceID()
     return try transaction {
+      try requireNoResync()
       let rows = try validateRecovery(issue)
       guard let local = try recoveryEntity(rows[0].first) else { throw StoreError.invalidRecord }
       if keepRecipeCopy {
@@ -520,9 +540,7 @@ public actor LocalStore {
           [issue.kind.rawValue, issue.entityID.uuidString])
       }
       if keepRecipeCopy {
-        let newID = UUID()
-        try persist(kind: .recipe, id: newID, payload: local.payload, delete: false, device: device)
-        return newID
+        return try queueRecipeCopy(payload: local.payload, from: local.id, device: device)
       }
       return nil
     }
@@ -545,10 +563,190 @@ public actor LocalStore {
       else { throw StoreError.invalidRecord }
       let saved = try decoder.decode(ArchivedDraft.self, from: Data(raw.utf8))
       guard saved.kind == .recipe, !saved.deleted else { throw StoreError.invalidRecord }
-      let id = UUID()
-      try persist(kind: .recipe, id: id, payload: saved.payload, delete: false, device: device)
-      return id
+      return try queueRecipeCopy(payload: saved.payload, from: saved.entityID, device: device)
     }
+  }
+
+  public func syncAnchor() throws -> SyncAnchor? {
+    let value = try cursor()
+    if value == 0 { return SyncAnchor(cursor: 0, token: "root") }
+    guard let token = try run("SELECT value FROM metadata WHERE key='cursor_token'").first?["value"]
+    else { return nil }
+    let anchor = SyncAnchor(cursor: value, token: token)
+    return anchor.valid ? anchor : nil
+  }
+  public func fullResyncState() throws -> FullResyncState? {
+    guard let raw = try run("SELECT value FROM metadata WHERE key='full_resync'").first?["value"]
+    else { return nil }
+    return try decoder.decode(FullResyncState.self, from: Data(raw.utf8))
+  }
+  public func recoveryStatus() throws -> SyncRecoveryStatus {
+    SyncRecoveryStatus(
+      required: try !run("SELECT 1 FROM metadata WHERE key='resync_required'").isEmpty,
+      rebuilding: try fullResyncState() != nil,
+      stagedCount: Int(
+        try run("SELECT COUNT(*) AS count FROM resync_entity").first?["count"] ?? "0") ?? 0,
+      localCount: Int(
+        try run("SELECT COUNT(*) AS count FROM entity WHERE deleted=0").first?["count"] ?? "0") ?? 0
+    )
+  }
+  public func requireFullResync(discardStaging: Bool = false) throws {
+    try transaction {
+      _ = try run("INSERT OR REPLACE INTO metadata VALUES ('resync_required','1')")
+      if discardStaging {
+        _ = try run("DELETE FROM resync_entity")
+        _ = try run("DELETE FROM metadata WHERE key='full_resync'")
+      }
+    }
+  }
+  private func requireNoResync() throws {
+    guard try !recoveryStatus().required else { throw StoreError.fullResyncRequired }
+  }
+  public func beginFullResync(instanceID: String, checkpoint: SyncAnchor) throws {
+    guard checkpoint.valid else { throw APIError.invalidResponse }
+    try bind(instanceID: instanceID)
+    try transaction {
+      _ = try run("DELETE FROM resync_entity")
+      _ = try run("INSERT OR REPLACE INTO metadata VALUES ('resync_required','1')")
+      let state = FullResyncState(
+        instanceID: instanceID, checkpoint: checkpoint, after: nil, complete: false)
+      _ = try run(
+        "INSERT OR REPLACE INTO metadata VALUES ('full_resync',?)",
+        [String(decoding: encoder.encode(state), as: UTF8.self)])
+    }
+  }
+  public func stageSnapshot(_ page: SyncSnapshot, expected: FullResyncState) throws {
+    try transaction {
+      guard try fullResyncState() == expected, !expected.complete,
+        page.instanceID == expected.instanceID, page.checkpoint == expected.checkpoint,
+        page.changes.count <= 100
+      else { throw APIError.invalidResponse }
+      var last = expected.after ?? ""
+      for change in page.changes {
+        try validateSnapshotPayload(change)
+        let key = change.kind.rawValue + ":" + change.entityID.uuidString.lowercased()
+        guard key > last, change.revision > 0, change.revision <= page.checkpoint.cursor else {
+          throw APIError.invalidResponse
+        }
+        _ = try run(
+          "INSERT INTO resync_entity VALUES (?,?,?,?,?)",
+          [
+            change.kind.rawValue, change.entityID.uuidString, String(change.revision),
+            change.deleted ? "1" : "0",
+            String(decoding: encoder.encode(change.payload), as: UTF8.self),
+          ])
+        last = key
+      }
+      if let after = page.nextAfter {
+        guard !page.changes.isEmpty, after == last else { throw APIError.invalidResponse }
+      }
+      var next = expected
+      next.after = last.isEmpty ? nil : last
+      next.complete = page.nextAfter == nil
+      _ = try run(
+        "UPDATE metadata SET value=? WHERE key='full_resync'",
+        [String(decoding: encoder.encode(next), as: UTF8.self)])
+    }
+  }
+  public func finishFullResync(expected: FullResyncState, verified: SyncState) throws {
+    guard verified.anchor.valid, verified.instanceID == expected.instanceID,
+      verified.requestedCursor == expected.checkpoint.cursor,
+      verified.requestedToken == expected.checkpoint.token,
+      verified.cursor >= expected.checkpoint.cursor
+    else { throw StoreError.fullResyncRequired }
+    try transaction {
+      guard try fullResyncState() == expected, expected.complete else {
+        throw APIError.invalidResponse
+      }
+      // Archive every active cached record, including acknowledged records lost from a
+      // restored backup, as well as every record with a queued deletion/update.
+      for row in try run(
+        "SELECT * FROM entity WHERE deleted=0 OR EXISTS (SELECT 1 FROM outbox WHERE outbox.kind=entity.kind AND outbox.entity_id=entity.id) ORDER BY kind,id"
+      ) {
+        guard let local = try recoveryEntity(row) else { throw StoreError.invalidRecord }
+        let queued = try run(
+          "SELECT body FROM outbox WHERE kind=? AND entity_id=? ORDER BY sequence",
+          [local.kind.rawValue, local.id.uuidString])
+        let mutations = try queued.map {
+          try decoder.decode(Mutation.self, from: Data(($0["body"] ?? "").utf8))
+        }
+        let archive = ArchivedDraft(
+          formatVersion: 1, id: UUID(), entityID: local.id, kind: local.kind,
+          revision: local.revision, deleted: local.deleted, payload: local.payload,
+          mutations: mutations, errorCode: "server_history_rebuilt",
+          archivedAt: ISO8601DateFormatter().string(from: Date()))
+        _ = try run(
+          "INSERT INTO recovered_draft(id,body) VALUES (?,?)",
+          [archive.id.uuidString, String(decoding: encoder.encode(archive), as: UTF8.self)])
+      }
+      _ = try run("DELETE FROM outbox")
+      _ = try run("DELETE FROM entity")
+      _ = try run("INSERT INTO entity SELECT * FROM resync_entity")
+      _ = try run("DELETE FROM server_entity")
+      _ = try run("INSERT INTO server_entity SELECT * FROM resync_entity")
+      _ = try run("UPDATE local_media SET pending_upload=0")
+      _ = try run(
+        "INSERT OR REPLACE INTO metadata VALUES ('cursor',?)", [String(expected.checkpoint.cursor)])
+      _ = try run(
+        "INSERT OR REPLACE INTO metadata VALUES ('cursor_token',?)", [expected.checkpoint.token])
+      _ = try run(
+        "INSERT OR REPLACE INTO metadata VALUES ('observed_checkpoint',?)",
+        [String(decoding: encoder.encode(verified.anchor), as: UTF8.self)])
+      _ = try run("DELETE FROM resync_entity")
+      _ = try run("DELETE FROM metadata WHERE key IN ('full_resync','resync_required')")
+    }
+  }
+  private func queueRecipeCopy(payload: JSONValue, from originalID: UUID, device: UUID) throws
+    -> UUID
+  {
+    var recipe = try decoder.decode(Recipe.self, from: encoder.encode(payload))
+    // Import confirmation belongs to its original recipe UUID. Preserve attribution
+    // without replaying a job's one-time confirmation against a new identity.
+    if let job = recipe.provenance.removeValue(forKey: "import_job_id") {
+      recipe.provenance["original_import_job_id"] = job
+    }
+    // Server provenance is bounded to 50 entries. Preserve the user's attribution
+    // rather than making an otherwise valid full-capacity recipe impossible to copy.
+    if recipe.provenance.count < 50 || recipe.provenance["copied_from_recipe_id"] != nil {
+      recipe.provenance["copied_from_recipe_id"] = originalID.uuidString.lowercased()
+    }
+    if let imageID = recipe.imageID {
+      _ = try run("UPDATE local_media SET pending_upload=1 WHERE id=?", [imageID.uuidString])
+    }
+    let id = UUID()
+    try persist(kind: .recipe, id: id, payload: Codec.json(recipe), delete: false, device: device)
+    return id
+  }
+
+  public func observedAnchor() throws -> SyncAnchor? {
+    guard
+      let raw = try run("SELECT value FROM metadata WHERE key='observed_checkpoint'").first?[
+        "value"]
+    else { return try syncAnchor() }
+    let anchor = try decoder.decode(SyncAnchor.self, from: Data(raw.utf8))
+    guard anchor.valid else { throw StoreError.invalidRecord }
+    return anchor
+  }
+  public func observe(_ anchor: SyncAnchor) throws {
+    guard anchor.valid else { throw APIError.invalidResponse }
+    if let old = try observedAnchor(), old.cursor > anchor.cursor { return }
+    _ = try run(
+      "INSERT OR REPLACE INTO metadata VALUES ('observed_checkpoint',?)",
+      [String(decoding: encoder.encode(anchor), as: UTF8.self)])
+  }
+
+  private func validateSnapshotPayload(_ change: Change) throws {
+    if change.deleted { return }
+    let data = try encoder.encode(change.payload)
+    do {
+      switch change.kind {
+      case .recipe: _ = try decoder.decode(Recipe.self, from: data)
+      case .meal: _ = try decoder.decode(Meal.self, from: data)
+      case .pantry: _ = try decoder.decode(PantryItem.self, from: data)
+      case .leftover: _ = try decoder.decode(Leftover.self, from: data)
+      case .template: _ = try decoder.decode(MealTemplate.self, from: data)
+      }
+    } catch { throw APIError.invalidResponse }
   }
 
 }

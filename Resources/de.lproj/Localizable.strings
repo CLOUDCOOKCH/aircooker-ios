@@ -365,3 +365,25 @@
 "weekly_templates" = "Wochenvorlagen";
 
 "saved" = "Gespeichert";
+
+"server_recovery" = "Serverwiederherstellung";
+
+"server_history_recovery_required" = "Der Serververlauf hat sich geändert. Öffne Einstellungen → Synchronisierung und Entwürfe für die Wiederherstellung.";
+
+"server_history_recovery_explanation" = "Baue die Daten auf diesem Gerät aus den aktuellen Serverdaten neu auf. Zuerst werden alle aktuellen lokalen Einträge mit ihren ausstehenden Änderungen als lokale Entwürfe gesichert, auch Einträge, die auf dem Server fehlen. Zwischengespeicherte Fotos bleiben auf diesem Gerät. Frühere Änderungen werden nicht automatisch hochgeladen; stelle gewünschte Rezepte aus den gesicherten lokalen Entwürfen wieder her.";
+
+"recovery_cached_records %lld" = "Lokale Einträge: %lld";
+
+"recovery_staged_records %lld" = "Heruntergeladene Servereinträge: %lld";
+
+"resume_server_recovery" = "Wiederherstellung fortsetzen";
+
+"rebuild_from_server" = "Aus Serverdaten neu aufbauen";
+
+"recovery_working" = "Serverdaten werden vorbereitet …";
+
+"recovery_sign_in_hint" = "Deine Serversitzung ist abgelaufen oder wurde widerrufen. Melde dich erneut an. Lokale Änderungen und der Wiederherstellungsfortschritt bleiben erhalten.";
+
+"sign_in_again" = "Erneut anmelden";
+
+"confirm_server_recovery" = "Lokale Daten sichern und neu aufbauen?";

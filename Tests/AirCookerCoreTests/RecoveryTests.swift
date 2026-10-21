@@ -40,10 +40,20 @@ private actor RecoveryServer: SyncTransport {
     return MutationResult(
       mutationID: mutation.id, status: "accepted", revision: revision, conflict: false)
   }
-  func pull(cursor: Int) -> PullPage {
+  func syncState(cursor: Int) -> SyncState {
+    SyncState(
+      instanceID: info().instanceID!, cursor: changes.last?.revision ?? 0,
+      token: syntheticToken(changes.last?.revision ?? 0), requestedCursor: cursor,
+      requestedToken: cursor == 0 || changes.contains(where: { $0.revision == cursor })
+        ? syntheticToken(cursor) : nil)
+  }
+  func snapshot(checkpoint: SyncAnchor, after: String?) throws -> SyncSnapshot {
+    throw APIError.invalidResponse
+  }
+  func pull(cursor: Int, token: String) -> PullPage {
     PullPage(
       changes: changes.filter { $0.revision > cursor }, cursor: changes.last?.revision ?? cursor,
-      hasMore: false)
+      hasMore: false, cursorToken: syntheticToken(changes.last?.revision ?? cursor))
   }
   func uploadPhoto(_ photo: PendingPhoto) throws -> MediaInfo { throw APIError.invalidResponse }
   func downloadPhoto(id: UUID) throws -> Data { throw APIError.invalidResponse }
@@ -298,8 +308,18 @@ private actor PausedRecoveryServer: SyncTransport {
       observers = []
     }
   }
+  func syncState(cursor: Int) -> SyncState {
+    SyncState(
+      instanceID: "paused-tests", cursor: 0, token: "root", requestedCursor: cursor,
+      requestedToken: cursor == 0 ? "root" : nil)
+  }
+  func snapshot(checkpoint: SyncAnchor, after: String?) throws -> SyncSnapshot {
+    throw APIError.invalidResponse
+  }
   func push(_ mutation: Mutation) throws -> MutationResult { throw APIError.invalidResponse }
-  func pull(cursor: Int) -> PullPage { PullPage(changes: [], cursor: cursor, hasMore: false) }
+  func pull(cursor: Int, token: String) -> PullPage {
+    PullPage(changes: [], cursor: cursor, hasMore: false)
+  }
   func uploadPhoto(_ photo: PendingPhoto) throws -> MediaInfo { throw APIError.invalidResponse }
   func downloadPhoto(id: UUID) throws -> Data { throw APIError.invalidResponse }
 }

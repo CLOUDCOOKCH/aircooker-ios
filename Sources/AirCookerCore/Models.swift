@@ -165,9 +165,20 @@ public struct MutationResult: Codable, Sendable {
   public var status: String
   public var revision: Int
   public var conflict: Bool
+  public var revisionToken: String?
+  public init(
+    mutationID: UUID, status: String, revision: Int, conflict: Bool, revisionToken: String? = nil
+  ) {
+    self.mutationID = mutationID
+    self.status = status
+    self.revision = revision
+    self.conflict = conflict
+    self.revisionToken = revisionToken
+  }
   enum CodingKeys: String, CodingKey {
     case mutationID = "mutation_id"
     case status, revision, conflict
+    case revisionToken = "revision_token"
   }
 }
 public struct Change: Codable, Sendable {
@@ -188,9 +199,17 @@ public struct PullPage: Codable, Sendable {
   public var changes: [Change]
   public var cursor: Int
   public var hasMore: Bool
+  public var cursorToken: String?
+  public init(changes: [Change], cursor: Int, hasMore: Bool, cursorToken: String? = nil) {
+    self.changes = changes
+    self.cursor = cursor
+    self.hasMore = hasMore
+    self.cursorToken = cursorToken
+  }
   enum CodingKeys: String, CodingKey {
     case changes, cursor
     case hasMore = "has_more"
+    case cursorToken = "cursor_token"
   }
 }
 public struct LocalEntity: Identifiable, Sendable {

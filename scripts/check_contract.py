@@ -7,10 +7,15 @@ pin=json.loads((root/'Contracts'/'pin.json').read_text())
 assert hashlib.sha256(contract.read_bytes()).hexdigest()==pin['sha256'], 'Contract checksum mismatch'
 schema=json.loads(contract.read_text())
 assert schema['info']['version']=='0.1.0'
-for path in ['/api/v1/system/info','/api/v1/sync/push','/api/v1/sync/pull','/api/v1/auth/login','/api/v1/auth/refresh','/api/v1/imports','/api/v1/media/{image_id}','/api/v1/media/{image_id}/info','/api/v1/suggestions/weekly','/api/v1/suggestions/apply','/api/v1/admin/ai','/api/v1/admin/ai/test','/api/v1/admin/status']:
+for path in ['/api/v1/system/info','/api/v1/sync/push','/api/v1/sync/pull','/api/v1/auth/login','/api/v1/auth/refresh','/api/v1/imports','/api/v1/media/{image_id}','/api/v1/media/{image_id}/info','/api/v1/suggestions/weekly','/api/v1/suggestions/apply','/api/v1/admin/ai','/api/v1/admin/ai/test','/api/v1/admin/status','/api/v1/sync/state','/api/v1/sync/snapshot']:
     assert path in schema['paths'],path
 schemas=schema['components']['schemas']
 expected={
+'SyncAnchor':{'cursor','token'},
+'SyncState':{'instance_id','cursor','token','requested_cursor','requested_token'},
+'SyncSnapshot':{'instance_id','checkpoint','changes','next_after'},
+'Push':{'mutations','checkpoint'},
+'MutationResult':{'mutation_id','status','revision','conflict','revision_token'},
 'SessionInfo':{'id','device_id','access_expires','refresh_expires','revoked','current'},
 'AdministrationStatus':{'database_bytes','media_bytes','disk_free_bytes','pending_jobs','recipes'},
 'Leftover':{'recipe_id','portions','produced_on','discarded'},
@@ -25,7 +30,7 @@ expected={
 'Meal':{'recipe_id','date','category','servings','order','leftover_id','recurrence','cooked'},
 'Mutation':{'mutation_id','entity_id','kind','operation','base_revision','payload','device_id','client_timestamp','idempotency_key'},
 'Change':{'revision','kind','entity_id','deleted','payload','updated_at'},
-'Pull':{'changes','cursor','has_more'},
+'Pull':{'changes','cursor','has_more','cursor_token'},
 'Tokens':{'access_token','refresh_token','token_type','expires_in','session_id'}
 }
 for name,fields in expected.items():
@@ -38,3 +43,7 @@ print('Pinned OpenAPI checksum, native routes and wire field sets verified.')
 
 fixture=root/'Tests'/'AirCookerCoreTests'/'Fixtures'/'recommendations-v1.json'
 assert hashlib.sha256(fixture.read_bytes()).hexdigest()==pin['fixtures']['recommendations-v1']['sha256'], 'Recommendation fixture pin mismatch'
+
+history=root/"Tests"/"AirCookerCoreTests"/"Fixtures"/"sync-history-v1.json"
+assert hashlib.sha256(history.read_bytes()).hexdigest()==pin["fixtures"]["sync-history-v1"]["sha256"], "History fixture pin mismatch"
+assert json.loads(history.read_text())["format_version"]==1

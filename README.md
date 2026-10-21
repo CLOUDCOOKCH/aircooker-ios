@@ -54,6 +54,8 @@ These native photo APIs still require Apple SDK/device validation.
 Local edits and outgoing mutations commit together in SQLite. Server-ordered changes win;
 unsent local drafts are never replaced by incoming deltas. Rejected changes pause per record and remain recoverable through the saved-draft review
 sources. Recipe recovery uses a fresh identity; see [sync recovery](docs/SYNC_RECOVERY.md).
+Commit proofs detect restored/divergent server history. Explicit full recovery stages a
+server snapshot and archives local content atomically; it never replays old edits automatically.
 The core behaviour is tested; its native interface requires Apple SDK validation.
 Offline imports are stored in the shared inbox and submitted when the main app can sync.
 No exact iOS background execution is assumed.

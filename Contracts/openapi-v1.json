@@ -944,6 +944,17 @@
             "title": "Revision",
             "type": "integer"
           },
+          "revision_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision Token"
+          },
           "status": {
             "enum": [
               "accepted",
@@ -1026,6 +1037,10 @@
             "title": "Cursor",
             "type": "integer"
           },
+          "cursor_token": {
+            "title": "Cursor Token",
+            "type": "string"
+          },
           "has_more": {
             "title": "Has More",
             "type": "boolean"
@@ -1034,7 +1049,8 @@
         "required": [
           "changes",
           "cursor",
-          "has_more"
+          "has_more",
+          "cursor_token"
         ],
         "title": "Pull",
         "type": "object"
@@ -1042,6 +1058,16 @@
       "Push": {
         "additionalProperties": false,
         "properties": {
+          "checkpoint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncAnchor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "mutations": {
             "items": {
               "$ref": "#/components/schemas/Mutation"
@@ -1409,6 +1435,110 @@
           "meals"
         ],
         "title": "SuggestionPreview",
+        "type": "object"
+      },
+      "SyncAnchor": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "minimum": 0.0,
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "token": {
+            "pattern": "^(root|[a-f0-9]{32})$",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "token"
+        ],
+        "title": "SyncAnchor",
+        "type": "object"
+      },
+      "SyncSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/Change"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "checkpoint": {
+            "$ref": "#/components/schemas/SyncAnchor"
+          },
+          "instance_id": {
+            "format": "uuid",
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "next_after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next After"
+          }
+        },
+        "required": [
+          "instance_id",
+          "checkpoint",
+          "changes",
+          "next_after"
+        ],
+        "title": "SyncSnapshot",
+        "type": "object"
+      },
+      "SyncState": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "minimum": 0.0,
+            "title": "Cursor",
+            "type": "integer"
+          },
+          "instance_id": {
+            "format": "uuid",
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "requested_cursor": {
+            "title": "Requested Cursor",
+            "type": "integer"
+          },
+          "requested_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Token"
+          },
+          "token": {
+            "pattern": "^(root|[a-f0-9]{32})$",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cursor",
+          "token",
+          "instance_id",
+          "requested_cursor",
+          "requested_token"
+        ],
+        "title": "SyncState",
         "type": "object"
       },
       "Template": {
@@ -3977,6 +4107,23 @@
               "title": "Limit",
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(root|[a-f0-9]{32})$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Token"
+            }
           }
         ],
         "responses": {
@@ -4054,6 +4201,130 @@
           }
         ],
         "summary": "Push"
+      }
+    },
+    "/api/v1/sync/snapshot": {
+      "get": {
+        "operationId": "sync_snapshot_api_v1_sync_snapshot_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": true,
+            "schema": {
+              "minimum": 0,
+              "title": "Cursor",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "pattern": "^(root|[a-f0-9]{32})$",
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 50,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sync Snapshot"
+      }
+    },
+    "/api/v1/sync/state": {
+      "get": {
+        "operationId": "sync_state_api_v1_sync_state_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Cursor",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sync State"
       }
     },
     "/api/v1/system/capabilities": {

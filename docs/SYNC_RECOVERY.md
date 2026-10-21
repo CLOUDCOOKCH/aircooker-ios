@@ -69,13 +69,57 @@ and recovery exclusion during an in-flight request. These use explicit synthetic
 
 SwiftUI review, confirmation, sharing, pagination, navigation, Dynamic Type/VoiceOver and
 interaction with backgrounding/lock still need Xcode/device validation. Photo transfer
-failures can still stop a sync before mutation reconciliation. Cursor-ahead-of-server after
-backup rollback needs an explicit full-resync workflow; this increment does not silently
-reset or replace a household. Cross-entity dependency remapping, archive import/media bundles,
-automatic retry/backoff enhancements, remote logout and deletion controls remain work.
+failures can still stop a sync before mutation reconciliation. Full-resync source and core tests are described below. This never silently changes household identity. Cross-entity dependency remapping, archive import/media bundles,
+automatic retry/backoff enhancements, native recovery validation, remote logout and deletion controls remain work.
 
 Native validation checklist (not yet executed): reject a recipe edit from a second device;
 open review, edit it again and verify stale-review feedback; accept deletion with archive;
 restore a recipe copy with cached photo; inspect old calendar references; share draft JSON;
 exercise archive pagination, permission/lock/logout, app termination and large Dynamic Type
 with VoiceOver. A rejected recipe must not stop independent imports or meal/pantry edits.
+
+## Rebuild after server restore
+
+Schema 4 adds durable snapshot staging and cursor/observed proof metadata. The updated native
+client requires the server's history-proof extension. A revision carries a random immutable
+token: the same revision number after a divergent restore has a different token. The client
+checks its last observed proof before uploading. Receipt proofs are retained even if the app
+stops after acknowledgement and before a delta pull. Pushes/pulls also carry anchors so a
+restore between preflight and the actual request stops the operation.
+
+A missing/changed history proof persists a global recovery requirement and pauses uploads.
+This also handles older local data with a positive cursor but no proof; it does not silently
+accept a new history. Settings → Sync and saved drafts explains the rebuild and shows cached
+record/pending counts. Rebuild from server requires explicit confirmation. An expired or
+revoked session can be renewed with Sign in again; database/outbox/staging data remain intact.
+
+The server snapshot fixes an anchor and pages latest records by kind/UUID, including tombstones.
+The app stores each page and continuation in SQLite while the working library stays intact.
+It can keep local edits during staging: the final archive reads the latest values, not an old
+preview. A stopped download resumes on reconnect/launch under the previously confirmed recovery.
+If history changes again, staging is discarded and a fresh recovery is required; current local
+data are not discarded. Switching to a different instance is refused instead of merging households.
+
+After the terminal page and a fresh anchor check, one transaction:
+
+1. Archives every active local cached record, plus records with pending updates/deletions,
+   including every queued mutation envelope. This also preserves acknowledged records that
+   disappeared from a restored backup.
+2. Replaces the local/server projections with the staged snapshot and sets its cursor/proof.
+3. Clears the old outgoing queue and deactivates old photo uploads while retaining photo bytes.
+4. Removes staging and the recovery-required flag.
+
+Failure rolls back archives, projection, queue, photo status and cursor together. Recovery
+never automatically replays archived edits into a restored server. Later recipe restoration
+uses a new UUID, requeues cached media and moves one-time import job attribution to
+`original_import_job_id`; the original confirmation cannot be reused for a new recipe.
+Earlier archives remain available. Recipe relationships keep their original IDs and need
+review. Other record kinds still require manual reference-safe reconstruction.
+
+Portable tests exercise same-number divergence, head rollback, acknowledged-before-pull
+proofs, a restore racing a push, interrupted staging/restart with new local edits, another
+restore mid-download, empty-server recovery, lost acknowledged records/deletion archives,
+failed final transaction, malformed pages, media requeue/import attribution, canonical wire
+fixtures and the schema-3 missing-proof upgrade. Native confirmation/navigation, sign-in,
+sharing, accessibility, multi-device/network timing and Apple framework type checking remain
+unverified here. No iOS screenshot or successful Apple build is claimed.

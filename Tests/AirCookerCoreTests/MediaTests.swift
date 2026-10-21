@@ -149,10 +149,20 @@ private actor MediaServer: SyncTransport {
     }
     return result
   }
-  func pull(cursor: Int) -> PullPage {
+  func syncState(cursor: Int) -> SyncState {
+    SyncState(
+      instanceID: info().instanceID!, cursor: changes.last?.revision ?? 0,
+      token: syntheticToken(changes.last?.revision ?? 0), requestedCursor: cursor,
+      requestedToken: cursor == 0 || changes.contains(where: { $0.revision == cursor })
+        ? syntheticToken(cursor) : nil)
+  }
+  func snapshot(checkpoint: SyncAnchor, after: String?) throws -> SyncSnapshot {
+    throw APIError.invalidResponse
+  }
+  func pull(cursor: Int, token: String) -> PullPage {
     PullPage(
       changes: changes.filter { $0.revision > cursor }, cursor: changes.last?.revision ?? cursor,
-      hasMore: false)
+      hasMore: false, cursorToken: syntheticToken(changes.last?.revision ?? cursor))
   }
   func downloadPhoto(id: UUID) throws -> Data {
     guard let data = uploaded[id] else { throw TransferFailure.missingPhoto }

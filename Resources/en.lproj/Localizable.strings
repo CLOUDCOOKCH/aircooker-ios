@@ -365,3 +365,25 @@
 "weekly_templates" = "Weekly templates";
 
 "saved" = "Saved";
+
+"server_recovery" = "Server recovery";
+
+"server_history_recovery_required" = "Server history changed. Open Settings → Sync and saved drafts to recover safely.";
+
+"server_history_recovery_explanation" = "Rebuild this device from the current server data. First, every current local record and its pending changes will be saved as a local draft, including records missing from the server. Cached photos stay on this device. Previous edits will not be uploaded automatically; restore any recipes you want to keep from Saved local drafts.";
+
+"recovery_cached_records %lld" = "Local records: %lld";
+
+"recovery_staged_records %lld" = "Server records downloaded: %lld";
+
+"resume_server_recovery" = "Continue recovery";
+
+"rebuild_from_server" = "Rebuild from server";
+
+"recovery_working" = "Preparing server data…";
+
+"recovery_sign_in_hint" = "Your server session expired or was revoked. Sign in again to continue. Local edits and recovery progress are preserved.";
+
+"sign_in_again" = "Sign in again";
+
+"confirm_server_recovery" = "Archive local data and rebuild?";

@@ -51,7 +51,9 @@ private final class NoRedirects: NSObject, URLSessionTaskDelegate, @unchecked Se
 public protocol SyncTransport: Sendable {
   func info() async throws -> SystemInfo
   func push(_ mutation: Mutation) async throws -> MutationResult
-  func pull(cursor: Int) async throws -> PullPage
+  func pull(cursor: Int, token: String) async throws -> PullPage
+  func syncState(cursor: Int) async throws -> SyncState
+  func snapshot(checkpoint: SyncAnchor, after: String?) async throws -> SyncSnapshot
   func uploadPhoto(_ photo: PendingPhoto) async throws -> MediaInfo
   func downloadPhoto(id: UUID) async throws -> Data
 }
@@ -60,6 +62,7 @@ public actor APIClient: SyncTransport {
   private let vault: any TokenVault
   private let session: URLSession
   private var refreshing: Task<Tokens, any Error>?
+  private var pushCheckpoint: SyncAnchor?
   public init(baseURL: URL, vault: any TokenVault, session: URLSession? = nil) throws {
     guard baseURL.scheme == "https", baseURL.host != nil, baseURL.user == nil,
       baseURL.password == nil, baseURL.query == nil, baseURL.fragment == nil,
@@ -178,15 +181,47 @@ public actor APIClient: SyncTransport {
     try await vault.save(tokens)
   }
   public func push(_ mutation: Mutation) async throws -> MutationResult {
+    guard let pushCheckpoint else { throw APIError.incompatibleServer }
+    struct PushBody: Encodable {
+      let mutations: [Mutation]
+      let checkpoint: SyncAnchor
+    }
     let results: [MutationResult] = try await request(
-      "/api/v1/sync/push", method: "POST", body: JSONEncoder().encode(["mutations": [mutation]]))
+      "/api/v1/sync/push", method: "POST",
+      body: JSONEncoder().encode(PushBody(mutations: [mutation], checkpoint: pushCheckpoint)))
     guard results.count == 1, results[0].mutationID == mutation.mutationID else {
       throw APIError.invalidResponse
     }
     return results[0]
   }
-  public func pull(cursor: Int) async throws -> PullPage {
-    try await request("/api/v1/sync/pull?cursor=\(cursor)&limit=100")
+  public func pull(cursor: Int, token: String) async throws -> PullPage {
+    guard SyncAnchor(cursor: cursor, token: token).valid else { throw APIError.invalidResponse }
+    let page: PullPage = try await request(
+      "/api/v1/sync/pull?cursor=\(cursor)&limit=100&token=\(token)")
+    guard let returnedToken = page.cursorToken,
+      SyncAnchor(cursor: page.cursor, token: returnedToken).valid
+    else { throw APIError.invalidResponse }
+    return page
+  }
+  public func syncState(cursor: Int) async throws -> SyncState {
+    let state: SyncState = try await request("/api/v1/sync/state?cursor=\(cursor)")
+    guard state.anchor.valid, state.requestedCursor == cursor else {
+      throw APIError.invalidResponse
+    }
+    pushCheckpoint = state.anchor
+    return state
+  }
+  public func snapshot(checkpoint: SyncAnchor, after: String?) async throws -> SyncSnapshot {
+    guard checkpoint.valid else { throw APIError.invalidResponse }
+    var components = URLComponents()
+    components.path = "/api/v1/sync/snapshot"
+    components.queryItems = [
+      URLQueryItem(name: "cursor", value: String(checkpoint.cursor)),
+      URLQueryItem(name: "token", value: checkpoint.token),
+    ]
+    if let after { components.queryItems?.append(URLQueryItem(name: "after", value: after)) }
+    guard let path = components.string else { throw APIError.invalidServerURL }
+    return try await request(path)
   }
   public func household() async throws -> [String: String] {
     try await request("/api/v1/household")
@@ -257,9 +292,35 @@ public actor SyncEngine {
     guard !running else { return }
     running = true
     defer { running = false }
+    do { try await runSync() } catch APIError.http(409, let code)
+      where code == "sync_history_changed" || code == "cursor_ahead_of_server_full_resync_required"
+    {
+      try await store.requireFullResync(discardStaging: true)
+      throw StoreError.fullResyncRequired
+    }
+  }
+  private func runSync() async throws {
     let info = try await client.info()
     guard let instanceID = info.instanceID else { throw APIError.incompatibleServer }
     try await store.bind(instanceID: instanceID)
+    if try await store.fullResyncState() != nil {
+      try await resumeFullResync()
+      return
+    }
+    if try await store.recoveryStatus().required { throw StoreError.fullResyncRequired }
+    let cursor = try await store.cursor()
+    let observed = try await store.observedAnchor()
+    let state = try await client.syncState(cursor: observed?.cursor ?? cursor)
+    guard state.instanceID == instanceID, state.anchor.valid,
+      state.requestedCursor == (observed?.cursor ?? cursor)
+    else { throw APIError.invalidResponse }
+    guard let local = try await store.syncAnchor(), let observed,
+      state.requestedToken == observed.token, state.cursor >= local.cursor
+    else {
+      try await store.requireFullResync()
+      throw StoreError.fullResyncRequired
+    }
+    try await store.observe(state.anchor)
     while true {
       let photos = try await store.pendingPhotos()
       if photos.isEmpty { break }
@@ -292,7 +353,7 @@ public actor SyncEngine {
           // Durable rejection already recorded; continue other entities and pull the
           // server tombstone so the user can review a coherent recovery decision.
         } catch APIError.http(let status, let code)
-          where [400, 404, 409, 413, 422].contains(status)
+          where [400, 404, 409, 413, 422].contains(status) && code != "sync_history_changed"
         {
           try await store.markFailure(mutation, code: code)
         }
@@ -300,7 +361,8 @@ public actor SyncEngine {
     }
     while true {
       let cursor = try await store.cursor()
-      let page = try await client.pull(cursor: cursor)
+      guard let anchor = try await store.syncAnchor() else { throw StoreError.fullResyncRequired }
+      let page = try await client.pull(cursor: cursor, token: anchor.token)
       guard !page.hasMore || page.cursor > cursor else { throw APIError.invalidResponse }
       try await store.apply(page)
       if !page.hasMore { break }
@@ -312,4 +374,46 @@ public actor SyncEngine {
     }
     if try await !store.syncIssues().isEmpty { throw StoreError.syncNeedsAttention }
   }
+  public func rebuildFromServer() async throws {
+    guard !running else { throw StoreError.syncInProgress }
+    running = true
+    defer { running = false }
+    let info = try await client.info()
+    guard let instanceID = info.instanceID else { throw APIError.incompatibleServer }
+    try await store.bind(instanceID: instanceID)
+    // This method is invoked only after the explicit native confirmation. Persisting
+    // its state authorises read-only continuation after a later launch/interruption.
+    if try await store.fullResyncState() == nil {
+      let state = try await client.syncState(cursor: 0)
+      guard state.instanceID == instanceID, state.anchor.valid else {
+        throw APIError.invalidResponse
+      }
+      try await store.beginFullResync(instanceID: instanceID, checkpoint: state.anchor)
+    }
+    do { try await resumeFullResync() } catch APIError.http(409, let code)
+      where code == "sync_history_changed"
+    {
+      try await store.requireFullResync(discardStaging: true)
+      throw StoreError.fullResyncRequired
+    }
+  }
+  private func resumeFullResync() async throws {
+    while let state = try await store.fullResyncState(), !state.complete {
+      try Task.checkCancellation()
+      let page = try await client.snapshot(checkpoint: state.checkpoint, after: state.after)
+      try await store.stageSnapshot(page, expected: state)
+    }
+    guard let final = try await store.fullResyncState(), final.complete else {
+      throw APIError.invalidResponse
+    }
+    let verified = try await client.syncState(cursor: final.checkpoint.cursor)
+    guard verified.instanceID == final.instanceID, verified.requestedToken == final.checkpoint.token
+    else {
+      try await store.requireFullResync(discardStaging: true)
+      throw StoreError.fullResyncRequired
+    }
+    try Task.checkCancellation()
+    try await store.finishFullResync(expected: final, verified: verified)
+  }
+
 }

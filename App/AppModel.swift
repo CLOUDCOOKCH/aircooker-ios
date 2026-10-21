@@ -19,6 +19,11 @@ import WidgetKit
   var leftovers: [LocalEntity] = []
   var photoRevision = 0
   var syncIssues: [SyncIssue] = []
+  var resyncRequired = false
+  var resyncRebuilding = false
+  var resyncStagedCount = 0
+  var cachedRecordCount = 0
+  var authenticationExpired = false
   private var synchronising = false
   var pending = 0
   var busy = false
@@ -140,6 +145,7 @@ import WidgetKit
       try await client.login(username: username, password: password, deviceID: deviceID)
       UserDefaults.standard.set(server, forKey: "server")
       connected = true
+      authenticationExpired = false
       UserDefaults.standard.set(false, forKey: "signedOut")
       error = nil
       await synchronise()
@@ -185,6 +191,7 @@ import WidgetKit
       try await store.bind(instanceID: instance)
       UserDefaults.standard.set(server, forKey: "server")
       connected = true
+      authenticationExpired = false
       UserDefaults.standard.set(false, forKey: "signedOut")
       await synchronise()
     } catch { report(error) }
@@ -222,6 +229,7 @@ import WidgetKit
       let currentTemplates = try await store.entities(kind: .template)
       let currentPending = try await store.pendingCount()
       let currentIssues = try await store.syncIssues()
+      let recovery = try await store.recoveryStatus()
       guard generation == reloadGeneration else { return }
       recipes = snapshot.recipes
       meals = snapshot.meals
@@ -230,12 +238,29 @@ import WidgetKit
       templates = currentTemplates
       pending = currentPending
       syncIssues = currentIssues
+      resyncRequired = recovery.required
+      resyncRebuilding = recovery.rebuilding
+      resyncStagedCount = recovery.stagedCount
+      cachedRecordCount = recovery.localCount
       photoRevision += 1
       if connected {
         try publishWidget()
         await refreshReminders()
       }
     } catch { report(error) }
+  }
+  func rebuildFromServer() async {
+    guard !busy, !locked, let syncEngine else { return }
+    busy = true
+    synchronising = true
+    do {
+      try await syncEngine.rebuildFromServer()
+      error = nil
+    } catch { report(error) }
+    await reload()
+    busy = false
+    synchronising = false
+    if !resyncRequired { Task { await synchronise() } }
   }
   func retrySyncIssue(_ issue: SyncIssue) async -> Bool {
     guard !busy, let syncEngine else { return false }
@@ -495,7 +520,8 @@ import WidgetKit
   }
   func report(_ problem: any Error) {
     switch problem {
-    case APIError.http(_, let code):
+    case APIError.http(let status, let code):
+      if status == 401 { authenticationExpired = true }
       switch code {
       case "insufficient_leftover_portions": error = String(localized: "leftover_reserved_error")
       case "leftover_not_yet_produced", "leftover_produced_after_booking":
@@ -510,6 +536,8 @@ import WidgetKit
       }
     case APIError.invalidServerURL: error = String(localized: "invalid_server")
     case APIError.incompatibleServer: error = String(localized: "incompatible_server")
+    case StoreError.fullResyncRequired:
+      error = String(localized: "server_history_recovery_required")
     case StoreError.syncNeedsAttention: error = String(localized: "sync_attention_hint")
     case StoreError.recoveryChanged: error = String(localized: "sync_review_changed")
     case StoreError.serverSnapshotUnavailable: error = String(localized: "sync_snapshot_missing")

@@ -36,3 +36,11 @@ See the implementation checklist for feature status and verification limits.
   identity; guard stale review decisions and in-flight sync/recovery races.
 - Add native English/German recovery/archive/sharing controls; platform validation pending.
 - Migrate the local store to schema 3 without losing outbox identities or cached photos.
+
+- Detect restored/divergent server history with persistent commit proofs, including receipts
+  acknowledged before the next delta pull; protect preflight-to-request races.
+- Add explicitly confirmed, durable full-resync staging and atomic archive/projection
+  replacement, preserving queued edits, acknowledged cached records and photo bytes.
+- Requeue media and detach one-time import confirmation when restoring recipe copies.
+- Add native recovery/continue/sign-in controls and English/German strings; native SDK
+  validation remains pending.

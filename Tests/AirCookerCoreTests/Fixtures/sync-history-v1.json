@@ -1,0 +1,90 @@
+{
+  "format_version": 1,
+  "state": {
+    "instance_id": "11111111-1111-4111-8111-111111111111",
+    "cursor": 3,
+    "token": "cccccccccccccccccccccccccccccccc",
+    "requested_cursor": 2,
+    "requested_token": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "snapshot": {
+    "instance_id": "11111111-1111-4111-8111-111111111111",
+    "checkpoint": {
+      "cursor": 2,
+      "token": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "changes": [
+      {
+        "revision": 2,
+        "kind": "pantry",
+        "entity_id": "33333333-3333-4333-8333-333333333333",
+        "deleted": false,
+        "payload": {
+          "name": "Salt",
+          "available": true,
+          "include_this_week": false
+        },
+        "updated_at": "2026-10-21T00:00:00Z"
+      },
+      {
+        "revision": 1,
+        "kind": "recipe",
+        "entity_id": "22222222-2222-4222-8222-222222222222",
+        "deleted": false,
+        "payload": {
+          "title": "Fixture soup",
+          "description": "",
+          "source_url": null,
+          "source_platform": "manual",
+          "image_id": null,
+          "servings": "2",
+          "ingredients": [],
+          "steps": [],
+          "notes": "",
+          "rating": null,
+          "nutrition": null,
+          "nutrition_source": null,
+          "provenance": {}
+        },
+        "updated_at": "2026-10-21T00:00:00Z"
+      }
+    ],
+    "next_after": null
+  },
+  "delta": {
+    "changes": [
+      {
+        "revision": 3,
+        "kind": "recipe",
+        "entity_id": "22222222-2222-4222-8222-222222222222",
+        "deleted": true,
+        "payload": {
+          "title": "Fixture soup",
+          "description": "",
+          "source_url": null,
+          "source_platform": "manual",
+          "image_id": null,
+          "servings": "2",
+          "ingredients": [],
+          "steps": [],
+          "notes": "",
+          "rating": null,
+          "nutrition": null,
+          "nutrition_source": null,
+          "provenance": {}
+        },
+        "updated_at": "2026-10-21T00:00:00Z"
+      }
+    ],
+    "cursor": 3,
+    "has_more": false,
+    "cursor_token": "cccccccccccccccccccccccccccccccc"
+  },
+  "receipt": {
+    "mutation_id": "44444444-4444-4444-8444-444444444444",
+    "status": "accepted",
+    "revision": 3,
+    "conflict": false,
+    "revision_token": "cccccccccccccccccccccccccccccccc"
+  }
+}

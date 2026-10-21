@@ -99,3 +99,7 @@ func temporaryURL() -> URL {
   #expect(salt.scaled(by: 4).quantity == nil)
   #expect(salt.scaled(by: 4).originalText == "to taste")
 }
+
+func syntheticToken(_ revision: Int) -> String {
+  revision == 0 ? "root" : String(format: "%032x", revision)
+}

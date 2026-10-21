@@ -3,14 +3,18 @@
   "version": "0.1.0-development",
   "api_major": 1,
   "sync_protocol": 1,
-  "sha256": "dbefae3908af9eab277734a01b3b12578854bd6613f3b246221637407e807c8e",
+  "sha256": "7b0c58f3445bf7ea09f264086bc80c9f1702872e8717fc75e32577955ec69e09",
   "source": "contracts/openapi-v1.json",
   "release_commit": null,
-  "source_commit": "9e2d453239fbfd19eab4d2fa13f3a76b7c19fa42",
+  "source_commit": "67c3e318dc962cd0e2b56f7f482846de13c3b72a",
   "fixtures": {
     "recommendations-v1": {
       "source": "contracts/fixtures/recommendations-v1.json",
       "sha256": "1d1128ae762bb9ae3730c2d59cd509f896e667544d3f7f067b137089428cd47e"
+    },
+    "sync-history-v1": {
+      "source": "contracts/fixtures/sync-history-v1.json",
+      "sha256": "7f04b86d4845ee0f550ff7a29f90acbf118059921f3d744c33616c5fe212ed99"
     }
   }
 }
