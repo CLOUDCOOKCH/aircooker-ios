@@ -387,3 +387,9 @@
 "sign_in_again" = "Sign in again";
 
 "confirm_server_recovery" = "Archive local data and rebuild?";
+
+"signing_out" = "Signing out…";
+"signout_pending_title" = "Server sign-out pending";
+"signout_pending_hint" = "A previous session is awaiting server sign-out. Keep this app installed and reopen it when the server is reachable, or revoke the session in the administration console. Local drafts are preserved.";
+"signout_retrying" = "Revoking previous sessions…";
+"signout_retry" = "Retry server sign-out";

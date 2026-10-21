@@ -44,3 +44,10 @@ See the implementation checklist for feature status and verification limits.
 - Requeue media and detach one-time import confirmation when restoring recipe copies.
 - Add native recovery/continue/sign-in controls and English/German strings; native SDK
   validation remains pending.
+
+- Add generation-checked credentials and a durable Keychain revocation queue; retain offline
+  drafts/outbox on sign-out and retry pending server revocation on launch/foreground/manual retry.
+- Prevent late refresh/login responses from restoring signed-out authentication; upgrade
+  legacy token-only envelopes and reject unknown formats without clearing secure storage.
+- Add English/German pending sign-out controls; native Apple validation remains outstanding.
+- Prefer unused recipes before repeats regardless of extreme rating/history differences.

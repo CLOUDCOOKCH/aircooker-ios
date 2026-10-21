@@ -34,12 +34,7 @@ public struct SystemInfo: Codable, Sendable {
 public enum APIError: Error, Sendable {
   case invalidServerURL, incompatibleServer
   case http(Int, String)
-  case invalidResponse
-}
-public protocol TokenVault: Sendable {
-  func load() async throws -> Tokens?
-  func save(_ tokens: Tokens) async throws
-  func clear() async throws
+  case invalidResponse, signedOut
 }
 private final class NoRedirects: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
   func urlSession(
@@ -62,6 +57,8 @@ public actor APIClient: SyncTransport {
   private let vault: any TokenVault
   private let session: URLSession
   private var refreshing: Task<Tokens, any Error>?
+  private var stopped = false
+  private var revoking = false
   private var pushCheckpoint: SyncAnchor?
   public init(baseURL: URL, vault: any TokenVault, session: URLSession? = nil) throws {
     guard baseURL.scheme == "https", baseURL.host != nil, baseURL.user == nil,
@@ -76,10 +73,11 @@ public actor APIClient: SyncTransport {
   private func rawRequest(
     _ path: String, method: String = "GET", body: Data? = nil, authenticated: Bool = true,
     retry: Bool = true,
-    contentType: String = "application/json", expectedType: String? = nil
+    contentType: String = "application/json", expectedType: String? = nil,
+    expectedStatus: Int? = nil
   ) async throws -> Data {
     guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL, url.host == baseURL.host,
-      url.scheme == "https"
+      url.scheme == "https", url.port == baseURL.port
     else { throw APIError.invalidServerURL }
     var request = URLRequest(url: url)
     request.httpMethod = method
@@ -87,18 +85,28 @@ public actor APIClient: SyncTransport {
     request.timeoutInterval = 30
     request.setValue(contentType, forHTTPHeaderField: "Content-Type")
     var usedAccessToken: String?
-    if authenticated, let tokens = try await vault.load() {
+    let credentials = try await vault.read()
+    if authenticated {
+      guard !stopped, let tokens = credentials.active else { throw APIError.signedOut }
       usedAccessToken = tokens.accessToken
       request.setValue("Bearer " + tokens.accessToken, forHTTPHeaderField: "Authorization")
     }
     let (data, response) = try await session.data(for: request)
     guard let http = response as? HTTPURLResponse else { throw APIError.invalidResponse }
     // URLSession's default redirect handling must never forward credentials to another origin.
-    guard http.url?.host == baseURL.host, http.url?.scheme == "https" else {
+    guard http.url?.host == baseURL.host, http.url?.scheme == "https",
+      http.url?.port == baseURL.port
+    else {
       throw APIError.invalidResponse
     }
+    if authenticated {
+      let current = try await vault.read()
+      guard !stopped, current.generation == credentials.generation else {
+        throw APIError.signedOut
+      }
+    }
     if http.statusCode == 401, authenticated, retry {
-      guard let tokens = try await vault.load() else {
+      guard let tokens = try await vault.read().active else {
         throw APIError.http(401, "authentication_required")
       }
       if tokens.accessToken != usedAccessToken {
@@ -112,7 +120,13 @@ public actor APIClient: SyncTransport {
             "/api/v1/auth/refresh", method: "POST",
             body: JSONEncoder().encode(["refresh_token": tokens.refreshToken]),
             authenticated: false, retry: false)
-          try await vault.save(refreshed)
+          let saved = try await vault.update(
+            .rotate(
+              refreshed, generation: credentials.generation,
+              previousRefreshToken: tokens.refreshToken))
+          guard saved.active?.refreshToken == refreshed.refreshToken, !self.stopped else {
+            throw APIError.signedOut
+          }
           return refreshed
         }
       }
@@ -131,6 +145,7 @@ public actor APIClient: SyncTransport {
       let value = try? JSONDecoder().decode([String: [String: String]].self, from: data)
       throw APIError.http(http.statusCode, value?["error"]?["code"] ?? "request_failed")
     }
+    if let expectedStatus, http.statusCode != expectedStatus { throw APIError.invalidResponse }
     if let expectedType {
       guard
         http.value(forHTTPHeaderField: "Content-Type")?.split(separator: ";").first?
@@ -173,12 +188,18 @@ public actor APIClient: SyncTransport {
     return info
   }
   public func login(username: String, password: String, deviceID: UUID) async throws {
+    guard !stopped else { throw APIError.signedOut }
+    let generation = try await vault.read().generation
+    guard !stopped else { throw APIError.signedOut }
     let body = try JSONEncoder().encode([
       "username": username, "password": password, "device_id": deviceID.uuidString,
     ])
     let tokens: Tokens = try await request(
       "/api/v1/auth/login", method: "POST", body: body, authenticated: false)
-    try await vault.save(tokens)
+    let saved = try await vault.update(.install(tokens, generation: generation))
+    guard saved.active?.refreshToken == tokens.refreshToken, !stopped else {
+      throw APIError.signedOut
+    }
   }
   public func push(_ mutation: Mutation) async throws -> MutationResult {
     guard let pushCheckpoint else { throw APIError.incompatibleServer }
@@ -233,6 +254,9 @@ public actor APIClient: SyncTransport {
     username: String, password: String, deviceID: UUID, name: String, timezone: String,
     language: String, setupToken: String
   ) async throws {
+    guard !stopped else { throw APIError.signedOut }
+    let generation = try await vault.read().generation
+    guard !stopped else { throw APIError.signedOut }
     // Setup uses a one-time local administrator token; it never appears in a URL.
     guard let url = URL(string: "/api/v1/setup", relativeTo: baseURL) else {
       throw APIError.invalidServerURL
@@ -250,7 +274,42 @@ public actor APIClient: SyncTransport {
     guard let http = response as? HTTPURLResponse, http.statusCode == 201 else {
       throw APIError.http((response as? HTTPURLResponse)?.statusCode ?? 0, "setup_failed")
     }
-    try await vault.save(JSONDecoder().decode(Tokens.self, from: data))
+    guard http.url?.host == baseURL.host, http.url?.scheme == "https",
+      http.url?.port == baseURL.port
+    else { throw APIError.invalidResponse }
+    let tokens = try JSONDecoder().decode(Tokens.self, from: data)
+    let saved = try await vault.update(.install(tokens, generation: generation))
+    guard saved.active?.refreshToken == tokens.refreshToken, !stopped else {
+      throw APIError.signedOut
+    }
+  }
+  /// Disconnect locally before attempting network revocation. No library/outbox writes.
+  public func signOut() async throws {
+    // The atomic vault transition rejects any refresh/login result already in flight.
+    guard !stopped else { return }
+    stopped = true
+    do { _ = try await vault.update(.signOut) } catch {
+      stopped = false
+      throw error
+    }
+    // Already-sent requests may commit on the server. Let refresh finish so its
+    // response is rejected by the vault generation and its capability is retained.
+    pushCheckpoint = nil
+  }
+  public func pendingRevocationCount() async throws -> Int { try await vault.read().pending.count }
+  /// One bounded pass; the caller retries on foreground/manual retry. Errors retain secrets.
+  public func retryRevocations() async throws {
+    guard !revoking else { return }
+    revoking = true
+    defer { revoking = false }
+    for pending in try await vault.read().pending {
+      try Task.checkCancellation()
+      _ = try await rawRequest(
+        "/api/v1/auth/revoke", method: "POST",
+        body: JSONEncoder().encode(["refresh_token": pending.refreshToken]),
+        authenticated: false, retry: false, expectedStatus: 204)
+      _ = try await vault.update(.acknowledge(pending.id))
+    }
   }
   public func beginImport(id: UUID = UUID(), url: String?, text: String?) async throws -> JSONValue
   {

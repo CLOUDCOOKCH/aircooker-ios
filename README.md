@@ -77,3 +77,6 @@ changes, and currently needs fuller revocation/data-deletion UX.
 See [development](docs/DEVELOPMENT.md), [release gates](docs/RELEASE.md),
 [privacy draft](docs/PRIVACY.md), [status](docs/IMPLEMENTATION.md) and the pinned
 [API contract](Contracts/openapi-v1.json).
+
+Device sign-out preserves drafts and queues offline server revocation securely. See
+[sign-out behaviour and validation limits](docs/SESSION_SIGNOUT.md).

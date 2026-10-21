@@ -387,3 +387,9 @@
 "sign_in_again" = "Erneut anmelden";
 
 "confirm_server_recovery" = "Lokale Daten sichern und neu aufbauen?";
+
+"signing_out" = "Abmeldung läuft …";
+"signout_pending_title" = "Server-Abmeldung ausstehend";
+"signout_pending_hint" = "Die Server-Abmeldung einer früheren Sitzung steht noch aus. Lass die App installiert und öffne sie erneut, sobald der Server erreichbar ist, oder widerrufe die Sitzung in der Verwaltungskonsole. Lokale Entwürfe bleiben erhalten.";
+"signout_retrying" = "Frühere Sitzungen werden widerrufen …";
+"signout_retry" = "Server-Abmeldung erneut versuchen";

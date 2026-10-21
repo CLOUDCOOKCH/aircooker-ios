@@ -79,12 +79,13 @@ import WidgetKit
     scheduledReminders = await reminders.count()
   }
   func refreshReminders() async {
-    guard let store else { return }
+    guard connected, !signingOut, let store else { return }
     do {
       let snapshot = try await store.planningSnapshot()
       let plan = try MealPresentation.reminders(
         snapshot: snapshot, preferences: reminderPreferences,
         timeZone: householdTimeZone, now: Date())
+      guard connected, !signingOut else { return }
       try await reminders.reconcile(plan, showRecipeNames: reminderPreferences.showRecipeNames)
       await refreshReminderStatus()
     } catch { report(error) }
@@ -95,6 +96,16 @@ import WidgetKit
     do { try publishWidget() } catch { report(error) }
   }
   private var vault: KeychainVault?
+  // Reuse one actor per exact Keychain service, including requests still in flight.
+  private var vaults: [String: KeychainVault] = [:]
+  var pendingSignOuts = 0
+  var retryingSignOuts = false
+  private func vaultFor(_ server: String) -> KeychainVault {
+    if let existing = vaults[server] { return existing }
+    let value = KeychainVault(server: server)
+    vaults[server] = value
+    return value
+  }
   func start() async {
     do {
       let directory = try FileManager.default.url(
@@ -108,10 +119,16 @@ import WidgetKit
         inbox = try ShareInbox(directory: shared)
       }
       store = try LocalStore(url: directory.appending(path: "aircooker.sqlite3"))
-      if !server.isEmpty && !UserDefaults.standard.bool(forKey: "signedOut") {
+      if !server.isEmpty {
         try configureClient()
-        connected = true
+        let active = try await vault?.read().active
+        connected = !UserDefaults.standard.bool(forKey: "signedOut") && active != nil
+        if !connected {
+          client = nil
+          syncEngine = nil
+        }
       }
+      Task { await retrySignOuts() }
       if !connected {
         clearWidget()
         try await reminders.reconcile([], showRecipeNames: false)
@@ -126,10 +143,15 @@ import WidgetKit
   }
   func configureClient() throws {
     guard let url = URL(string: server) else { throw APIError.invalidServerURL }
-    let vault = KeychainVault(server: url.absoluteString)
+    let vault = vaultFor(url.absoluteString)
     self.vault = vault
     let client = try APIClient(baseURL: url, vault: vault)
     self.client = client
+    var known = UserDefaults.standard.stringArray(forKey: "revocationServers") ?? []
+    if !known.contains(url.absoluteString) {
+      known.append(url.absoluteString)
+      UserDefaults.standard.set(known, forKey: "revocationServers")
+    }
     if let store { syncEngine = SyncEngine(store: store, client: client) }
   }
   func login(username: String, password: String) async {
@@ -152,7 +174,7 @@ import WidgetKit
     } catch { report(error) }
   }
   func synchronise() async {
-    guard !locked, !synchronising, let syncEngine else { return }
+    guard connected, !signingOut, !locked, !synchronising, let syncEngine else { return }
     synchronising = true
     busy = true
     defer {
@@ -164,6 +186,7 @@ import WidgetKit
       do { try await syncEngine.synchronise() } catch StoreError.syncNeedsAttention {
         needsReview = true
       }
+      guard connected, !signingOut else { return }
       if let settings = try await client?.household(), let timezone = settings["timezone"] {
         householdTimeZone = timezone
         UserDefaults.standard.set(timezone, forKey: "householdTimeZone")
@@ -506,18 +529,58 @@ import WidgetKit
     } catch { report(error) }
   }
   func logout() async {
-    // Preserve cached content and unsent edits. Server session revocation is available in the console.
+    guard !signingOut, let client else { return }
+    signingOut = true
+    defer { signingOut = false }
     do {
-      try await vault?.clear()
+      try await client.signOut()
+      // Only a successful atomic Keychain write permits disconnecting the UI.
       UserDefaults.standard.set(true, forKey: "signedOut")
       connected = false
+      authenticationExpired = false
+      pendingSignOuts = max(pendingSignOuts, 1)
       destination = nil
-      try await reminders.reconcile([], showRecipeNames: false)
-      clearWidget()
-      client = nil
+      self.client = nil
       syncEngine = nil
+      error = nil
+      clearWidget()
+      do { try await reminders.reconcile([], showRecipeNames: false) } catch { report(error) }
+      signingOut = false
+      Task { await retrySignOuts() }
     } catch { report(error) }
   }
+  var signingOut = false
+  func retrySignOuts() async {
+    guard !retryingSignOuts else { return }
+    retryingSignOuts = true
+    defer { retryingSignOuts = false }
+    var jobs: [(APIClient, KeychainVault)] = []
+    var total = 0
+    for server in UserDefaults.standard.stringArray(forKey: "revocationServers") ?? [] {
+      do {
+        guard let url = URL(string: server) else { continue }
+        let vault = vaultFor(server)
+        let client = try APIClient(baseURL: url, vault: vault)
+        let count = try await vault.read().pending.count
+        total += count
+        if count > 0 { jobs.append((client, vault)) }
+      } catch { report(error) }
+    }
+    pendingSignOuts = total
+    for (client, vault) in jobs {
+      do {
+        let before = try await vault.read().pending.count
+        // Offline/old-server failures deliberately leave the capability in Keychain.
+        do { try await client.retryRevocations() } catch {}
+        let remaining = try await vault.read().pending.count
+        pendingSignOuts = max(0, pendingSignOuts - before + remaining)
+      } catch {
+        // Keep the last known count and surface a secure-storage failure.
+        report(error)
+      }
+    }
+  }
+
   func report(_ problem: any Error) {
     switch problem {
     case APIError.http(let status, let code):
@@ -534,6 +597,7 @@ import WidgetKit
         error = String(localized: "suggestions_stale")
       default: error = String(localized: "server_error") + " " + code
       }
+    case APIError.signedOut: return
     case APIError.invalidServerURL: error = String(localized: "invalid_server")
     case APIError.incompatibleServer: error = String(localized: "incompatible_server")
     case StoreError.fullResyncRequired:

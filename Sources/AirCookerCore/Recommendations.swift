@@ -141,11 +141,16 @@ public enum WeeklyRecommendations {
             30, PlanningDate.distance(from: lastPlanned[id] ?? historyStart, to: week))
           let score =
             (recipe.rating ?? 3) * 5 + cookedDays + plannedDays
-            - 100 * used[id, default: 0] - 10 * frequency[id, default: 0]
+            - 10 * frequency[id, default: 0]
             + tie(seed: options.seed, day: day, category: category, recipe: id)
           ranked.append((id, recipe, score))
         }
-        ranked.sort { $0.2 == $1.2 ? $0.0.uuidString < $1.0.uuidString : $0.2 > $1.2 }
+        ranked.sort {
+          let leftUse = used[$0.0, default: 0]
+          let rightUse = used[$1.0, default: 0]
+          if leftUse != rightUse { return leftUse < rightUse }
+          return $0.2 == $1.2 ? $0.0.uuidString < $1.0.uuidString : $0.2 > $1.2
+        }
         guard let (id, recipe, _) = ranked.first else { continue }
         var reasons = [(recipe.rating ?? 0) >= 4 ? "positively_rated" : "library_variety"]
         let cookedDays = try lastCooked[id].map { try PlanningDate.distance(from: $0, to: week) }

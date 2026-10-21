@@ -16,7 +16,9 @@ separately from household records. Neither encryption prevents a trusted server 
 or compromised device/host from accessing data. Non-secret exports contain private recipe
 and planning content and should be handled accordingly.
 
-Signing out does not currently delete cached device content. Complete app/server deletion
+Signing out preserves cached device content. A pending refresh capability remains in
+device-only Keychain until server revocation succeeds; the app retries on launch/foreground
+and manual request. Offline sign-out cannot immediately revoke a server session. Complete app/server deletion
 controls, retention periods, operator contact, support URL, jurisdiction and accurate App
 Privacy disclosures must be finalised before distribution. Users should not be told that
 unimplemented deletion or anonymisation controls already exist.

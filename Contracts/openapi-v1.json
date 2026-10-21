@@ -2212,6 +2212,37 @@
         "summary": "Refresh"
       }
     },
+    "/api/v1/auth/revoke": {
+      "post": {
+        "operationId": "revoke_capability_api_v1_auth_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Refresh"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Capability"
+      }
+    },
     "/api/v1/auth/sessions": {
       "get": {
         "operationId": "sessions_api_v1_auth_sessions_get",

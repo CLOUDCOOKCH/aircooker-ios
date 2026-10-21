@@ -6,7 +6,7 @@ VisionKit, WidgetKit, LocalAuthentication, Keychain and notifications have not b
 or tested with an Apple SDK here. All native UI functionality is therefore unverified.
 
 Implemented sources: five-tab navigation, HTTPS onboarding, QR scanner, initial setup/login,
-Keychain token vault, optional local access lock, persistent SQLite/outbox, server identity
+Keychain token vault with generation-checked sign-out and durable revocation, optional local access lock, persistent SQLite/outbox, server identity
 pinning, sync, recipe list/detail/editor/scaling and photo selection/cache, week calendar assignment,
 occurrence-aware movement/duplication, day/week copy previews, template save/apply, recurrence editing,
 accessible context-menu alternatives, pantry editing, leftover recording/editing/discard/assignment,
@@ -21,13 +21,14 @@ leftover reservation invariants, local recommendations, stale-preview checks, at
 reminder dates/DST/grouping/limits, strict deep-link parsing and widget rollover/privacy/expiry;
 per-entity rejection isolation, server snapshots, atomic archive/copy recovery, stale-decision
 guards, coordinator exclusion and schema-v3 migration replay; schema-v4 history proofs,
-resumable full rebuild, final archive/projection rollback and restored media requeue.
+resumable full rebuild, final archive/projection rollback and restored media requeue; persisted credential envelopes, late refresh/login rejection, offline
+revocation retry and draft/outbox preservation during sign-out.
 
 Remaining: full native SDK build/Swift concurrency validation; photo quota/cleanup UI;
 arbitrary copy destinations, native leftover/suggestion lifecycle validation, shared household
 recommendation preferences and cross-device approval collision handling; import preview lifecycle
 end-to-end; provider disclosure/configuration; Apple notification delivery/permission and
-widget/deep-link lifecycle validation; remote logout/session revocation and deletion UX; recoverable sync
+widget/deep-link lifecycle validation; native logout/session revocation lifecycle and deletion UX; recoverable sync
 recovery UI/device validation and reference-safe restoration beyond recipes; UI tests; app icon; screenshots; demo environment; TestFlight signing/upload;
 accessibility audit; full performance/privacy/security validation.
 

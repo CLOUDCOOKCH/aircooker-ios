@@ -7,10 +7,11 @@ pin=json.loads((root/'Contracts'/'pin.json').read_text())
 assert hashlib.sha256(contract.read_bytes()).hexdigest()==pin['sha256'], 'Contract checksum mismatch'
 schema=json.loads(contract.read_text())
 assert schema['info']['version']=='0.1.0'
-for path in ['/api/v1/system/info','/api/v1/sync/push','/api/v1/sync/pull','/api/v1/auth/login','/api/v1/auth/refresh','/api/v1/imports','/api/v1/media/{image_id}','/api/v1/media/{image_id}/info','/api/v1/suggestions/weekly','/api/v1/suggestions/apply','/api/v1/admin/ai','/api/v1/admin/ai/test','/api/v1/admin/status','/api/v1/sync/state','/api/v1/sync/snapshot']:
+for path in ['/api/v1/system/info','/api/v1/sync/push','/api/v1/sync/pull','/api/v1/auth/login','/api/v1/auth/refresh','/api/v1/auth/revoke','/api/v1/imports','/api/v1/media/{image_id}','/api/v1/media/{image_id}/info','/api/v1/suggestions/weekly','/api/v1/suggestions/apply','/api/v1/admin/ai','/api/v1/admin/ai/test','/api/v1/admin/status','/api/v1/sync/state','/api/v1/sync/snapshot']:
     assert path in schema['paths'],path
 schemas=schema['components']['schemas']
 expected={
+'Refresh':{'refresh_token'},
 'SyncAnchor':{'cursor','token'},
 'SyncState':{'instance_id','cursor','token','requested_cursor','requested_token'},
 'SyncSnapshot':{'instance_id','checkpoint','changes','next_after'},
@@ -47,3 +48,7 @@ assert hashlib.sha256(fixture.read_bytes()).hexdigest()==pin['fixtures']['recomm
 history=root/"Tests"/"AirCookerCoreTests"/"Fixtures"/"sync-history-v1.json"
 assert hashlib.sha256(history.read_bytes()).hexdigest()==pin["fixtures"]["sync-history-v1"]["sha256"], "History fixture pin mismatch"
 assert json.loads(history.read_text())["format_version"]==1
+
+revocation=schema["paths"]["/api/v1/auth/revoke"]["post"]
+assert "204" in revocation["responses"]
+assert revocation["requestBody"]["content"]["application/json"]["schema"]["$ref"].endswith("/Refresh")

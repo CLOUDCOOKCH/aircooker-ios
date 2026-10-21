@@ -13,6 +13,7 @@ import SwiftUI
         if phase == .background && biometricLock { model.locked = true }
         if phase == .active {
           Task {
+            Task { await model.retrySignOuts() }
             if model.locked { await model.unlock() }
             if !model.locked { await model.synchronise() }
           }

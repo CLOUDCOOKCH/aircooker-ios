@@ -1,6 +1,6 @@
 # Native validation evidence — 2026-10-21
 
-**66 Swift core tests pass**, compiled with Swift 6.2.1 on Linux with SQLite headers.
+**76 Swift core tests pass**, compiled with Swift 6.2.1 on Linux with SQLite headers.
 An earlier 65-test run passed in Docker. The final run used hash-verified compiler files
 from the same pinned Swift OCI image on the Debian host, with verified SQLite headers,
 after VFS container allocation exhausted Docker storage. No Apple SDK was involved.
@@ -21,7 +21,7 @@ and fresh recipe copies, restart/later restore, stale local/server reviews, unkn
 state, rollback on write failure, identical retries, auth failures, invalid receipts/deltas,
 active-request exclusion and schema-v3 replay without cached-state regression.
 
-Pinned OpenAPI SHA-256, required route/property sets, 251 English/German localisation keys,
+Pinned OpenAPI SHA-256, required route/property sets, 256 English/German localisation keys,
 static error lookups, Swift formatting and native-source syntax parsing pass. Source secret
 scanning reports no findings. Workflow YAML and export configuration parse successfully.
 
@@ -34,7 +34,7 @@ its disk filled; test build outputs and compiler caches were ephemeral. Final ho
 are isolated under the session temporary directory. No iOS screenshots have been fabricated. Genuine admin console screenshots reside in the
 independent server repository and are not screenshots of this app.
 
-The backend has 92 passing tests and a passing real-container photo upload/replay/restart, leftover exclusion, suggestion approval/replay and JSON/ZIP restore E2E.
+The backend has 97 passing tests and a passing real-container photo upload/replay/restart, leftover exclusion, suggestion approval/replay and JSON/ZIP restore E2E.
 Its Chromium administration workflow passes with explicit AI/Bring test doubles, and
 encrypted AI settings persist across container restart without entering exports.
 Its container security gate still fails on 44 high package/advisory matches (8 unique
@@ -58,3 +58,20 @@ Latest changed-file map:
 
 Recipe-copy coverage also verifies that a full 50-entry attribution dictionary remains
 within server limits without discarding the user's original metadata.
+
+
+Device sign-out verification adds portable credential-envelope upgrade/future-format
+rejection, offline queue restart, unchanged SQLite recipe/mutation identities, refresh and
+late-login races, failed simulated secure-storage writes, malformed/unconfirmed HTTP
+receipts and response-origin checks. The final total is 76 passing Swift tests. Ordinary
+refresh still rotates and retries with the new access token. These tests use synthetic
+URLSession responses and an encoded in-memory vault; they do not test Apple's Keychain.
+
+The native source changes cover `AirCookerApp.swift`, `AppModel.swift`, `KeychainVault.swift`,
+`RootView.swift` and EN/DE resources. Core changes are `CredentialState.swift`, `APIClient.swift`
+and `Recommendations.swift`; tests are `SessionTests.swift` and
+`LeftoverRecommendationTests.swift`. Contract checks/pin, README, changelog, implementation,
+privacy and sign-out documentation were updated. Formatting, native syntax parsing,
+256-key localisation parity and source secret scanning pass. Native build/rendering,
+Face ID, lock/logout notification/widget lifecycle and physical offline devices remain
+unverified. The server's current verification record is `docs/validation/session-signout.json`.

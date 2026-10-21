@@ -276,3 +276,23 @@ private struct RecommendationFixture: Decodable {
     #expect(actual == test.expected)
   }
 }
+
+@Test func repetitionWaitsForEveryAvailableRecipeEvenWithExtremeRatingAndHistory() throws {
+  let ids = [UUID(), UUID(), UUID()]
+  let recipes = try ids.enumerated().map { index, id in
+    var recipe = Recipe(title: "Recipe \(index)")
+    recipe.rating = index == 0 ? 1 : 5
+    return try row(.recipe, recipe, id: id)
+  }
+  var cooked = Meal(recipeID: ids[0], date: "2026-10-18", category: "dinner")
+  cooked.cooked = true
+  let snapshot = try PlanningSnapshot(recipes: recipes, meals: [row(.meal, cooked)])
+  for seed in 0..<10 {
+    let preview = try WeeklyRecommendations.generate(
+      snapshot: snapshot, week: "2026-10-19",
+      options: SuggestionOptions(allowRepeats: true, seed: seed))
+    #expect(preview.suggestions.count == 7)
+    #expect(Set(preview.suggestions.prefix(3).map { $0.meal.recipeID }).count == 3)
+    #expect(Set(preview.suggestions.dropFirst(3).prefix(3).map { $0.meal.recipeID }).count == 3)
+  }
+}

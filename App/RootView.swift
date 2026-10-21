@@ -81,6 +81,7 @@ struct OnboardingView: View {
           Text("welcome_title").font(.largeTitle.bold())
           Text("welcome_body").foregroundStyle(.secondary)
         }
+        if model.pendingSignOuts > 0 { SignOutStatusView() }
         Section("server_connection") {
           TextField("server_url", text: $server).accessibilityIdentifier("onboarding.server")
             .keyboardType(.URL).textInputAutocapitalization(
@@ -208,9 +209,12 @@ struct SettingsView: View {
         Text("pending_changes \(model.pending)")
         NavigationLink("sync_recovery") { SyncRecoveryView() }
       }
+      if model.pendingSignOuts > 0 { SignOutStatusView() }
       Section("integrations") { Text("integration_console_hint").foregroundStyle(.secondary) }
       Section {
         Button("logout", role: .destructive) { Task { await model.logout() } }
+          .disabled(model.signingOut)
+        if model.signingOut { ProgressView("signing_out") }
         Text("logout_keeps_local_data").font(.footnote).foregroundStyle(.secondary)
       }
     }.navigationTitle("settings")
@@ -226,6 +230,21 @@ struct OperationErrorNotice: View {
         .font(.footnote).foregroundStyle(.red).padding()
         .frame(maxWidth: .infinity, alignment: .leading).background(.regularMaterial)
         .accessibilityAddTraits(.updatesFrequently)
+    }
+  }
+}
+
+/// Remains visible on onboarding after local logout and on settings after a new login.
+struct SignOutStatusView: View {
+  @Environment(AppModel.self) private var model
+  var body: some View {
+    Section("signout_pending_title") {
+      Text("signout_pending_hint").foregroundStyle(.secondary)
+      if model.retryingSignOuts {
+        ProgressView("signout_retrying")
+      } else {
+        Button("signout_retry") { Task { await model.retrySignOuts() } }
+      }
     }
   }
 }
