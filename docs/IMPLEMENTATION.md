@@ -5,8 +5,11 @@ primary PWA’s image-import extension and typed import response. Reviewed the e
 optional planning-export, pantry override and suggestion-checkpoint additions since the
 previous native pin; exact native field checks and optional compatibility checks pass.
 Native photo/OCR import UI is not added by this contract-only refresh. Local contract and
-296-key localisation checks pass; Swift/Xcode validation is delegated to the native CI
-because this Linux session has no Swift toolchain installed.
+296-key localisation checks pass. CI 39660428236 at 32604a1 passes both jobs: 90 core
+tests on Linux/macOS, Xcode 26.6 builds all native targets, and the existing onboarding/demo
+and German light/dark simulator flows pass. This validates the retained client against
+the pinned contract, not new native camera/OCR UI or physical hardware. See
+validation/github-image-import-contract.json.
 
 **Brand update, 2026-10-21:** the product is now mealf. App/Share/widget display names,
 onboarding and English/German copy are updated; bundle IDs, App Groups, Keychain, paths and

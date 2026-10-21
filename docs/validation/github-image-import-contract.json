@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-21",
+  "status": "contract pin validated; native photo OCR UI deferred",
+  "source": "32604a1544a79c7bde65dd1ec6080c9903146447",
+  "server_contract_source": "c97bf16a7ee7ce10cc5af5d18ca3b1c0ca1f2f2c",
+  "contract_sha256": "487e01e15229a8b2fe85c55c08e2c7f3801b6eefc13d93481f578bb499d0a3e7",
+  "ci": {
+    "run_id": 39660428236,
+    "url": "https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39660428236",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 119431671494,
+        "name": "core",
+        "head_sha": "32604a1544a79c7bde65dd1ec6080c9903146447",
+        "conclusion": "success"
+      },
+      {
+        "id": 119431671845,
+        "name": "native",
+        "head_sha": "32604a1544a79c7bde65dd1ec6080c9903146447",
+        "conclusion": "success"
+      }
+    ],
+    "portable_tests": 90,
+    "xcode": "26.6",
+    "apple": "all native targets build, 90 core tests and existing English onboarding/demo and German light/dark simulator flows pass"
+  },
+  "scope": "canonical OpenAPI refresh, exact existing native wire checks and optional additive field compatibility checks; no native photo/OCR UI implementation",
+  "limits": [
+    "physical devices/camera/live integrations/signing/TestFlight remain unverified",
+    "Primary photo recipe import ships in the PWA backend repository"
+  ]
+}
