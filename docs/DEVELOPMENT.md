@@ -30,10 +30,11 @@ audit. Date-only fields use the household time zone, never a floating device UTC
 ## Original icon and privacy manifest
 
 `Design/AppIconSource.png` is original generated artwork, not a screenshot or third-party
-brand asset. The app target's declared build step uses Apple's `sips` to package that opaque
-square source at the required 1024-pixel size before asset compilation. The generated
+brand asset. XcodeGen's pre-generation command uses Apple's `sips` to package that opaque
+square source at the required 1024-pixel size before project/asset discovery. The generated
 catalog PNG is ignored; no image editor, network request or package dependency is needed
-for this step. Keep the source opaque and square when replacing it. Inspect small-size,
+for this step. Keep the source opaque and square and regenerate the project after replacing
+it. Generating before the build avoids an app/extension resource dependency cycle. Inspect small-size,
 dark and tinted Home Screen appearances on real Apple tooling before release.
 
 `App/PrivacyInfo.xcprivacy` declares the required-reason use of local UserDefaults and no
