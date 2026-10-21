@@ -1,5 +1,12 @@
 # aircooker for iOS
 
+**Native development is retained for later.** The user chose PWA-first delivery on
+2026-10-21. The primary client now lives in
+[aircooker-server/frontend](https://github.com/CLOUDCOOKCH/aircooker-server/tree/main/frontend)
+and ships in the existing backend container. No Mac, signing or App Store account is
+required for that browser client. This repository preserves the native app, Share Extension
+and widgets for a future native release.
+
 Native SwiftUI companion to the independently self-hosted aircooker-server.
 Apache-2.0. No hosted account, payment flow, mandatory analytics or advertising SDK.
 

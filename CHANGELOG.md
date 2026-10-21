@@ -2,6 +2,9 @@
 
 ## Unreleased — 0.1.0 development
 
+- Record the user-confirmed PWA-first delivery decision; preserve native code for later.
+  No Swift code, pinned contract or Apple capabilities are changed by this documentation.
+
 - Display existing ingredient preparation notes and source-attributed nutrition in recipe
   details; nutrition stays as supplied and is not guessed or rescaled.
 

@@ -1,5 +1,13 @@
 # Native implementation status
 
+Delivery direction changed to PWA-first by explicit user choice on 2026-10-21. Native
+feature development is paused; keep the tested sources available for later. The web client
+is implemented in the independent aircooker-server repository, not in a third repository.
+Native signing/TestFlight/device gates remain deferred and are not considered PWA blockers.
+The latest native source validation at f165c36 passes 90 core tests, all three native targets,
+and demo/onboarding/localisation simulator workflows on Xcode 26.6 (run 39566779970).
+The historical evidence below retains its original scope.
+
 The Swift core is compiled and tested on Linux using Swift 6.2.1. Earlier runs used Docker;
 see VALIDATION.md for the final host-toolchain recovery and its exact limits. SwiftUI, UIKit,
 VisionKit, WidgetKit, LocalAuthentication, Keychain and notifications have not been compiled
