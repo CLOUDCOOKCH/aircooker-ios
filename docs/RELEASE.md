@@ -30,11 +30,11 @@ API-major and sync protocol.
 Draft metadata (requires editorial/legal review):
 
 English: “Plan meals together with your household. Keep recipes, plan your week and connect
-to your own aircooker server. Optional AI extraction and Bring shopping integration are
+to your own mealf server. Optional AI extraction and Bring shopping integration are
 configured on your server.”
 
 German: “Plane Mahlzeiten gemeinsam mit deinem Haushalt. Verwalte Rezepte und deinen
-Wochenplan auf deinem eigenen aircooker-Server. Optionale KI-Extraktion und die
+Wochenplan auf deinem eigenen mealf-Server. Optionale KI-Extraktion und die
 Bring!-Einkaufsintegration werden auf deinem Server eingerichtet.”
 
 Descriptions must be revised to match verified release functionality. Do not advertise

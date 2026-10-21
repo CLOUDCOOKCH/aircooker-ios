@@ -1,5 +1,9 @@
 # Changelog
 
+- Adopt the mealf product name in app/Share/widget display names and English/German copy.
+  Retain bundle IDs, Keychain, App Groups, database paths and build targets so this name-only
+  change does not strand existing installations. New supplied artwork awaits original files.
+
 ## Unreleased — 0.1.0 development
 
 - Record the user-confirmed PWA-first delivery decision; preserve native code for later.

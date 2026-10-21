@@ -35,7 +35,7 @@ targets:
     info:
       path: Config/App-Info.plist
       properties:
-        CFBundleDisplayName: aircooker
+        CFBundleDisplayName: mealf
         UILaunchScreen: {}
         NSFaceIDUsageDescription: Unlock your household recipes and meal plan.
         AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
@@ -60,7 +60,7 @@ targets:
     info:
       path: Config/Share-Info.plist
       properties:
-        CFBundleDisplayName: aircooker
+        CFBundleDisplayName: mealf
         AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.share-services
@@ -84,7 +84,7 @@ targets:
     info:
       path: Config/Widget-Info.plist
       properties:
-        CFBundleDisplayName: aircooker
+        CFBundleDisplayName: mealf
         AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension

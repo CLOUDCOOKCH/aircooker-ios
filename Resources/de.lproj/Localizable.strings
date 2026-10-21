@@ -44,7 +44,7 @@
 "logout_keeps_local_data" = "Beim Abmelden bleiben gespeicherte Rezepte und nicht übertragene Änderungen auf diesem Gerät.";
 "lunch" = "Mittagessen";
 "meal_reminder" = "Zeit für deine Mahlzeit";
-"meal_reminder_body" = "Deine geplante Mahlzeit wartet in aircooker.";
+"meal_reminder_body" = "Deine geplante Mahlzeit wartet in mealf.";
 "move_tomorrow" = "Auf morgen verschieben";
 "next_week" = "Nächste Woche";
 "not_configured" = "Nicht eingerichtet";
@@ -89,7 +89,7 @@
 "setup_token" = "Einmaliges Einrichtungstoken";
 "share_error" = "Import konnte nicht gespeichert werden";
 "share_error_detail" = "Teile einen öffentlichen HTTPS-Rezeptlink oder Text. Prüfe bei weiteren Problemen die App-Group-Konfiguration.";
-"share_saving" = "Dein Import wird gespeichert. Öffne aircooker, um fortzufahren.";
+"share_saving" = "Dein Import wird gespeichert. Öffne mealf, um fortzufahren.";
 "source" = "Quelle";
 "source_url" = "Quelladresse";
 "staples" = "Grundvorräte";
@@ -104,11 +104,11 @@
 "unlock_reason" = "Entsperre deine Rezepte und deinen Speiseplan.";
 "unrated" = "Nicht bewertet";
 "username" = "Benutzername";
-"welcome_body" = "Deine Rezepte und Mahlzeiten an einem Ort. Verbinde dich mit deinem eigenen aircooker-Server.";
+"welcome_body" = "Deine Rezepte und Mahlzeiten an einem Ort. Verbinde dich mit deinem eigenen mealf-Server.";
 "welcome_title" = "Ein wenig planen. Besser durch die Woche.";
 "widget_description" = "Zeigt Mahlzeiten aus deinem lokal gespeicherten Kalender.";
 "widget_name" = "Deine Mahlzeiten";
-"widget_open_app" = "Öffne aircooker, um deine Mahlzeiten zu speichern.";
+"widget_open_app" = "Öffne mealf, um deine Mahlzeiten zu speichern.";
 "your_kitchen" = "Deine Küche";
 "use_password" = "Mit Haushaltspasswort anmelden";
 
@@ -280,7 +280,7 @@
 
 "open_system_settings" = "Systemeinstellungen öffnen";
 
-"reminder_timezone_hint" = "Erinnerungszeiten richten sich nach der Zeitzone deines Haushalts. Öffne aircooker regelmäßig, um kommende Mahlzeiten zu aktualisieren.";
+"reminder_timezone_hint" = "Erinnerungszeiten richten sich nach der Zeitzone deines Haushalts. Öffne mealf regelmäßig, um kommende Mahlzeiten zu aktualisieren.";
 
 "reminder_times" = "Erinnerungszeiten";
 

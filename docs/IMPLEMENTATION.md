@@ -1,5 +1,11 @@
 # Native implementation status
 
+**Brand update, 2026-10-21:** the product is now mealf. App/Share/widget display names,
+onboarding and English/German copy are updated; bundle IDs, App Groups, Keychain, paths and
+build targets remain compatible. The original supplied peach icon/wordmark PNG files are
+not accessible in the cloud workspace, so their installation is still pending. Native
+development remains retained for later; name-only source edits do not prove Apple rendering.
+
 Delivery direction changed to PWA-first by explicit user choice on 2026-10-21. Native
 feature development is paused; keep the tested sources available for later. The web client
 is implemented in the independent aircooker-server repository, not in a third repository.

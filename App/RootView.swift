@@ -152,7 +152,7 @@ struct OnboardingView: View {
         } footer: {
           Text("setup_console_hint")
         }
-      }.navigationTitle("aircooker").onAppear { server = model.server }
+      }.navigationTitle("mealf").onAppear { server = model.server }
         .sheet(isPresented: $scanning) {
           QRScanner { value in
             server = value

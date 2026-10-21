@@ -37,7 +37,7 @@ private struct TodayView: View {
   @Environment(\.widgetFamily) private var family
   var body: some View {
     VStack(alignment: .leading, spacing: family == .systemSmall ? 4 : 8) {
-      Text("aircooker").font(.headline)
+      Text("mealf").font(.headline)
       if let day = entry.day {
         if family == .systemMedium {
           HStack(alignment: .top, spacing: 12) {

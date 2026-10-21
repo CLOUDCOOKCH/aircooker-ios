@@ -44,7 +44,7 @@
 "logout_keeps_local_data" = "Signing out keeps cached recipes and unsent changes on this device.";
 "lunch" = "Lunch";
 "meal_reminder" = "Time for your meal";
-"meal_reminder_body" = "Your planned meal is waiting in aircooker.";
+"meal_reminder_body" = "Your planned meal is waiting in mealf.";
 "move_tomorrow" = "Move to tomorrow";
 "next_week" = "Next week";
 "not_configured" = "Not configured";
@@ -89,7 +89,7 @@
 "setup_token" = "One-time setup token";
 "share_error" = "Couldn’t save this import";
 "share_error_detail" = "Share a public HTTPS recipe link or text. If this continues, check the App Group configuration.";
-"share_saving" = "Saving your import. Open aircooker to continue.";
+"share_saving" = "Saving your import. Open mealf to continue.";
 "source" = "Source";
 "source_url" = "Source URL";
 "staples" = "Pantry staples";
@@ -104,11 +104,11 @@
 "unlock_reason" = "Unlock your recipes and meal plan.";
 "unrated" = "Not rated";
 "username" = "Username";
-"welcome_body" = "Your recipes and meals, together. Connect to your self-hosted aircooker server to begin.";
+"welcome_body" = "Your recipes and meals, together. Connect to your self-hosted mealf server to begin.";
 "welcome_title" = "A little planning. A better week.";
 "widget_description" = "View meals from your locally saved calendar.";
 "widget_name" = "Your meals";
-"widget_open_app" = "Open aircooker to cache your meals.";
+"widget_open_app" = "Open mealf to cache your meals.";
 "your_kitchen" = "Your kitchen";
 "use_password" = "Sign in with household password";
 
@@ -280,7 +280,7 @@
 
 "open_system_settings" = "Open system settings";
 
-"reminder_timezone_hint" = "Reminder times follow your household time zone. Open aircooker regularly to refresh upcoming meals.";
+"reminder_timezone_hint" = "Reminder times follow your household time zone. Open mealf regularly to refresh upcoming meals.";
 
 "reminder_times" = "Reminder times";
 

@@ -1,4 +1,9 @@
-# aircooker for iOS
+# mealf for iOS
+
+Formerly aircooker. Display names and English/German copy now use **mealf**; existing bundle
+IDs, Keychain/App Group storage and build target names are retained for compatibility.
+The supplied new icon/wordmark files are pending workspace access; the previous icon remains
+until the original PNG is available.
 
 **Native development is retained for later.** The user chose PWA-first delivery on
 2026-10-21. The primary client now lives in
