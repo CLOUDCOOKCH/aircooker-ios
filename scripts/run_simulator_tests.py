@@ -3,6 +3,7 @@
 import json
 import re
 import subprocess
+import time
 from pathlib import Path
 
 raw = subprocess.check_output(
@@ -23,7 +24,24 @@ version, name, udid, state = sorted(choices, reverse=True)[0]
 print(f"Testing {name}, iOS {version[0]}.{version[1]}", flush=True)
 if state != "Booted":
     subprocess.run(["xcrun", "simctl", "boot", udid], check=True)
-subprocess.run(["xcrun", "simctl", "bootstatus", udid, "-b"], check=True, timeout=180)
+# A fresh hosted runtime can spend several minutes migrating Apple system data.
+# Keep a bounded deadline and visible progress without treating boot as a UI pass.
+boot_started = time.monotonic()
+with subprocess.Popen(["xcrun", "simctl", "bootstatus", udid, "-b"]) as boot:
+    while True:
+        remaining = 600 - (time.monotonic() - boot_started)
+        if remaining <= 0:
+            boot.kill()
+            boot.wait()
+            raise SystemExit("Simulator did not finish booting within 10 minutes; no UI checks ran")
+        try:
+            status = boot.wait(timeout=min(30, remaining))
+        except subprocess.TimeoutExpired:
+            print(f"Waiting for simulator readiness ({int(time.monotonic() - boot_started)}s)", flush=True)
+            continue
+        if status:
+            raise subprocess.CalledProcessError(status, boot.args)
+        break
 command = [
     "xcodebuild", "-project", "aircooker.xcodeproj", "-scheme", "aircooker",
     "-derivedDataPath", "build/DerivedData",

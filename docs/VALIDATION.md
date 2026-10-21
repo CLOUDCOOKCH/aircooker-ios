@@ -177,3 +177,10 @@ Foundation GitHub run 39560965568 at 528a9ac is now green: app and both extensio
 the onboarding UI test launches the app successfully on an iPhone simulator and keeps a
 genuine capture. See validation/github-native-foundation.json for exact job IDs. Current
 demo edits postdate that verified run and still require their own native acceptance.
+
+Demo run 39563358861 at 17b1318 passes all 85 core tests on Linux and macOS,
+formatting, contract/localisation and secret checks, and builds all three native targets.
+Its UI step never reached XCTest: first-boot CoreLocation system-data migration exceeded
+the original 180-second readiness limit. The runner now allows a bounded ten-minute boot
+with progress messages and still fails if readiness is not reached. This is infrastructure
+handling, not UI acceptance; no demo capture or passing workflow is claimed from that run.
