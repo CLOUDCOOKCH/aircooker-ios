@@ -2,6 +2,9 @@
 
 ## Unreleased — 0.1.0 development
 
+- Display existing ingredient preparation notes and source-attributed nutrition in recipe
+  details; nutrition stays as supplied and is not guessed or rescaled.
+
 Initial independently versioned repository. This is not a stable or production release.
 See the implementation checklist for feature status and verification limits.
 
@@ -13,7 +16,7 @@ See the implementation checklist for feature status and verification limits.
 - Add an explicit offline demo with a separate database/identity and original illustrative
   food artwork; household data, credentials and pending edits are never reused for samples.
 - Add five atomic-seed/isolation/restart tests and native demo persistence/localisation
-  workflows with light/dark captures. Simulator runtime validation remains in progress.
+  workflows with light/dark captures. Demo recipe restart/search/exit, onboarding and German light/dark UI checks pass on iOS 26.5.
 
 - Publish both repositories and begin real GitHub backend/browser/core/native CI checks.
 - Check the installed supported Apple SDK instead of requiring an unavailable Xcode version.

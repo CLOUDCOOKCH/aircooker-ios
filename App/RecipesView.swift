@@ -120,6 +120,9 @@ struct RecipeDetail: View {
               if ingredient.quantity == nil && !ingredient.originalText.isEmpty {
                 Text(ingredient.originalText).font(.caption).foregroundStyle(.secondary)
               }
+              if !ingredient.preparation.isEmpty {
+                Text(ingredient.preparation).font(.caption).foregroundStyle(.secondary)
+              }
             }
           }
         }
@@ -134,6 +137,26 @@ struct RecipeDetail: View {
           }
         }
         if !recipe.notes.isEmpty { Section("notes") { Text(recipe.notes) } }
+        if let nutrition = recipe.nutrition, !nutrition.isEmpty {
+          Section {
+            ForEach(nutrition.keys.sorted(), id: \.self) { key in
+              LabeledContent {
+                Text(nutrition[key] ?? "")
+              } label: {
+                Text(key)
+              }
+            }
+            if let source = recipe.nutritionSource, !source.isEmpty {
+              LabeledContent("nutrition_source") { Text(source) }
+            } else {
+              Text("nutrition_source_unknown").font(.caption).foregroundStyle(.secondary)
+            }
+          } header: {
+            Text("nutrition")
+          } footer: {
+            Text("nutrition_as_imported")
+          }
+        }
         if let source = recipe.sourceURL, let url = URL(string: source),
           ["https", "http"].contains(url.scheme ?? "")
         {

@@ -434,4 +434,8 @@
 "servings_invalid" = "Enter one positive serving amount, such as 2 or 1 1/2.";
 "quantity_invalid" = "Enter a valid amount or range, such as 1/2 or 1–2. Put the unit in its own field.";
 "quantity_unquantified" = "This amount will be kept in Original text. It will not be multiplied when servings change.";
+"nutrition" = "Nutrition";
+"nutrition_source" = "Nutrition source";
+"nutrition_source_unknown" = "The nutrition source was not supplied.";
+"nutrition_as_imported" = "Shown as supplied by the source. Changing servings scales ingredients only; these nutrition values stay unchanged.";
 "quantity_entry_hint" = "Amounts can use decimals, fractions or ranges. Both comma and point mean decimals; do not use thousands separators. Fractions are rounded to 12 decimal places. Leave amounts empty for unmeasured ingredients.";

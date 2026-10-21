@@ -434,4 +434,8 @@
 "servings_invalid" = "Gib eine positive Portionsmenge ein, zum Beispiel 2 oder 1 1/2.";
 "quantity_invalid" = "Gib eine gültige Menge oder einen Bereich ein, zum Beispiel 1/2 oder 1–2. Trage die Einheit separat ein.";
 "quantity_unquantified" = "Diese Angabe wird als Originaltext gespeichert und beim Ändern der Portionen nicht multipliziert.";
+"nutrition" = "Nährwerte";
+"nutrition_source" = "Nährwertquelle";
+"nutrition_source_unknown" = "Die Quelle der Nährwerte wurde nicht angegeben.";
+"nutrition_as_imported" = "Wie von der Quelle angegeben. Beim Ändern der Portionen werden nur Zutatenmengen skaliert; diese Nährwerte bleiben unverändert.";
 "quantity_entry_hint" = "Mengen können Dezimalzahlen, Brüche oder Bereiche sein. Komma und Punkt sind Dezimalzeichen; verwende keine Tausendertrennzeichen. Brüche werden auf 12 Nachkommastellen gerundet. Bei ungemessenen Zutaten kann die Menge leer bleiben.";

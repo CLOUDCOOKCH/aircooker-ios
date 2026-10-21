@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-10-21 08:04:11 UTC",
+  "repository": "CLOUDCOOKCH/aircooker-ios",
+  "commit": "7d5a96caa71649794fa26f0d24d56e7e2d63357e",
+  "run_id": 39564263323,
+  "url": "https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39564263323",
+  "conclusion": "success",
+  "xcode": "26.6",
+  "simulator": "iPhone Air, iOS 26.5",
+  "core_tests": 85,
+  "jobs": [
+    {
+      "id": 119102633745,
+      "name": "native",
+      "conclusion": "success"
+    },
+    {
+      "id": 119102633933,
+      "name": "core",
+      "conclusion": "success"
+    }
+  ],
+  "verified": [
+    "Native app, Share Extension and Widget Extension build",
+    "Light: demo recipe creation, persistence after app restart, search and demo exit",
+    "Light: German demo navigation and English onboarding",
+    "Dark: German demo navigation",
+    "Genuine XCTest screenshot attachment export",
+    "Unsigned simulator app archive"
+  ],
+  "artifacts": [
+    {
+      "id": 12329548004,
+      "name": "native-test-results",
+      "sha256": "10cb01e5e90187904c0b2643208e52608d58e0bf71f5bc23c90f4ca9d916775c"
+    },
+    {
+      "id": 12329139905,
+      "name": "simulator-development-build",
+      "sha256": "b75b0fca0148b94b540ae6120ba154a09084605c6222cfcb9f228488e6b7619d"
+    }
+  ],
+  "limits": [
+    "No physical-device, signing or TestFlight verification",
+    "Screenshot download from the file-service URL returned HTTP 403; visual quality was not reviewed in this workspace",
+    "Later quantity editor changes postdate this verified run",
+    "These workflows do not establish all product acceptance criteria"
+  ]
+}

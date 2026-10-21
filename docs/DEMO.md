@@ -28,6 +28,13 @@ database. Relaunching starts normal onboarding; enter the demo again to continue
 
 ## Verification and remaining checks
 
+Native run 39564263323 at 7d5a96c passes demo entry, recipe creation/persistence after
+restart, search/exit, English onboarding and German light/dark navigation on iPhone Air
+with iOS 26.5. Genuine captures and an unsigned simulator build are in the Actions
+artifacts; download them from the run page. File-service capture retrieval returned HTTP
+403 in this workspace, so no visual-quality review is claimed here. Later quantity editor
+changes require their own native run. See validation/github-native-demo.json.
+
 Five portable tests prove actual seeded planning data, household-date/German content,
 restart/edit/deletion/outbox preservation, failed-seed/media/identity rollback and refusal
 to overwrite a household database. The full portable suite has 85 passing tests. These

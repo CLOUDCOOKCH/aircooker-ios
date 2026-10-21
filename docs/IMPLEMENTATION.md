@@ -8,7 +8,9 @@ extensions at e82cae4; simulator installation exposed missing extension display 
 which were fixed. Foundation run 39560965568 at 528a9ac passes native build, simulator
 onboarding, core and secret checks. Demo run 39563358861 at 17b1318 passes 85 core tests on both platforms and builds all
 three native targets. Its UI step stopped during simulator system-data migration before
-XCTest; the bounded first-boot deadline has been increased for the next run.
+XCTest. Runs 39564263323 (7d5a96c) and 39564434377 (c763956) subsequently pass all
+native targets, demo edit/restart/exit, English onboarding and German light/dark navigation.
+See validation/github-native-demo.json. Current quantity editor changes require their own CI.
 
 Implemented sources: adaptive native tint, shared recipe/meal presentation, photo-led recipe grid,
 interactive civil-date Home week selection, focused daily meal presentation, shared searchable
@@ -45,7 +47,7 @@ arbitrary copy destinations, native leftover/suggestion lifecycle validation, sh
 recommendation preferences and cross-device approval collision handling; import preview lifecycle
 end-to-end; provider disclosure/configuration; Apple notification delivery/permission and
 widget/deep-link lifecycle validation; native logout/session revocation lifecycle and deletion UX; recoverable sync
-recovery UI/device validation and reference-safe restoration beyond recipes; expanded UI tests; icon appearance validation; genuine screenshot review; demo native
+recovery UI/device validation and reference-safe restoration beyond recipes; expanded UI tests; icon appearance validation; genuine screenshot review; expanded demo planning/editor native
 acceptance; TestFlight signing/upload;
 accessibility audit; full performance/privacy/security validation.
 
