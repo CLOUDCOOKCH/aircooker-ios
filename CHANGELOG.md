@@ -1,5 +1,9 @@
 # Changelog
 
+- Make simulator keyboard setup explicit and wait for keyboard readiness before demo
+  recipe/search text entry. The mealf build/core checks passed; the prior UI run exposed
+  missing input focus and requires a new verified simulator run.
+
 - Adopt the mealf product name in app/Share/widget display names and English/German copy.
   Retain bundle IDs, Keychain, App Groups, database paths and build targets so this name-only
   change does not strand existing installations. New supplied artwork awaits original files.

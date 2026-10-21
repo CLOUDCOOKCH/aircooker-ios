@@ -22,6 +22,11 @@ if not choices:
     raise SystemExit("Install an iOS 26+ iPhone simulator runtime; UI validation is required")
 version, name, udid, state = sorted(choices, reverse=True)[0]
 print(f"Testing {name}, iOS {version[0]}.{version[1]}", flush=True)
+# Hosted runners must expose the software keyboard used by the real text-entry tests.
+subprocess.run(
+    ["defaults", "write", "com.apple.iphonesimulator", "ConnectHardwareKeyboard", "-bool", "false"],
+    check=True,
+)
 if state != "Booted":
     subprocess.run(["xcrun", "simctl", "boot", udid], check=True)
 # A fresh hosted runtime can spend several minutes migrating Apple system data.
