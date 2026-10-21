@@ -161,6 +161,7 @@ struct RecipeEditor: View {
   @Environment(AppModel.self) private var model
   @Environment(\.dismiss) private var dismiss
   let id: UUID
+  let importWarnings: [String]?
   @State private var recipe: Recipe
   @State private var source = ""
   @State private var saving = false
@@ -169,8 +170,9 @@ struct RecipeEditor: View {
   @State private var preparingPhoto = false
   @State private var photoError: String?
 
-  init(id: UUID = UUID(), initial: Recipe = Recipe()) {
+  init(id: UUID = UUID(), initial: Recipe = Recipe(), importWarnings: [String]? = nil) {
     self.id = id
+    self.importWarnings = importWarnings
     _recipe = State(initialValue: initial)
     _source = State(initialValue: initial.sourceURL ?? "")
   }
@@ -184,6 +186,14 @@ struct RecipeEditor: View {
   var body: some View {
     NavigationStack {
       Form {
+        if let importWarnings {
+          Section("import_review") {
+            Label("import_uncertainty", systemImage: "exclamationmark.circle")
+            ForEach(Array(Set(importWarnings)).sorted(), id: \.self) { warning in
+              Text(LocalizedStringKey(importWarningKey(warning))).font(.footnote)
+            }
+          }
+        }
         Section("recipe_photo") {
           if let preparedPhoto, let image = UIImage(data: preparedPhoto) {
             Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 220)
@@ -292,5 +302,15 @@ struct RecipeEditor: View {
         } catch is CancellationError {
         } catch { photoError = String(localized: "photo_invalid") }
       }
+  }
+  private func importWarningKey(_ warning: String) -> String {
+    switch warning {
+    case "review_ingredient_quantities": return "import_notice_quantities"
+    case "review_servings": return "import_notice_servings"
+    case "image_import_not_yet_available": return "import_notice_images"
+    case "ingredient_entries_omitted": return "import_notice_omitted"
+    case "ingredient_text_truncated": return "import_notice_truncated"
+    default: return "import_notice_unknown"
+    }
   }
 }

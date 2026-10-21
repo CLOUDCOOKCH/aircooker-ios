@@ -417,3 +417,10 @@
 "recipe_grid" = "Cards";
 "recipe_list" = "List";
 "recipe_rating %lld" = "%lld out of 5";
+
+"import_notice_quantities" = "Check ingredient amounts, units and ranges against the source. Uncertain quantities remain unparsed.";
+"import_notice_servings" = "Check the number of servings. A default may have been used when the source was unclear.";
+"import_notice_images" = "Recipe images are not downloaded automatically. You can add a photo in this editor.";
+"import_notice_omitted" = "Some ingredient entries were left out because they could not be read. Check the source before saving.";
+"import_notice_truncated" = "Some ingredient text exceeded import limits and was shortened. Check the source before saving.";
+"import_notice_unknown" = "Some source information needs review. Compare the recipe with its source before saving.";

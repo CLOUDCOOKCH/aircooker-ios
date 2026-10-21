@@ -439,7 +439,7 @@ struct PantryView: View {
           }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
       }
-      Section("staples") {
+      Section {
         ForEach(model.pantry) { row in
           if var item = try? row.decode(PantryItem.self),
             search.isEmpty || item.name.localizedCaseInsensitiveContains(search)
@@ -460,6 +460,8 @@ struct PantryView: View {
             }
           }
         }
+      } header: {
+        Text("staples")
       } footer: {
         Text("pantry_exclusion_hint")
       }

@@ -417,3 +417,10 @@
 "recipe_grid" = "Karten";
 "recipe_list" = "Liste";
 "recipe_rating %lld" = "%lld von 5";
+
+"import_notice_quantities" = "Vergleiche Zutatenmengen, Einheiten und Mengenbereiche mit der Quelle. Unsichere Mengen bleiben unaufgelöst.";
+"import_notice_servings" = "Prüfe die Portionszahl. Bei unklaren Angaben wurde möglicherweise ein Standardwert verwendet.";
+"import_notice_images" = "Rezeptbilder werden nicht automatisch heruntergeladen. Du kannst im Editor ein Foto hinzufügen.";
+"import_notice_omitted" = "Einige Zutatenangaben konnten nicht gelesen werden und wurden ausgelassen. Prüfe vor dem Speichern die Quelle.";
+"import_notice_truncated" = "Einige Zutatenangaben überschritten die Importgrenzen und wurden gekürzt. Prüfe vor dem Speichern die Quelle.";
+"import_notice_unknown" = "Einige Angaben aus der Quelle müssen geprüft werden. Vergleiche das Rezept vor dem Speichern mit der Quelle.";

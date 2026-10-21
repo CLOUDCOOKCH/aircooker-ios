@@ -47,10 +47,7 @@ struct ImportView: View {
             recipe.provenance["import_job_id"] = draft.id.uuidString.lowercased()
             recipe.provenance["reviewed_by_user"] = "true"
           }()
-          VStack {
-            Text("import_uncertainty").font(.footnote).padding().background(.yellow.opacity(0.15))
-            RecipeEditor(initial: recipe)
-          }
+          RecipeEditor(initial: recipe, importWarnings: draft.warnings)
         }
       }
       .task {
