@@ -8,7 +8,8 @@ or tested with an Apple SDK here. All native UI functionality is therefore unver
 Implemented sources: adaptive native tint, shared recipe/meal presentation, photo-led recipe grid,
 interactive civil-date Home week selection, focused daily meal presentation, shared searchable
 Home/Calendar assignment and grouped settings; saved recipe card/list layout, adaptive rating
-metadata and calendar-linked weekly summary with Reduce Motion support; Home meal hierarchy
+metadata and calendar-linked weekly summary with Reduce Motion support; native Liquid Glass
+controls, photo category overlay and accessibility surface fallbacks; Home meal hierarchy
 and empty-state actions, clearer calendar date/week controls; five-tab navigation, HTTPS onboarding, QR scanner, initial setup/login,
 Keychain token vault with generation-checked sign-out and durable revocation, optional local access lock, persistent SQLite/outbox, server identity
 pinning, sync, recipe list/detail/editor/scaling and photo selection/cache, week calendar assignment,

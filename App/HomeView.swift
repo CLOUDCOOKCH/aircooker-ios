@@ -53,6 +53,7 @@ struct HomeView: View {
             Label("import_recipe", systemImage: "square.and.arrow.down")
           }
           Button("create_recipe", systemImage: "plus") { newRecipe = true }
+            .labelStyle(.iconOnly).buttonStyle(.glassProminent).buttonBorderShape(.circle)
         }
       }
       .refreshable { await model.synchronise() }
@@ -100,7 +101,8 @@ struct HomeView: View {
           CalendarView(initialDate: overview.selectedDate)
         } label: {
           Image(systemName: "calendar").frame(minWidth: 44, minHeight: 44)
-        }.accessibilityLabel(Text("calendar"))
+        }.buttonStyle(.plain).kitchenGlass(in: Circle())
+          .accessibilityLabel(Text("calendar"))
       }
       if let featured = overview.selectedMeals.first(where: { !$0.meal.cooked })
         ?? overview.selectedMeals.first
@@ -165,7 +167,7 @@ struct HomeView: View {
           SuggestionsView(week: overview.monday)
         } label: {
           Label("weekly_suggestions", systemImage: "sparkles").frame(maxWidth: .infinity)
-        }.buttonStyle(.bordered).controlSize(.large)
+        }.buttonStyle(.glass).controlSize(.large)
         NavigationLink {
           LeftoversView()
         } label: {

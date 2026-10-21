@@ -80,6 +80,7 @@ struct RecipesView: View {
             Label("import_recipe", systemImage: "square.and.arrow.down")
           }
           Button("create_recipe", systemImage: "plus") { creating = true }
+            .labelStyle(.iconOnly).buttonStyle(.glassProminent).buttonBorderShape(.circle)
         }
       }
       .sheet(isPresented: $creating) { RecipeEditor() }

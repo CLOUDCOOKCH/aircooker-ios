@@ -135,3 +135,22 @@ rendering evidence. On Apple tooling, verify layout switching with search active
 relaunch, empty/missing-photo/unrated/long-title recipes, German and accessibility text sizes,
 calendar navigation from earlier/later weeks, VoiceOver, Reduce Motion and both appearances.
 No native screenshot, Apple SDK build or device result is claimed.
+
+## Liquid Glass presentation
+
+The current interface pass changes `KitchenStyle.swift`, `PlannerComponents.swift`,
+`HomeView.swift`, `RootView.swift` and `RecipesView.swift`, plus presentation, implementation,
+release, changelog and validation documentation. It uses native SwiftUI glass effects and
+button styles on the existing iOS 26+ target, without changing the API or local persistence.
+
+All 80 portable core tests pass. Formatting, native syntax parsing, contract pin validation,
+277-key English/German parity and whitespace checks pass. Linux parsing does not resolve
+SwiftUI API signatures, prove Apple SDK compatibility or verify system glass rendering.
+No iOS 27 SDK/device execution or native screenshot was produced. The revised visual
+concept is illustrative and its sample recipes are not inserted into household data.
+
+Apple validation must exercise all five tabs, scroll minimisation/restoration, sheet and
+keyboard transitions, sync notice wrapping, photo overlays and missing images, and both
+appearances with Reduce Transparency, increased contrast, Reduce Motion and Dynamic Type.
+Custom glass regions have explicit opaque fallbacks; system tab/tool/button accessibility
+adaptation and contrast still need real-device verification.

@@ -4,6 +4,8 @@ import VisionKit
 
 struct RootView: View {
   @Environment(AppModel.self) private var model
+  @Environment(\.dynamicTypeSize) private var typeSize
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @AppStorage("startScreen") private var startScreen = "home"
   @State private var selection = "home"
   var body: some View {
@@ -32,7 +34,9 @@ struct RootView: View {
           Tab("settings", systemImage: "gearshape", value: "settings") {
             NavigationStack { SettingsView() }
           }
-        }.onAppear { selection = startScreen }
+        }.tabBarMinimizeBehavior(
+          typeSize.isAccessibilitySize || reduceMotion ? .never : .onScrollDown
+        ).onAppear { selection = startScreen }
       }
     }
     .safeAreaInset(edge: .bottom) {
@@ -45,11 +49,13 @@ struct RootView: View {
             Spacer()
             Button("retry") { Task { await model.synchronise() } }.disabled(model.busy)
           }
-        }.padding().background(.regularMaterial)
+        }.padding(16).kitchenGlass(in: RoundedRectangle(cornerRadius: 24))
+          .padding(.horizontal, 16).padding(.bottom, 8)
       } else if model.pending > 0 || model.busy {
         Label("pending_changes \(model.pending)", systemImage: "arrow.triangle.2.circlepath").font(
           .caption
-        ).padding(8).frame(maxWidth: .infinity).background(.thinMaterial)
+        ).padding(.horizontal, 16).padding(.vertical, 12)
+          .kitchenGlass(in: Capsule()).padding(.horizontal, 16).padding(.bottom, 8)
       }
     }
     .sheet(

@@ -7,6 +7,8 @@ A source tree and workflow file do not constitute a distributable iOS release.
 2. Register unique app/extension bundle IDs and one App Group on an Apple developer team.
 3. Configure signing certificates/profiles through protected CI secrets; never commit them.
 4. Complete native UI/device tests, accessibility, performance and offline scenarios.
+   Verify Liquid Glass contrast over bright/dark/missing photos, Reduce Transparency,
+   increased contrast, Reduce Motion, accessibility text and native tab-bar restoration.
 5. Finish photo cleanup/quotas, advanced planning, backup/deletion and all checklist requirements.
 6. Provide original app icons, genuine screenshots in English/German and support/privacy URLs.
 7. Provide an accessible fully functional review backend with an explicit demo account,

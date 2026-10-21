@@ -5,6 +5,11 @@
 Initial independently versioned repository. This is not a stable or production release.
 See the implementation checklist for feature status and verification limits.
 
+- Use native Liquid Glass for planning controls, over-photo labels, create/suggestion
+  actions and sync notices, with opaque custom-surface accessibility fallbacks.
+- Keep the native tab bar; disable scroll minimisation for Reduce Motion/accessibility
+  text sizes. Apple SDK and device validation remain required.
+
 - Add a remembered recipe Cards/List choice and shared compact rows with actual ratings.
 - Make the weekly summary open its calendar, distinguish the selected week from this week,
   and respect Reduce Motion for count transitions. Native SDK/rendering validation pending.

@@ -37,7 +37,7 @@ struct PlannerWeekStrip: View {
       }
       ScrollViewReader { proxy in
         ScrollView(.horizontal) {
-          HStack(spacing: 6) {
+          HStack(spacing: 4) {
             ForEach(overview.days) { day in
               let selected = day.date == overview.selectedDate
               Button {
@@ -56,8 +56,7 @@ struct PlannerWeekStrip: View {
                 .frame(minWidth: 44, minHeight: 76)
                 .foregroundStyle(selected ? Color(uiColor: .systemBackground) : Color.primary)
                 .background(
-                  selected ? Color.primary : KitchenStyle.surface,
-                  in: RoundedRectangle(cornerRadius: KitchenStyle.radius))
+                  selected ? KitchenStyle.accent : Color.clear, in: Capsule())
               }.buttonStyle(.plain).id(day.date)
                 .accessibilityLabel(
                   Text(
@@ -69,7 +68,7 @@ struct PlannerWeekStrip: View {
                 .accessibilityAddTraits(selected ? .isSelected : [])
                 .accessibilityHint(day.isToday ? Text("today") : Text("select_planning_day"))
             }
-          }.padding(.vertical, 4)
+          }.padding(6).kitchenGlass(in: Capsule()).padding(.vertical, 4)
         }.scrollIndicators(.hidden)
           .onChange(of: overview.selectedDate, initial: true) { _, date in
             proxy.scrollTo(date, anchor: .center)
@@ -98,7 +97,7 @@ struct PlannerWeekStrip: View {
       } label: {
         Image(systemName: "chevron.right").frame(minWidth: 44, minHeight: 44)
       }.accessibilityLabel(Text("next_week"))
-    }.buttonStyle(.plain)
+    }.buttonStyle(.plain).kitchenGlass(in: Capsule())
   }
 }
 
@@ -136,16 +135,18 @@ struct FeaturedMealView: View {
   @Environment(AppModel.self) private var model
   let item: MealOccurrence
   var body: some View {
+    let imageID = model.recipe(item.meal.recipeID)?.imageID
     VStack(alignment: .leading, spacing: 0) {
-      if let imageID = model.recipe(item.meal.recipeID)?.imageID {
+      if let imageID {
         RecipePhotoView(imageID: imageID).aspectRatio(3 / 2, contentMode: .fit)
+          .overlay(alignment: .topLeading) {
+            category.foregroundStyle(.primary)
+              .padding(.horizontal, 14).padding(.vertical, 10)
+              .kitchenGlass(in: Capsule()).padding(14)
+          }
       }
       VStack(alignment: .leading, spacing: 10) {
-        Label(
-          LocalizedStringKey(item.meal.category),
-          systemImage: KitchenStyle.symbol(for: item.meal.category)
-        )
-        .font(.subheadline).foregroundStyle(.secondary)
+        if imageID == nil { category.foregroundStyle(.secondary) }
         Text(model.title(item.meal)).font(.title2.weight(.semibold)).foregroundStyle(.primary)
           .fixedSize(horizontal: false, vertical: true)
         HStack {
@@ -159,6 +160,12 @@ struct FeaturedMealView: View {
       .clipShape(RoundedRectangle(cornerRadius: KitchenStyle.radius))
       .contentShape(RoundedRectangle(cornerRadius: KitchenStyle.radius))
       .accessibilityElement(children: .combine)
+  }
+  private var category: some View {
+    Label(
+      LocalizedStringKey(item.meal.category),
+      systemImage: KitchenStyle.symbol(for: item.meal.category)
+    ).font(.subheadline.weight(.medium))
   }
 }
 

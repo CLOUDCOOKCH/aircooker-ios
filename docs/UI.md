@@ -52,3 +52,20 @@ search results and recipe destinations. Shared list rows show actual ingredient 
 optional ratings, with vertical metadata fallback when horizontal space is insufficient.
 The layout choice, long German labels, large text, screen-reader output, Reduce Motion and
 light/dark rendering still need simulator/device verification. No native capture is claimed.
+
+Navigation and controls use SwiftUI's native Liquid Glass APIs on the existing iOS 26+
+target. The standard TabView and toolbar retain system rendering. The tab bar can minimise
+on downward scrolling; Reduce Motion or accessibility text sizes keep it expanded.
+Create actions use `glassProminent`, and the suggestion action uses `glass`.
+
+The week selector, week navigation, calendar shortcut, over-photo meal label and sync
+notices share `kitchenGlass`, which uses regular system glass. Reduce Transparency or
+increased contrast substitutes an opaque semantic surface for these custom glass regions.
+Selected dates retain a solid accent and a contrasting foreground. Recipe text, ingredients,
+settings and planning summaries keep readable semantic content surfaces. Missing photos
+retain a normal category label without requiring an image backdrop. No shader, fake blur
+texture, custom tab bar or third-party glass dependency was introduced.
+
+These are source changes, not verified iOS 27 captures. Apple SDK compilation, material
+contrast over different photographs, light/dark appearances, all accessibility combinations,
+tab-bar minimisation/restoration, toolbar grouping and touch/scroll behaviour remain gates.

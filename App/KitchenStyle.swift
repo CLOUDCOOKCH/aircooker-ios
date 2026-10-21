@@ -17,6 +17,27 @@ enum KitchenStyle {
   }
 }
 
+/// The system owns refraction and appearance. Accessibility settings use an
+/// opaque semantic surface instead of relying on the backdrop for contrast.
+private struct KitchenGlass<Surface: Shape>: ViewModifier {
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+  @Environment(\.colorSchemeContrast) private var contrast
+  let shape: Surface
+  func body(content: Content) -> some View {
+    if reduceTransparency || contrast == .increased {
+      content.background(KitchenStyle.surface, in: shape)
+    } else {
+      content.glassEffect(.regular, in: shape)
+    }
+  }
+}
+
+extension View {
+  func kitchenGlass<Surface: Shape>(in shape: Surface) -> some View {
+    modifier(KitchenGlass(shape: shape))
+  }
+}
+
 struct RecipeCard: View {
   let recipe: Recipe
   var body: some View {
