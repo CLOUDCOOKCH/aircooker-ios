@@ -400,3 +400,15 @@
 "from_your_recipes" = "From your recipes";
 "recipe_step %lld %@" = "Step %lld. %@";
 "today" = "Today";
+
+"select_planning_day" = "Show meals for this day";
+"view_recipe" = "View recipe";
+"cooked_meal" = "Cooked";
+"loading_plan" = "Loading your plan…";
+"on_your_menu" = "On your menu";
+"planned_slots_count %lld %lld" = "%lld of %lld meal slots planned";
+"weekly_planning" = "Weekly planning";
+"open_admin_console" = "Open administration console";
+"sync_status" = "Synchronisation";
+"planning_unavailable" = "Your plan could not be loaded";
+"planning_retry_hint" = "Your saved meals are still on this device. Try loading the plan again.";

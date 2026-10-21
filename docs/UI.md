@@ -1,14 +1,14 @@
 # Native presentation
 
 Keep the five native tabs, NavigationStack pushes, system sheets, grouped settings and
-native controls. Home gives today's meals the first content position and keeps import /
-creation in the toolbar. Recipes are real library objects in an adaptive grid; no sample
+native controls. Home gives the selected day's meals the first content position and keeps import /
+creation in the toolbar. The default selected day is today in the household time zone. Recipes are real library objects in an adaptive grid; no sample
 recipes or stock food photographs are inserted into a household library.
 
 `KitchenStyle.swift` owns semantic grouped backgrounds, surfaces, photo placeholders,
 16-point recipe/meal corners and SF Symbols for meal categories. `AccentColor` has light
 and dark variants; the root binds it explicitly. Body and controls use system Dynamic Type
-styles; serif display text is limited to welcome/detail moments. Missing photos remain
+styles throughout, including headings. Missing photos remain
 neutral placeholders. Photos fill a stable clipped frame using bounded cached data.
 
 Separate an empty library from empty search results. Preserve recipe editing/scaling,
@@ -22,3 +22,21 @@ Validation: portable tests, formatter, syntax parser, contract/localisation scri
 Apple build, iPhone/iPad rendering, large Dynamic Type, VoiceOver, dark/high-contrast modes,
 keyboard/touch interaction and image memory/performance checks remain required. There are
 no genuine iOS screenshots yet; the web console captures are not evidence for this app.
+
+
+Home now has a Monday–Sunday selector, previous/next-week actions, a focused meal image,
+quiet empty meal slots and a real weekly planning count. `PlannerOverview` expands local
+recurrence rules and counts occupied breakfast/lunch/dinner slots rather than dishes.
+Selected civil dates remain separate from absolute timestamps. Foreground date state
+refreshes periodically and on scene activation; this does not schedule background jobs.
+
+`MealAssignmentView` is shared by Home and Calendar: searchable recipes with thumbnails,
+leftover navigation, an explicit saving state and the existing transactional offline save.
+Settings keeps native grouped rows, independent recovery access and secure browser access
+to the backend administration console. It contains no fabricated connection status.
+
+The phone layout stacks planning and library content; regular widths use a primary meal
+column and a secondary planning/library column. Accessibility text sizes retain a single
+column and scrollable date controls. These are implemented sources, not a claim of tested
+Apple layouts. The accompanying illustrative visual concept is separate from app captures;
+no generated meal photograph or sample recipe is inserted into the live library.

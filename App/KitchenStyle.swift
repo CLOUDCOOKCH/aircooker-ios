@@ -21,7 +21,7 @@ struct RecipeCard: View {
   let recipe: Recipe
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      RecipePhotoView(imageID: recipe.imageID).aspectRatio(4 / 3, contentMode: .fit)
+      RecipePhotoView(imageID: recipe.imageID).aspectRatio(3 / 2, contentMode: .fit)
       VStack(alignment: .leading, spacing: 8) {
         Text(recipe.title).font(.headline).foregroundStyle(.primary)
           .fixedSize(horizontal: false, vertical: true)
@@ -62,9 +62,7 @@ struct MealRow: View {
       }
       Spacer(minLength: 0)
       Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
-    }.padding(12).background(
-      KitchenStyle.surface, in: RoundedRectangle(cornerRadius: KitchenStyle.radius)
-    )
-    .accessibilityElement(children: .combine)
+    }.padding(.vertical, 8).contentShape(Rectangle())
+      .accessibilityElement(children: .combine)
   }
 }

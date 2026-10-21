@@ -1,6 +1,6 @@
 # Native validation evidence — 2026-10-21
 
-**76 Swift core tests pass**, compiled with Swift 6.2.1 on Linux with SQLite headers.
+**80 Swift core tests pass**, compiled with Swift 6.2.1 on Linux with SQLite headers.
 An earlier 65-test run passed in Docker. The final run used hash-verified compiler files
 from the same pinned Swift OCI image on the Debian host, with verified SQLite headers,
 after VFS container allocation exhausted Docker storage. No Apple SDK was involved.
@@ -72,7 +72,7 @@ The native source changes cover `AirCookerApp.swift`, `AppModel.swift`, `Keychai
 and `Recommendations.swift`; tests are `SessionTests.swift` and
 `LeftoverRecommendationTests.swift`. Contract checks/pin, README, changelog, implementation,
 privacy and sign-out documentation were updated. Formatting, native syntax parsing,
-262-key localisation parity and source secret scanning pass. Native build/rendering,
+273-key localisation parity and source secret scanning pass. Native build/rendering,
 Face ID, lock/logout notification/widget lifecycle and physical offline devices remain
 unverified. The server's current verification record is `docs/validation/session-signout.json`.
 
@@ -89,7 +89,29 @@ keep their frame and avoid blanking an unchanged cached photo during a reload.
 Changed files: `RootView.swift`, `RecipesView.swift`, `CalendarView.swift`,
 `RecipePhotoView.swift`, new `KitchenStyle.swift`, AccentColor catalog, English/German
 resources, README/changelog/status/this report and `UI.md`. The existing 76 portable core
-tests pass, as do formatting, native syntax parsing, contract checks and 262-key
+tests pass, as do formatting, native syntax parsing, contract checks and 273-key
 localisation parity. These checks do not compile SwiftUI or validate rendering. No native
 screenshot, simulator, Dynamic Type/device or Apple accessibility result is claimed.
 The independent web console has genuine Chromium captures and browser workflow evidence.
+
+
+## Interactive Home planning
+
+The current 80-test portable suite includes four new overview tests: household date/week
+boundaries, duplicate-dish slot counting and leftover inclusion, recurrence exceptions and
+year rollover, and rejection of invalid date/time-zone input. Existing mutation, media,
+recovery, archive and offline replay tests still pass. Formatter, native syntax parsing,
+contract pin and 273-key English/German parity checks pass. The API pin is unchanged.
+
+Changed sources: new `HomeView.swift`, `SettingsView.swift`, `PlannerComponents.swift`,
+`PlannerOverview.swift` and its tests; extracted views in `RootView.swift`, shared picker
+in `CalendarView.swift`, typography/photo proportions in `RecipesView.swift` and
+`KitchenStyle.swift`, localisations and implementation/presentation/changelog documentation.
+The picker continues to use `AppModel.save` and its SQLite/outbox transaction.
+
+No Apple SDK build or iOS screenshot was produced. The visual concept shown in conversation
+is labelled illustrative and is not evidence of native rendering or actual household
+content. Reference images were not successfully exposed by the connected image reader;
+no pixel-level comparison to those references or motion inference is claimed. The native
+layout, sheet dismiss/save lifecycle, VoiceOver, physical touch, dark appearance and large
+Dynamic Type remain unverified on Apple hardware. No backend code was changed in this pass.

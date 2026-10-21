@@ -400,3 +400,15 @@
 "from_your_recipes" = "Aus deinen Rezepten";
 "recipe_step %lld %@" = "Schritt %lld. %@";
 "today" = "Heute";
+
+"select_planning_day" = "Gerichte für diesen Tag anzeigen";
+"view_recipe" = "Rezept ansehen";
+"cooked_meal" = "Gekocht";
+"loading_plan" = "Dein Plan wird geladen …";
+"on_your_menu" = "Auf deinem Speiseplan";
+"planned_slots_count %lld %lld" = "%lld von %lld Mahlzeiten geplant";
+"weekly_planning" = "Wochenplanung";
+"open_admin_console" = "Verwaltungskonsole öffnen";
+"sync_status" = "Synchronisierung";
+"planning_unavailable" = "Dein Plan konnte nicht geladen werden";
+"planning_retry_hint" = "Deine gespeicherten Gerichte bleiben auf diesem Gerät. Versuche, den Plan erneut zu laden.";

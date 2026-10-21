@@ -56,3 +56,8 @@ See the implementation checklist for feature status and verification limits.
 - Add adaptive photo-led recipe cards, meaningful empty states, shared native surfaces and
   light/dark tint assets. Improve calendar date/week hierarchy and accessible meal actions.
 - Preserve cached photo presentation during reload; native rendering remains unverified.
+
+- Add interactive Home week/day selection, a featured planned meal and truthful slot counts
+  from cached data. Reuse one searchable offline recipe/leftover picker across Home/Calendar.
+- Group settings by preferences, sync/recovery and server connection; keep native type,
+  adaptive layout and direct secure console access. Native Apple validation remains open.

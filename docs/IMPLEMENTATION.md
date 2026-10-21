@@ -6,7 +6,8 @@ VisionKit, WidgetKit, LocalAuthentication, Keychain and notifications have not b
 or tested with an Apple SDK here. All native UI functionality is therefore unverified.
 
 Implemented sources: adaptive native tint, shared recipe/meal presentation, photo-led recipe grid,
-Home meal hierarchy and empty-state actions, clearer calendar date/week controls; five-tab navigation, HTTPS onboarding, QR scanner, initial setup/login,
+interactive civil-date Home week selection, focused daily meal presentation, shared searchable
+Home/Calendar assignment and grouped settings; Home meal hierarchy and empty-state actions, clearer calendar date/week controls; five-tab navigation, HTTPS onboarding, QR scanner, initial setup/login,
 Keychain token vault with generation-checked sign-out and durable revocation, optional local access lock, persistent SQLite/outbox, server identity
 pinning, sync, recipe list/detail/editor/scaling and photo selection/cache, week calendar assignment,
 occurrence-aware movement/duplication, day/week copy previews, template save/apply, recurrence editing,
@@ -22,7 +23,8 @@ leftover reservation invariants, local recommendations, stale-preview checks, at
 reminder dates/DST/grouping/limits, strict deep-link parsing and widget rollover/privacy/expiry;
 per-entity rejection isolation, server snapshots, atomic archive/copy recovery, stale-decision
 guards, coordinator exclusion and schema-v3 migration replay; schema-v4 history proofs,
-resumable full rebuild, final archive/projection rollback and restored media requeue; persisted credential envelopes, late refresh/login rejection, offline
+resumable full rebuild, final archive/projection rollback and restored media requeue; read-only planner overview boundaries, recurrence, unique-slot counts and
+selected-day ordering; persisted credential envelopes, late refresh/login rejection, offline
 revocation retry and draft/outbox preservation during sign-out.
 
 Remaining: full native SDK build/Swift concurrency validation; photo quota/cleanup UI;

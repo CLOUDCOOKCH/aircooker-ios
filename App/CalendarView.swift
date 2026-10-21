@@ -265,41 +265,8 @@ struct CalendarView: View {
         }
         .sheet(isPresented: Binding(get: { assigning != nil }, set: { if !$0 { assigning = nil } }))
       {
-        NavigationStack {
-          List {
-            Section("recipes") {
-              ForEach(model.recipes) { row in
-                if let recipe = try? row.decode(Recipe.self) {
-                  Button(recipe.title) {
-                    guard let day = assigning else { return }
-                    let meal = Meal(
-                      recipeID: row.id, date: model.dateString(day), category: category,
-                      servings: recipe.servings)
-                    Task { if await model.save(kind: .meal, value: meal) { assigning = nil } }
-                  }
-                }
-              }
-            }
-            Section("leftovers") {
-              ForEach(model.leftovers.filter { model.canScheduleLeftover($0) }) { row in
-                if let leftover = try? row.decode(Leftover.self) {
-                  NavigationLink {
-                    LeftoverScheduleView(
-                      row: row,
-                      initialDate: assigning.map { model.dateString($0) }, initialCategory: category
-                    )
-                  } label: {
-                    VStack(alignment: .leading) {
-                      Text(
-                        model.recipe(leftover.recipeID)?.title
-                          ?? String(localized: "recipe_unavailable"))
-                      Text("available_portions \(model.availablePortions(row))").font(.caption)
-                    }
-                  }
-                }
-              }
-            }
-          }.navigationTitle("choose_recipe").toolbar { Button("cancel") { assigning = nil } }
+        if let day = assigning {
+          MealAssignmentView(date: model.dateString(day), category: category) { assigning = nil }
         }
       }
     }

@@ -73,7 +73,7 @@ struct RecipeDetail: View {
             .listRowInsets(EdgeInsets()).accessibilityLabel(Text("recipe_photo"))
         }
         Section {
-          Text(recipe.title).font(.system(.largeTitle, design: .serif).weight(.semibold))
+          Text(recipe.title).font(.largeTitle.weight(.semibold))
           if !recipe.description.isEmpty { Text(recipe.description) }
         }
         Section("ingredients") {
