@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     iOS: "26.0"
   xcodeVersion: "26.0"
+  preGenCommand: /usr/bin/sips --resampleHeightWidth 1024 1024 Design/AppIconSource.png --out Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 settings:
   base:
     SWIFT_VERSION: "6.0"

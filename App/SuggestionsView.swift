@@ -53,7 +53,7 @@ struct SuggestionsView: View {
         if generating { ProgressView("generating_suggestions") }
       }
       if let preview {
-        Section("suggested_meals") {
+        Section {
           if preview.suggestions.isEmpty {
             ContentUnavailableView(
               "no_suggestions", systemImage: "calendar.badge.checkmark",
@@ -90,6 +90,8 @@ struct SuggestionsView: View {
               }.padding(.vertical, 4)
             }
           }
+        } header: {
+          Text("suggested_meals")
         } footer: {
           Text("suggestions_variety_hint")
         }
