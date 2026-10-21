@@ -13,26 +13,37 @@ struct RecipesView: View {
     }
   }
   var body: some View {
-    List {
-      if filtered.isEmpty { ContentUnavailableView.search(text: search) }
-      ForEach(filtered) { row in
-        if let recipe = try? row.decode(Recipe.self) {
-          NavigationLink {
-            RecipeDetail(id: row.id)
-          } label: {
-            HStack(spacing: 16) {
-              RecipePhotoView(imageID: recipe.imageID).frame(width: 64, height: 72)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-              VStack(alignment: .leading, spacing: 6) {
-                Text(recipe.title).font(.headline)
-                Text("ingredient_count \(recipe.ingredients.count)").font(.caption).foregroundStyle(
-                  .secondary)
+    ScrollView {
+      if model.recipes.isEmpty {
+        ContentUnavailableView {
+          Label("recipe_library_empty", systemImage: "book.closed")
+        } description: {
+          Text("recipe_library_empty_hint")
+        } actions: {
+          Button("create_recipe") { creating = true }.buttonStyle(.borderedProminent)
+          NavigationLink("import_recipe") { ImportView() }.buttonStyle(.bordered)
+        }.padding(.top, 32)
+      } else if filtered.isEmpty {
+        ContentUnavailableView.search(text: search).padding(.top, 32)
+      } else {
+        LazyVGrid(
+          columns: [GridItem(.adaptive(minimum: 250), alignment: .top)], alignment: .leading,
+          spacing: 20
+        ) {
+          ForEach(filtered) { row in
+            if let recipe = try? row.decode(Recipe.self) {
+              NavigationLink {
+                RecipeDetail(id: row.id)
+              } label: {
+                RecipeCard(recipe: recipe)
               }
-            }.padding(.vertical, 5)
+              .buttonStyle(.plain)
+            }
           }
-        }
+        }.padding(20)
       }
-    }.searchable(text: $search).navigationTitle("recipes")
+    }.background(KitchenStyle.background)
+      .searchable(text: $search).navigationTitle("recipes")
       .toolbar {
         ToolbarItemGroup(placement: .topBarTrailing) {
           NavigationLink {
@@ -62,7 +73,7 @@ struct RecipeDetail: View {
             .listRowInsets(EdgeInsets()).accessibilityLabel(Text("recipe_photo"))
         }
         Section {
-          Text(recipe.title).font(.largeTitle.bold())
+          Text(recipe.title).font(.system(.largeTitle, design: .serif).weight(.semibold))
           if !recipe.description.isEmpty { Text(recipe.description) }
         }
         Section("ingredients") {
@@ -84,7 +95,12 @@ struct RecipeDetail: View {
         }
         Section("instructions") {
           ForEach(Array(recipe.steps.enumerated()), id: \.offset) { index, step in
-            Text("\(index + 1). \(step)")
+            HStack(alignment: .top, spacing: 16) {
+              Text("\(index + 1)").font(.headline).foregroundStyle(.tint)
+                .frame(minWidth: 24, alignment: .leading).accessibilityHidden(true)
+              Text(step).lineSpacing(5).fixedSize(horizontal: false, vertical: true)
+            }.padding(.vertical, 8)
+              .accessibilityLabel(Text("recipe_step \(index + 1) \(step)"))
           }
         }
         if !recipe.notes.isEmpty { Section("notes") { Text(recipe.notes) } }

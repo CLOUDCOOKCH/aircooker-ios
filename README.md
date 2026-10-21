@@ -80,3 +80,5 @@ See [development](docs/DEVELOPMENT.md), [release gates](docs/RELEASE.md),
 
 Device sign-out preserves drafts and queues offline server revocation securely. See
 [sign-out behaviour and validation limits](docs/SESSION_SIGNOUT.md).
+
+See [native presentation](docs/UI.md) for the current UI structure and Apple validation still required.

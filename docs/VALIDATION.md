@@ -21,7 +21,7 @@ and fresh recipe copies, restart/later restore, stale local/server reviews, unkn
 state, rollback on write failure, identical retries, auth failures, invalid receipts/deltas,
 active-request exclusion and schema-v3 replay without cached-state regression.
 
-Pinned OpenAPI SHA-256, required route/property sets, 256 English/German localisation keys,
+Pinned OpenAPI SHA-256, required route/property sets, 262 English/German localisation keys,
 static error lookups, Swift formatting and native-source syntax parsing pass. Source secret
 scanning reports no findings. Workflow YAML and export configuration parse successfully.
 
@@ -72,6 +72,24 @@ The native source changes cover `AirCookerApp.swift`, `AppModel.swift`, `Keychai
 and `Recommendations.swift`; tests are `SessionTests.swift` and
 `LeftoverRecommendationTests.swift`. Contract checks/pin, README, changelog, implementation,
 privacy and sign-out documentation were updated. Formatting, native syntax parsing,
-256-key localisation parity and source secret scanning pass. Native build/rendering,
+262-key localisation parity and source secret scanning pass. Native build/rendering,
 Face ID, lock/logout notification/widget lifecycle and physical offline devices remain
 unverified. The server's current verification record is `docs/validation/session-signout.json`.
+
+
+## Interface refinement
+
+Home now leads with today's meals, planning actions and actual cached recipe content.
+Recipes use an adaptive photo-led grid, separate empty-library/search states and native
+create/import actions. Shared semantic surfaces, an adaptive AccentColor asset and display
+text styles replace scattered green decorations. Calendar week arrows and meal actions
+have explicit targets/styles; date headers distinguish weekdays and today. Photo views
+keep their frame and avoid blanking an unchanged cached photo during a reload.
+
+Changed files: `RootView.swift`, `RecipesView.swift`, `CalendarView.swift`,
+`RecipePhotoView.swift`, new `KitchenStyle.swift`, AccentColor catalog, English/German
+resources, README/changelog/status/this report and `UI.md`. The existing 76 portable core
+tests pass, as do formatting, native syntax parsing, contract checks and 262-key
+localisation parity. These checks do not compile SwiftUI or validate rendering. No native
+screenshot, simulator, Dynamic Type/device or Apple accessibility result is claimed.
+The independent web console has genuine Chromium captures and browser workflow evidence.

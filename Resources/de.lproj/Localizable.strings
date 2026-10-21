@@ -393,3 +393,10 @@
 "signout_pending_hint" = "Die Server-Abmeldung einer früheren Sitzung steht noch aus. Lass die App installiert und öffne sie erneut, sobald der Server erreichbar ist, oder widerrufe die Sitzung in der Verwaltungskonsole. Lokale Entwürfe bleiben erhalten.";
 "signout_retrying" = "Frühere Sitzungen werden widerrufen …";
 "signout_retry" = "Server-Abmeldung erneut versuchen";
+
+"recipe_library_empty" = "Hier beginnt deine Rezeptsammlung";
+"recipe_library_empty_hint" = "Speichere ein Lieblingsgericht oder importiere ein Rezept, das du kochen möchtest.";
+"plan_your_week" = "Ein bisschen Planung";
+"from_your_recipes" = "Aus deinen Rezepten";
+"recipe_step %lld %@" = "Schritt %lld. %@";
+"today" = "Heute";

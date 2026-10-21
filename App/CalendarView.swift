@@ -43,13 +43,29 @@ struct CalendarView: View {
     ScrollViewReader { proxy in
       List {
         Section {
-          HStack {
-            Button("previous_week", systemImage: "chevron.left") { weekOffset -= 1 }
-            Spacer()
-            Button("this_week") { weekOffset = 0 }
-            Spacer()
-            Button("next_week", systemImage: "chevron.right") { weekOffset += 1 }
-          }.labelStyle(.iconOnly)
+          HStack(spacing: 12) {
+            Button {
+              weekOffset -= 1
+            } label: {
+              Image(systemName: "chevron.left").frame(minWidth: 44, minHeight: 44)
+            }.accessibilityLabel(Text("previous_week"))
+            Spacer(minLength: 0)
+            VStack(spacing: 2) {
+              if let first = days.first, let last = days.last {
+                (Text(first, format: .dateTime.day().month(.abbreviated)) + Text(" – ")
+                  + Text(last, format: .dateTime.day().month(.abbreviated)))
+                  .font(.headline).multilineTextAlignment(.center)
+              }
+              Button("this_week") { weekOffset = 0 }.font(.subheadline)
+                .frame(minHeight: 44)
+            }
+            Spacer(minLength: 0)
+            Button {
+              weekOffset += 1
+            } label: {
+              Image(systemName: "chevron.right").frame(minWidth: 44, minHeight: 44)
+            }.accessibilityLabel(Text("next_week"))
+          }.buttonStyle(.borderless).listRowBackground(Color.clear)
         }
         ForEach(days, id: \.self) { day in
           let date = model.dateString(day)
@@ -57,7 +73,8 @@ struct CalendarView: View {
             ForEach(["breakfast", "lunch", "dinner"], id: \.self) { slot in
               let entries = visibleMeals.filter { $0.date == date && $0.meal.category == slot }
               VStack(alignment: .leading, spacing: 8) {
-                Text(LocalizedStringKey(slot)).font(.caption).foregroundStyle(.secondary)
+                Label(LocalizedStringKey(slot), systemImage: KitchenStyle.symbol(for: slot))
+                  .font(.caption.weight(.medium)).foregroundStyle(.secondary)
                 ForEach(entries) { item in
                   NavigationLink {
                     RecipeDetail(id: item.meal.recipeID)
@@ -106,7 +123,7 @@ struct CalendarView: View {
                 Button(entries.isEmpty ? "plan_meal" : "add_meal", systemImage: "plus") {
                   category = slot
                   assigning = day
-                }.font(.subheadline)
+                }.font(.subheadline).buttonStyle(.borderless).frame(minHeight: 44)
               }.padding(.vertical, 6)
                 .dropDestination(for: String.self) { values, _ in
                   guard let value = values.first,
@@ -118,7 +135,16 @@ struct CalendarView: View {
             }
           } header: {
             HStack {
-              Text(day, format: .dateTime.weekday(.wide).day().month())
+              VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                  Text(day, format: .dateTime.weekday(.wide)).font(.title3.weight(.semibold))
+                  if date == model.dateString(Date()) {
+                    Text("today").font(.caption).foregroundStyle(.tint)
+                  }
+                }
+                Text(day, format: .dateTime.day().month(.wide)).font(.subheadline).foregroundStyle(
+                  .secondary)
+              }
               Spacer()
               Menu {
                 Button("copy_day_tomorrow") {
@@ -129,7 +155,7 @@ struct CalendarView: View {
                   }
                 }
               } label: {
-                Image(systemName: "ellipsis.circle")
+                Image(systemName: "ellipsis.circle").frame(minWidth: 44, minHeight: 44)
               }
               .accessibilityLabel(Text("day_actions"))
             }

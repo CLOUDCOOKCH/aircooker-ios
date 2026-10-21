@@ -43,20 +43,28 @@ struct RecipePhotoView: View {
   @Environment(AppModel.self) private var model
   let imageID: UUID?
   @State private var data: Data?
+  @State private var loadedImageID: UUID?
   private var loadKey: String { "\(imageID?.uuidString ?? "none")-\(model.photoRevision)" }
   var body: some View {
-    ZStack {
-      Rectangle().fill(.green.opacity(0.1))
-      if let data, let image = UIImage(data: data) {
-        Image(uiImage: image).resizable().scaledToFill()
-      } else {
-        Image(systemName: imageID == nil ? "fork.knife" : "photo")
-          .font(.title2).foregroundStyle(.green)
-      }
-    }.clipped().accessibilityHidden(true)
+    GeometryReader { geometry in
+      ZStack {
+        Rectangle().fill(KitchenStyle.placeholder)
+        if let data, let image = UIImage(data: data) {
+          Image(uiImage: image).resizable().scaledToFill()
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        } else {
+          Image(systemName: imageID == nil ? "fork.knife" : "photo")
+            .font(.title2).foregroundStyle(.secondary)
+        }
+      }.frame(width: geometry.size.width, height: geometry.size.height).clipped()
+    }.accessibilityHidden(true)
       .task(id: loadKey) {
-        data = nil
-        if let imageID { data = try? await model.store?.photoData(id: imageID) }
+        if loadedImageID != imageID { data = nil }
+        let next: Data?
+        if let imageID { next = try? await model.store?.photoData(id: imageID) } else { next = nil }
+        guard !Task.isCancelled else { return }
+        data = next
+        loadedImageID = imageID
       }
   }
 }

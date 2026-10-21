@@ -5,7 +5,8 @@ see VALIDATION.md for the final host-toolchain recovery and its exact limits. Sw
 VisionKit, WidgetKit, LocalAuthentication, Keychain and notifications have not been compiled
 or tested with an Apple SDK here. All native UI functionality is therefore unverified.
 
-Implemented sources: five-tab navigation, HTTPS onboarding, QR scanner, initial setup/login,
+Implemented sources: adaptive native tint, shared recipe/meal presentation, photo-led recipe grid,
+Home meal hierarchy and empty-state actions, clearer calendar date/week controls; five-tab navigation, HTTPS onboarding, QR scanner, initial setup/login,
 Keychain token vault with generation-checked sign-out and durable revocation, optional local access lock, persistent SQLite/outbox, server identity
 pinning, sync, recipe list/detail/editor/scaling and photo selection/cache, week calendar assignment,
 occurrence-aware movement/duplication, day/week copy previews, template save/apply, recurrence editing,

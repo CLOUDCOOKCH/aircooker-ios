@@ -51,3 +51,8 @@ See the implementation checklist for feature status and verification limits.
   legacy token-only envelopes and reject unknown formats without clearing secure storage.
 - Add English/German pending sign-out controls; native Apple validation remains outstanding.
 - Prefer unused recipes before repeats regardless of extreme rating/history differences.
+
+- Refine Home into meals, planning and recipe sections; keep import/create actions available.
+- Add adaptive photo-led recipe cards, meaningful empty states, shared native surfaces and
+  light/dark tint assets. Improve calendar date/week hierarchy and accessible meal actions.
+- Preserve cached photo presentation during reload; native rendering remains unverified.

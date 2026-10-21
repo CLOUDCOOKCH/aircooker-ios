@@ -58,7 +58,7 @@ struct RootView: View {
         set: { value in if model.connected && !model.locked { model.destination = value } }
       )
     ) { DestinationView(destination: $0) }
-    .tint(Color(red: 0.21, green: 0.39, blue: 0.27))
+    .tint(KitchenStyle.accent)
   }
 }
 struct OnboardingView: View {
@@ -75,10 +75,8 @@ struct OnboardingView: View {
     NavigationStack {
       Form {
         Section {
-          Image(systemName: "fork.knife.circle.fill").font(.system(size: 72)).foregroundStyle(
-            .green
-          ).accessibilityHidden(true)
-          Text("welcome_title").font(.largeTitle.bold())
+          Text("welcome_title").font(.system(.largeTitle, design: .serif).weight(.semibold))
+            .padding(.vertical, 8)
           Text("welcome_body").foregroundStyle(.secondary)
         }
         if model.pendingSignOuts > 0 { SignOutStatusView() }
@@ -134,48 +132,110 @@ struct OnboardingView: View {
 struct HomeView: View {
   @Environment(AppModel.self) private var model
   @State private var newRecipe = false
+  private var today: [MealOccurrence] {
+    (try? MealPlanning.expand(
+      model.meals, from: model.dateString(Date()), through: model.dateString(Date()))) ?? []
+  }
   var body: some View {
-    List {
-      Section {
-        Text("home_greeting").font(.largeTitle.bold()).listRowSeparator(.hidden)
-        Text(Date.now, format: .dateTime.weekday(.wide).day().month(.wide)).foregroundStyle(
-          .secondary)
-      }
-      Section("today_meals") {
-        let today =
-          (try? MealPlanning.expand(
-            model.meals, from: model.dateString(Date()),
-            through: model.dateString(Date()))) ?? []
-        if today.isEmpty {
-          ContentUnavailableView(
-            "nothing_planned", systemImage: "calendar.badge.plus",
-            description: Text("plan_from_calendar"))
-        }
-        ForEach(today) { item in
-          NavigationLink {
-            RecipeDetail(id: item.meal.recipeID)
-          } label: {
-            Label(
-              model.title(item.meal),
-              systemImage: item.meal.category == "breakfast" ? "sunrise" : "fork.knife")
+    ScrollView {
+      LazyVStack(alignment: .leading, spacing: 30) {
+        Text(Date.now, format: .dateTime.weekday(.wide).day().month(.wide))
+          .font(.subheadline).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 14) {
+          HStack {
+            Text("today_meals").font(.title2.weight(.semibold))
+            Spacer()
+            NavigationLink {
+              CalendarView(initialDate: model.dateString(Date()))
+            } label: {
+              Image(systemName: "arrow.up.right").frame(minWidth: 44, minHeight: 44)
+            }.accessibilityLabel(Text("calendar"))
+          }
+          if today.isEmpty {
+            VStack(alignment: .leading, spacing: 14) {
+              Text("nothing_planned").font(.system(.title2, design: .serif))
+              Text("plan_from_calendar").foregroundStyle(.secondary)
+              NavigationLink("plan_meal") { CalendarView(initialDate: model.dateString(Date())) }
+                .buttonStyle(.borderedProminent)
+            }.padding(22).frame(maxWidth: .infinity, alignment: .leading)
+              .background(
+                KitchenStyle.surface, in: RoundedRectangle(cornerRadius: KitchenStyle.radius))
+          }
+          ForEach(today) { item in
+            NavigationLink {
+              RecipeDetail(id: item.meal.recipeID)
+            } label: {
+              MealRow(item: item)
+            }
+            .buttonStyle(.plain)
           }
         }
-      }
-      Section {
-        if let week = try? PlanningDate.monday(containing: model.dateString(Date())) {
-          NavigationLink("weekly_suggestions") { SuggestionsView(week: week) }
+        VStack(alignment: .leading, spacing: 16) {
+          Text("plan_your_week").font(.title2.weight(.semibold))
+          if let week = try? PlanningDate.monday(containing: model.dateString(Date())) {
+            NavigationLink {
+              SuggestionsView(week: week)
+            } label: {
+              Label("weekly_suggestions", systemImage: "sparkles").frame(
+                maxWidth: .infinity, alignment: .leading)
+            }.buttonStyle(.bordered).controlSize(.large)
+          }
+          NavigationLink {
+            LeftoversView()
+          } label: {
+            Label("leftovers", systemImage: "takeoutbag.and.cup.and.straw")
+          }.frame(minHeight: 44)
         }
-        NavigationLink("leftovers") { LeftoversView() }
+        VStack(alignment: .leading, spacing: 16) {
+          Text("from_your_recipes").font(.title2.weight(.semibold))
+          if model.recipes.isEmpty { Text("recipe_library_empty_hint").foregroundStyle(.secondary) }
+          ForEach(Array(model.recipes.prefix(3))) { row in
+            if let recipe = try? row.decode(Recipe.self) {
+              NavigationLink {
+                RecipeDetail(id: row.id)
+              } label: {
+                HStack(spacing: 14) {
+                  RecipePhotoView(imageID: recipe.imageID).frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                  VStack(alignment: .leading, spacing: 5) {
+                    Text(recipe.title).font(.headline).foregroundStyle(.primary)
+                    Text("ingredient_count \(recipe.ingredients.count)").font(.caption)
+                      .foregroundStyle(.secondary)
+                  }
+                  Spacer(minLength: 0)
+                }.frame(minHeight: 64)
+              }.buttonStyle(.plain)
+            }
+          }
+          ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) { recipeActions }
+            VStack(alignment: .leading, spacing: 12) { recipeActions }
+          }.controlSize(.large)
+        }
+      }.padding(.horizontal, 20).padding(.top, 8).padding(.bottom, 32)
+        .frame(maxWidth: 760, alignment: .leading).frame(maxWidth: .infinity)
+    }.background(KitchenStyle.background).navigationTitle("home_greeting")
+      .toolbar {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+          NavigationLink {
+            ImportView()
+          } label: {
+            Label("import_recipe", systemImage: "square.and.arrow.down")
+          }
+          Button("create_recipe", systemImage: "plus") { newRecipe = true }
+        }
       }
-      Section("your_kitchen") {
-        LabeledContent("recipes", value: String(model.recipes.count))
-        LabeledContent("pending", value: String(model.pending))
-        LabeledContent("bring_status", value: String(localized: "not_configured"))
-        Button("create_recipe", systemImage: "plus") { newRecipe = true }
-        NavigationLink("import_recipe") { ImportView() }
-      }
-    }.navigationTitle("home").refreshable { await model.synchronise() }
+      .refreshable { await model.synchronise() }
       .sheet(isPresented: $newRecipe) { RecipeEditor() }
+  }
+  @ViewBuilder private var recipeActions: some View {
+    NavigationLink {
+      ImportView()
+    } label: {
+      Label("import_recipe", systemImage: "square.and.arrow.down")
+    }
+    .buttonStyle(.borderedProminent)
+    Button("create_recipe", systemImage: "plus") { newRecipe = true }.buttonStyle(.bordered)
   }
 }
 struct SettingsView: View {

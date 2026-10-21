@@ -393,3 +393,10 @@
 "signout_pending_hint" = "A previous session is awaiting server sign-out. Keep this app installed and reopen it when the server is reachable, or revoke the session in the administration console. Local drafts are preserved.";
 "signout_retrying" = "Revoking previous sessions…";
 "signout_retry" = "Retry server sign-out";
+
+"recipe_library_empty" = "Your recipe collection starts here";
+"recipe_library_empty_hint" = "Save a family favourite or import a recipe you want to cook.";
+"plan_your_week" = "A little planning";
+"from_your_recipes" = "From your recipes";
+"recipe_step %lld %@" = "Step %lld. %@";
+"today" = "Today";
