@@ -9,34 +9,38 @@ struct ImportView: View {
   @State private var preview: ImportDraft?
   var body: some View {
     Form {
-      Section("import_recipe") {
-        TextField("import_url", text: $url).keyboardType(.URL).textInputAutocapitalization(.never)
-          .autocorrectionDisabled()
-        TextField("import_text", text: $text, axis: .vertical).lineLimit(3...8)
-        Button("import_start") {
-          Task {
-            await model.queueImport(url: url.isEmpty ? nil : url, text: text.isEmpty ? nil : text)
-            url = ""
-            text = ""
-          }
-        }.disabled(url.isEmpty && text.isEmpty)
-      }
-      Section {
-        Text("import_pending").font(.footnote).foregroundStyle(.secondary)
-        ForEach(drafts) { draft in
-          if draft.state == "preview", draft.recipe != nil {
-            Button(draft.recipe?.title ?? String(localized: "import_review")) { preview = draft }
-          } else if draft.state == "needs_input" {
-            VStack(alignment: .leading) {
-              Text("import_failed")
-              if let code = draft.errorCode {
-                Text(code).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
-              }
+      if model.isDemo {
+        Section("import_recipe") { Text("demo_server_features") }
+      } else {
+        Section("import_recipe") {
+          TextField("import_url", text: $url).keyboardType(.URL).textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+          TextField("import_text", text: $text, axis: .vertical).lineLimit(3...8)
+          Button("import_start") {
+            Task {
+              await model.queueImport(url: url.isEmpty ? nil : url, text: text.isEmpty ? nil : text)
+              url = ""
+              text = ""
             }
-          } else {
-            Label(
-              LocalizedStringKey(draft.state == "confirmed" ? "save" : "import_pending"),
-              systemImage: draft.state == "confirmed" ? "checkmark.circle" : "clock")
+          }.disabled(url.isEmpty && text.isEmpty)
+        }
+        Section {
+          Text("import_pending").font(.footnote).foregroundStyle(.secondary)
+          ForEach(drafts) { draft in
+            if draft.state == "preview", draft.recipe != nil {
+              Button(draft.recipe?.title ?? String(localized: "import_review")) { preview = draft }
+            } else if draft.state == "needs_input" {
+              VStack(alignment: .leading) {
+                Text("import_failed")
+                if let code = draft.errorCode {
+                  Text(code).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                }
+              }
+            } else {
+              Label(
+                LocalizedStringKey(draft.state == "confirmed" ? "save" : "import_pending"),
+                systemImage: draft.state == "confirmed" ? "checkmark.circle" : "clock")
+            }
           }
         }
       }

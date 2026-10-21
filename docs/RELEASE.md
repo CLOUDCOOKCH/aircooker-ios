@@ -12,8 +12,9 @@ A source tree and workflow file do not constitute a distributable iOS release.
    increased contrast, Reduce Motion, accessibility text and native tab-bar restoration.
 5. Finish photo cleanup/quotas, advanced planning, backup/deletion and all checklist requirements.
 6. Provide original app icons, genuine screenshots in English/German and support/privacy URLs.
-7. Provide an accessible fully functional review backend with an explicit demo account,
-   or implement a complete, clearly labelled local demo. Neither currently exists.
+7. Validate the explicitly labelled [local demo](DEMO.md) for core App Review workflows.
+   Its native UI checks are in progress. Provide an accessible review backend/account when
+   server/integration workflows must be exercised; none has been supplied.
 8. Finalise App Privacy declarations based on the implemented data flows; no tracking claim
    should extend to independently configured third-party providers.
 9. Re-read Apple's current review/SDK rules. Supply review instructions explaining self-hosting

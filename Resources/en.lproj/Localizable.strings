@@ -424,3 +424,9 @@
 "import_notice_omitted" = "Some ingredient entries were left out because they could not be read. Check the source before saving.";
 "import_notice_truncated" = "Some ingredient text exceeded import limits and was shortened. Check the source before saving.";
 "import_notice_unknown" = "Some source information needs review. Compare the recipe with its source before saving.";
+
+"offline_demo" = "Offline demo · sample data";
+"explore_demo" = "Explore the app";
+"exit_demo" = "Exit demo";
+"demo_intro" = "Try recipes, planning, pantry and leftovers without a server. Sample recipes and illustrative photos are kept in a separate local demo. Your edits stay on this device.";
+"demo_server_features" = "Connect your self-hosted server to use synchronisation, imports, AI and Bring!. These services are not simulated in the demo. Exit the demo to connect.";

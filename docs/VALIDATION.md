@@ -154,3 +154,26 @@ keyboard transitions, sync notice wrapping, photo overlays and missing images, a
 appearances with Reduce Transparency, increased contrast, Reduce Motion and Dynamic Type.
 Custom glass regions have explicit opaque fallbacks; system tab/tool/button accessibility
 adaptation and contrast still need real-device verification.
+
+
+## Native build progress and isolated demo
+
+The GitHub runner supplies production Xcode 26.6 with a supported iOS SDK. After correcting
+Section initializers and icon packaging, the app, Share Extension and Widget Extension
+build successfully at e82cae4. The first simulator test could not install the app because
+extension display names were missing; 528a9ac supplies them. This is compile evidence,
+not a claim that UI workflows or physical-device behaviour have passed.
+
+The demo adds five portable tests; all 85 pass on the verified Swift 6.2.1 Linux toolchain.
+They cover actual seed planning/German/household-date data, stable restart/edit/deletion
+queues, rejection of a household store, and rollback of entities/photos/identity. Native
+mode changes clear derived snapshots, disable server client construction and restore the
+original store without deleting it. These Apple-source lifecycle paths require native UI
+validation. Formatting, source syntax parsing, unchanged API pin and 288-key EN/DE parity
+pass. UI tests and genuine light/dark screenshot export are configured; results are pending.
+
+
+Foundation GitHub run 39560965568 at 528a9ac is now green: app and both extensions build,
+the onboarding UI test launches the app successfully on an iPhone simulator and keeps a
+genuine capture. See validation/github-native-foundation.json for exact job IDs. Current
+demo edits postdate that verified run and still require their own native acceptance.

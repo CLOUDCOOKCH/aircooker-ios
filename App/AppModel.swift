@@ -29,6 +29,11 @@ import WidgetKit
   var busy = false
   var error: String?
   var connected = false
+  var isDemo = false
+  var ready = false
+  private var starting = false
+  private var householdStore: LocalStore?
+  private var householdDemoTimeZone: String?
   var locked = false
   var householdTimeZone =
     UserDefaults.standard.string(forKey: "householdTimeZone") ?? TimeZone.current.identifier
@@ -79,7 +84,7 @@ import WidgetKit
     scheduledReminders = await reminders.count()
   }
   func refreshReminders() async {
-    guard connected, !signingOut, let store else { return }
+    guard connected, !isDemo, !signingOut, let store else { return }
     do {
       let snapshot = try await store.planningSnapshot()
       let plan = try MealPresentation.reminders(
@@ -107,6 +112,12 @@ import WidgetKit
     return value
   }
   func start() async {
+    guard !ready, !starting else { return }
+    starting = true
+    defer {
+      starting = false
+      ready = store != nil
+    }
     do {
       let directory = try FileManager.default.url(
         for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -142,6 +153,7 @@ import WidgetKit
     } catch { report(error) }
   }
   func configureClient() throws {
+    guard !isDemo else { throw APIError.signedOut }
     guard let url = URL(string: server) else { throw APIError.invalidServerURL }
     let vault = vaultFor(url.absoluteString)
     self.vault = vault
@@ -220,6 +232,10 @@ import WidgetKit
     } catch { report(error) }
   }
   func queueImport(url: String?, text: String?) async {
+    guard !isDemo else {
+      error = String(localized: "demo_server_features")
+      return
+    }
     do {
       guard let inbox else { throw StoreError.invalidRecord }
       if let url {
@@ -266,7 +282,7 @@ import WidgetKit
       resyncStagedCount = recovery.stagedCount
       cachedRecordCount = recovery.localCount
       photoRevision += 1
-      if connected {
+      if connected && !isDemo {
         try publishWidget()
         await refreshReminders()
       }
@@ -529,6 +545,10 @@ import WidgetKit
     } catch { report(error) }
   }
   func logout() async {
+    if isDemo {
+      await endDemo()
+      return
+    }
     guard !signingOut, let client else { return }
     signingOut = true
     defer { signingOut = false }
@@ -550,6 +570,78 @@ import WidgetKit
     } catch { report(error) }
   }
   var signingOut = false
+  func beginDemo() async {
+    guard ready, !connected, !busy, !signingOut, !isDemo, let currentStore = store else { return }
+    busy = true
+    defer { busy = false }
+    do {
+      let directory = try FileManager.default.url(
+        for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+      let demo = try LocalStore(url: DemoWorkspace.databaseURL(in: directory))
+      guard let asset = Bundle.main.url(forResource: "DemoChicken", withExtension: "png") else {
+        throw StoreError.invalidPhoto
+      }
+      let photo = try await Task.detached(priority: .userInitiated) {
+        try PhotoPreparation.prepare(Data(contentsOf: asset))
+      }.value
+      let zone = TimeZone.current.identifier
+      let language = Locale.current.language.languageCode?.identifier ?? "en"
+      let seed = try DemoWorkspace.seed(
+        now: Date(), timeZone: zone, language: language, withPhoto: true)
+      try await demo.initialiseDemo(seed, photos: [DemoWorkspace.photoID: photo])
+      householdStore = currentStore
+      householdDemoTimeZone = householdTimeZone
+      client = nil
+      syncEngine = nil
+      vault = nil
+      store = demo
+      householdTimeZone = zone
+      isDemo = true
+      clearPresentation()
+      clearWidget()
+      do { try await reminders.reconcile([], showRecipeNames: false) } catch { report(error) }
+      await reload()
+      connected = true
+    } catch { report(error) }
+  }
+  func endDemo() async {
+    guard isDemo, !busy else { return }
+    busy = true
+    defer { busy = false }
+    connected = false
+    isDemo = false
+    store = householdStore
+    householdStore = nil
+    householdTimeZone = householdDemoTimeZone ?? TimeZone.current.identifier
+    householdDemoTimeZone = nil
+    client = nil
+    syncEngine = nil
+    vault = nil
+    clearPresentation()
+    clearWidget()
+    do { try await reminders.reconcile([], showRecipeNames: false) } catch { report(error) }
+    await reload()
+  }
+  private func clearPresentation() {
+    // Invalidate older actor reads before switching data sources. Clearing
+    // derived views never removes a database record or queued mutation.
+    reloadGeneration += 1
+    recipes = []
+    meals = []
+    pantry = []
+    leftovers = []
+    templates = []
+    pending = 0
+    syncIssues = []
+    resyncRequired = false
+    resyncRebuilding = false
+    resyncStagedCount = 0
+    cachedRecordCount = 0
+    authenticationExpired = false
+    destination = nil
+    error = nil
+    photoRevision += 1
+  }
   func retrySignOuts() async {
     guard !retryingSignOuts else { return }
     retryingSignOuts = true

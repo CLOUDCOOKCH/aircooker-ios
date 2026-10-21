@@ -191,6 +191,25 @@ public actor LocalStore {
       recipes: entities(kind: .recipe), meals: entities(kind: .meal),
       leftovers: entities(kind: .leftover))
   }
+  public func initialiseDemo(_ edits: [LocalEdit], photos: [UUID: Data] = [:]) throws {
+    guard edits.count <= 100 else { throw PlanningError.tooManyChanges }
+    try transaction {
+      if try run("SELECT value FROM metadata WHERE key='offline_demo_seed'").first != nil {
+        return
+      }
+      guard try run("SELECT id FROM entity LIMIT 1").isEmpty,
+        try run("SELECT id FROM outbox LIMIT 1").isEmpty
+      else { throw StoreError.serverChanged }
+      try bind(instanceID: DemoWorkspace.instanceID)
+      let device = try deviceID()
+      for (id, data) in photos { try insertPhoto(id: id, data: data, pending: false) }
+      for edit in edits {
+        try persist(
+          kind: edit.kind, id: edit.id, payload: edit.payload, delete: edit.deleted, device: device)
+      }
+      _ = try run("INSERT INTO metadata VALUES ('offline_demo_seed','1')")
+    }
+  }
   public func applySuggestions(_ preview: WeeklyPreview, selectedIDs: Set<String>) throws {
     let device = try deviceID()
     try transaction {

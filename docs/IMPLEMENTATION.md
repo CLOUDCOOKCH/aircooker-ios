@@ -3,7 +3,10 @@
 The Swift core is compiled and tested on Linux using Swift 6.2.1. Earlier runs used Docker;
 see VALIDATION.md for the final host-toolchain recovery and its exact limits. SwiftUI, UIKit,
 VisionKit, WidgetKit, LocalAuthentication, Keychain and notifications have not been compiled
-or tested with an Apple SDK here. All native UI functionality is therefore unverified.
+with an Apple SDK in this Linux workspace. GitHub Xcode 26.6 has now built the app and
+extensions at e82cae4; simulator installation exposed missing extension display names,
+which were fixed. Foundation run 39560965568 at 528a9ac passes native build, simulator
+onboarding, core and secret checks. Current demo sources await their own CI result.
 
 Implemented sources: adaptive native tint, shared recipe/meal presentation, photo-led recipe grid,
 interactive civil-date Home week selection, focused daily meal presentation, shared searchable
@@ -17,7 +20,9 @@ occurrence-aware movement/duplication, day/week copy previews, template save/app
 accessible context-menu alternatives, pantry editing, leftover recording/editing/discard/assignment,
 local suggestion preferences/review/selection, import queue/review sources, App Group
 share inbox, 14-day widget snapshots/timeline sources, deferred deep links, reminder preferences
-opt-in notification reconciliation, rejected-change review and saved local draft recovery, explicit server-history rebuild, durable snapshot staging and reauthentication. English/German resources are present.
+opt-in notification reconciliation, rejected-change review and saved local draft recovery, explicit server-history rebuild, durable snapshot staging and reauthentication. English/German resources are present. The isolated offline demo includes atomic sample
+seeding, persistent editing, explicit service limitations and a visible sample-data notice;
+85 portable tests pass, including five new demo isolation/restart/rollback tests.
 
 Tested core: prepared photo + recipe + outbox atomic persistence, upload-before-recipe sync,
 replay after lost responses/restart, photo cache, v1→v2 local migration, bounded recurrence,
@@ -35,7 +40,8 @@ arbitrary copy destinations, native leftover/suggestion lifecycle validation, sh
 recommendation preferences and cross-device approval collision handling; import preview lifecycle
 end-to-end; provider disclosure/configuration; Apple notification delivery/permission and
 widget/deep-link lifecycle validation; native logout/session revocation lifecycle and deletion UX; recoverable sync
-recovery UI/device validation and reference-safe restoration beyond recipes; UI tests; app icon; screenshots; demo environment; TestFlight signing/upload;
+recovery UI/device validation and reference-safe restoration beyond recipes; expanded UI tests; icon appearance validation; genuine screenshot review; demo native
+acceptance; TestFlight signing/upload;
 accessibility audit; full performance/privacy/security validation.
 
 The server repository's implementation checklist tracks the full product phases. Neither

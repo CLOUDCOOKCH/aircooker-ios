@@ -1,0 +1,34 @@
+{
+  "observed_at": "2026-10-21T07:35:43.810954+00:00",
+  "repository": "CLOUDCOOKCH/aircooker-ios",
+  "commit": "528a9acaf8c92881e34653956e0213617e2cd458",
+  "run_id": 39560965568,
+  "url": "https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39560965568",
+  "conclusion": "success",
+  "xcode": "26.6",
+  "simulator_sdk": "26.5",
+  "core_tests": 80,
+  "jobs": [
+    {
+      "id": 119091839994,
+      "name": "native",
+      "conclusion": "success"
+    },
+    {
+      "id": 119091840181,
+      "name": "core",
+      "conclusion": "success"
+    }
+  ],
+  "verified": [
+    "Native app/Share/Widget build",
+    "OnboardingTests.testWelcomeRequiresServerAndCredentials on a supported iPhone simulator",
+    "Native XCTest screenshot attachment",
+    "Portable core and source secret checks"
+  ],
+  "limits": [
+    "No physical device or signing/TestFlight verification",
+    "Current demo changes postdate this run",
+    "Build/onboarding success is not proof of every UI feature or visual quality"
+  ]
+}

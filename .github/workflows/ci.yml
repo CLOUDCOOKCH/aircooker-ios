@@ -34,11 +34,19 @@ jobs:
       - run: swift format lint --strict --recursive Sources Tests App ShareExtension WidgetExtension UITests
       - run: swift test
       - name: Build all native targets
-        run: xcodebuild -project aircooker.xcodeproj -scheme aircooker -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project aircooker.xcodeproj -scheme aircooker -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
       - name: Run onboarding UI checks on available simulator
         run: python3 scripts/run_simulator_tests.py
+      - name: Package development simulator app
+        run: ditto -c -k --sequesterRsrc --keepParent build/DerivedData/Build/Products/Debug-iphonesimulator/aircooker.app build/aircooker-simulator.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: simulator-development-build
+          path: build/aircooker-simulator.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: native-test-results
-          path: build/NativeTests.xcresult
+          path: |
+            build/NativeTests-*.xcresult
+            build/screenshots

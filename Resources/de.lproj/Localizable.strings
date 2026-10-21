@@ -424,3 +424,9 @@
 "import_notice_omitted" = "Einige Zutatenangaben konnten nicht gelesen werden und wurden ausgelassen. Prüfe vor dem Speichern die Quelle.";
 "import_notice_truncated" = "Einige Zutatenangaben überschritten die Importgrenzen und wurden gekürzt. Prüfe vor dem Speichern die Quelle.";
 "import_notice_unknown" = "Einige Angaben aus der Quelle müssen geprüft werden. Vergleiche das Rezept vor dem Speichern mit der Quelle.";
+
+"offline_demo" = "Offline-Demo · Beispieldaten";
+"explore_demo" = "App erkunden";
+"exit_demo" = "Demo verlassen";
+"demo_intro" = "Probiere Rezepte, Planung, Vorräte und Reste ohne Server aus. Beispielrezepte und illustrative Fotos bleiben in einer getrennten lokalen Demo. Deine Änderungen bleiben auf diesem Gerät.";
+"demo_server_features" = "Verbinde deinen selbst gehosteten Server für Synchronisierung, Importe, KI und Bring!. Diese Dienste werden in der Demo nicht simuliert. Verlasse die Demo, um einen Server zu verbinden.";

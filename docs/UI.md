@@ -69,3 +69,12 @@ texture, custom tab bar or third-party glass dependency was introduced.
 These are source changes, not verified iOS 27 captures. Apple SDK compilation, material
 contrast over different photographs, light/dark appearances, all accessibility combinations,
 tab-bar minimisation/restoration, toolbar grouping and touch/scroll behaviour remain gates.
+
+
+The explicitly entered offline demo uses the same views with a separate database, no API
+client/sync engine and a persistent sample-data indicator. Household data is cleared from
+derived views before changing modes, without deleting stored content. Sample food artwork
+is original and illustrative; it never populates a real household library. Server features
+show a clear limitation instead of a fake working integration. Import review warnings now
+live within the editor's scrolling form and are translated into English/German. Native
+Demo UI captures and their visual review are pending; see DEMO.md.

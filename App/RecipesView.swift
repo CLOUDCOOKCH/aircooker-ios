@@ -81,6 +81,7 @@ struct RecipesView: View {
           }
           Button("create_recipe", systemImage: "plus") { creating = true }
             .labelStyle(.iconOnly).buttonStyle(.glassProminent).buttonBorderShape(.circle)
+            .accessibilityIdentifier("recipes.create")
         }
       }
       .sheet(isPresented: $creating) { RecipeEditor() }
@@ -186,6 +187,9 @@ struct RecipeEditor: View {
   var body: some View {
     NavigationStack {
       Form {
+        if model.isDemo {
+          Section { Label("offline_demo", systemImage: "eye").font(.footnote) }
+        }
         if let importWarnings {
           Section("import_review") {
             Label("import_uncertainty", systemImage: "exclamationmark.circle")
@@ -218,6 +222,7 @@ struct RecipeEditor: View {
         }
         Section("recipe") {
           TextField("recipe_title", text: $recipe.title)
+            .accessibilityIdentifier("recipe.title")
           TextField("description", text: $recipe.description, axis: .vertical)
           TextField("servings", text: $recipe.servings).keyboardType(.decimalPad)
         }
@@ -279,7 +284,7 @@ struct RecipeEditor: View {
                 }
                 saving = false
               }
-            }.disabled(!valid || saving || preparingPhoto)
+            }.disabled(!valid || saving || preparingPhoto).accessibilityIdentifier("recipe.save")
           }
           ToolbarItem(placement: .bottomBar) { EditButton() }
         }

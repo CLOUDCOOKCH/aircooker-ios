@@ -43,6 +43,10 @@ They do not validate Apple frameworks or demonstrate a working iOS installation.
 
 ## Using the app sources
 
+For a local preview, choose **Explore the app** on onboarding. The [offline demo](docs/DEMO.md)
+keeps sample content and edits in a separate database; it does not simulate server services.
+Its portable isolation tests pass; native UI verification is in progress.
+
 The app has Home, Calendar, Recipes, Pantry and Settings navigation. Enter a valid HTTPS
 origin, or scan a QR containing only that origin, then authenticate with the household
 account. New-server setup uses the one-time container administrator token. URLSession never

@@ -40,22 +40,43 @@ struct RootView: View {
       }
     }
     .safeAreaInset(edge: .bottom) {
-      if let error = model.error {
-        VStack(alignment: .leading, spacing: 8) {
-          Label(error, systemImage: "exclamationmark.icloud").font(.footnote)
-          if !model.syncIssues.isEmpty { Text("sync_attention_hint").font(.caption) }
-          HStack {
-            Text("pending_changes \(model.pending)").font(.caption)
-            Spacer()
-            Button("retry") { Task { await model.synchronise() } }.disabled(model.busy)
-          }
-        }.padding(16).kitchenGlass(in: RoundedRectangle(cornerRadius: 24))
-          .padding(.horizontal, 16).padding(.bottom, 8)
-      } else if model.pending > 0 || model.busy {
-        Label("pending_changes \(model.pending)", systemImage: "arrow.triangle.2.circlepath").font(
-          .caption
-        ).padding(.horizontal, 16).padding(.vertical, 12)
-          .kitchenGlass(in: Capsule()).padding(.horizontal, 16).padding(.bottom, 8)
+      VStack(spacing: 8) {
+        if model.isDemo {
+          HStack(spacing: 12) {
+            Label("offline_demo", systemImage: "eye").font(.caption)
+            Spacer(minLength: 0)
+            Button("exit_demo") { Task { await model.endDemo() } }
+              .font(.caption).frame(minHeight: 44).disabled(model.busy)
+              .accessibilityIdentifier("demo.exit")
+          }.padding(.horizontal, 16).kitchenGlass(in: Capsule())
+            .padding(.horizontal, 16).padding(.bottom, 8)
+        }
+        if let error = model.error {
+          VStack(alignment: .leading, spacing: 8) {
+            Label(error, systemImage: "exclamationmark.icloud").font(.footnote)
+            if !model.syncIssues.isEmpty { Text("sync_attention_hint").font(.caption) }
+            HStack {
+              if model.isDemo {
+                Button("done") { model.error = nil }
+              } else {
+                Text("pending_changes \(model.pending)").font(.caption)
+                Spacer()
+                Button("retry") {
+                  Task {
+                    if model.ready { await model.synchronise() } else { await model.start() }
+                  }
+                }.disabled(model.busy)
+              }
+            }
+          }.padding(16).kitchenGlass(in: RoundedRectangle(cornerRadius: 24))
+            .padding(.horizontal, 16).padding(.bottom, 8)
+        } else if !model.isDemo && (model.pending > 0 || model.busy) {
+          Label("pending_changes \(model.pending)", systemImage: "arrow.triangle.2.circlepath")
+            .font(
+              .caption
+            ).padding(.horizontal, 16).padding(.vertical, 12)
+            .kitchenGlass(in: Capsule()).padding(.horizontal, 16).padding(.bottom, 8)
+        }
       }
     }
     .sheet(
@@ -84,6 +105,12 @@ struct OnboardingView: View {
           Text("welcome_title").font(.largeTitle.weight(.semibold))
             .padding(.vertical, 8)
           Text("welcome_body").foregroundStyle(.secondary)
+        }
+        Section {
+          Button("explore_demo", systemImage: "play.circle") { Task { await model.beginDemo() } }
+            .disabled(!model.ready || model.busy).accessibilityIdentifier("onboarding.demo")
+        } footer: {
+          Text("demo_intro")
         }
         if model.pendingSignOuts > 0 { SignOutStatusView() }
         Section("server_connection") {
@@ -121,7 +148,7 @@ struct OnboardingView: View {
               setupToken = ""
             }
           }.accessibilityIdentifier("onboarding.connect").disabled(
-            model.busy || server.isEmpty || username.isEmpty || password.isEmpty)
+            !model.ready || model.busy || server.isEmpty || username.isEmpty || password.isEmpty)
         } footer: {
           Text("setup_console_hint")
         }

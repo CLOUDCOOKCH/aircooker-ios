@@ -31,39 +31,47 @@ struct SettingsView: View {
               }
             })
         ) { Label("biometric_lock", systemImage: "faceid") }
-      }
-      Section("sync_status") {
-        LabeledContent {
-          Text(model.pending, format: .number).monospacedDigit()
-        } label: {
-          Label("pending", systemImage: "arrow.triangle.2.circlepath")
+      }.disabled(model.isDemo)
+      if model.isDemo {
+        Section("offline_demo") {
+          Text("demo_intro")
+          Text("demo_server_features").foregroundStyle(.secondary)
+          Button("exit_demo") { Task { await model.endDemo() } }.disabled(model.busy)
         }
-        NavigationLink {
-          SyncRecoveryView()
-        } label: {
-          Label("sync_recovery", systemImage: "tray.full")
+      } else {
+        Section("sync_status") {
+          LabeledContent {
+            Text(model.pending, format: .number).monospacedDigit()
+          } label: {
+            Label("pending", systemImage: "arrow.triangle.2.circlepath")
+          }
+          NavigationLink {
+            SyncRecoveryView()
+          } label: {
+            Label("sync_recovery", systemImage: "tray.full")
+          }
+          Button {
+            Task { await model.synchronise() }
+          } label: {
+            Label("sync_now", systemImage: "arrow.clockwise")
+          }.disabled(model.busy)
         }
-        Button {
-          Task { await model.synchronise() }
-        } label: {
-          Label("sync_now", systemImage: "arrow.clockwise")
-        }.disabled(model.busy)
-      }
-      Section("server_connection") {
-        NavigationLink {
-          ServerConnectionView()
-        } label: {
-          Label("server_connection", systemImage: "server.rack")
+        Section("server_connection") {
+          NavigationLink {
+            ServerConnectionView()
+          } label: {
+            Label("server_connection", systemImage: "server.rack")
+          }
+        }
+        Section {
+          Button("logout", role: .destructive) { Task { await model.logout() } }
+            .disabled(model.signingOut)
+          if model.signingOut { ProgressView("signing_out") }
+        } footer: {
+          Text("logout_keeps_local_data")
         }
       }
       if model.pendingSignOuts > 0 { SignOutStatusView() }
-      Section {
-        Button("logout", role: .destructive) { Task { await model.logout() } }
-          .disabled(model.signingOut)
-        if model.signingOut { ProgressView("signing_out") }
-      } footer: {
-        Text("logout_keeps_local_data")
-      }
     }.navigationTitle("settings")
   }
 }
