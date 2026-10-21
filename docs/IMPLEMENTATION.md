@@ -6,7 +6,9 @@ VisionKit, WidgetKit, LocalAuthentication, Keychain and notifications have not b
 with an Apple SDK in this Linux workspace. GitHub Xcode 26.6 has now built the app and
 extensions at e82cae4; simulator installation exposed missing extension display names,
 which were fixed. Foundation run 39560965568 at 528a9ac passes native build, simulator
-onboarding, core and secret checks. Current demo sources await their own CI result.
+onboarding, core and secret checks. Demo run 39563358861 at 17b1318 passes 85 core tests on both platforms and builds all
+three native targets. Its UI step stopped during simulator system-data migration before
+XCTest; the bounded first-boot deadline has been increased for the next run.
 
 Implemented sources: adaptive native tint, shared recipe/meal presentation, photo-led recipe grid,
 interactive civil-date Home week selection, focused daily meal presentation, shared searchable
@@ -35,7 +37,7 @@ resumable full rebuild, final archive/projection rollback and restored media req
 selected-day ordering; persisted credential envelopes, late refresh/login rejection, offline
 revocation retry and draft/outbox preservation during sign-out.
 
-Remaining: full native SDK build/Swift concurrency validation; photo quota/cleanup UI;
+Remaining: complete native lifecycle/Swift concurrency validation; photo quota/cleanup UI;
 arbitrary copy destinations, native leftover/suggestion lifecycle validation, shared household
 recommendation preferences and cross-device approval collision handling; import preview lifecycle
 end-to-end; provider disclosure/configuration; Apple notification delivery/permission and
@@ -49,4 +51,5 @@ repository is declared complete, production-ready or App Store-ready. Both indep
 repositories are published under CLOUDCOOKCH; no stable release has been published. The
 first GitHub run passed core tests/secret scanning but stopped before native compilation
 because the runner had Xcode 26.6 rather than the previously hard-coded version 27.
-CI now checks actual iOS 26+ capability; a successful native run is still required.
+CI now checks actual iOS 26+ capability; the foundation native run passes as recorded
+above. Current demo UI acceptance remains open.

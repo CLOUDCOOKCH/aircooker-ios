@@ -4,8 +4,9 @@ Native SwiftUI companion to the independently self-hosted aircooker-server.
 Apache-2.0. No hosted account, payment flow, mandatory analytics or advertising SDK.
 
 **Development sources; not a TestFlight-ready application.** The platform-independent Swift
-core compiles and is tested on Linux. Native SwiftUI, Share Extension, WidgetKit, Keychain,
-Face ID/device authentication, camera and notifications need macOS/Xcode validation.
+core is tested on Linux and macOS. GitHub Actions builds the native SwiftUI app, Share
+Extension and Widget Extension with Xcode 26.6. Simulator onboarding passes; complete demo
+workflows, device authentication, camera and notification delivery still need validation.
 
 ## Build
 
@@ -45,7 +46,7 @@ They do not validate Apple frameworks or demonstrate a working iOS installation.
 
 For a local preview, choose **Explore the app** on onboarding. The [offline demo](docs/DEMO.md)
 keeps sample content and edits in a separate database; it does not simulate server services.
-Its portable isolation tests pass; native UI verification is in progress.
+Its 85 portable tests and all native target builds pass; demo UI verification is in progress.
 
 The app has Home, Calendar, Recipes, Pantry and Settings navigation. Enter a valid HTTPS
 origin, or scan a QR containing only that origin, then authenticate with the household
