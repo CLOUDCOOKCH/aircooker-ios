@@ -318,6 +318,38 @@
         "title": "BringCredentials",
         "type": "object"
       },
+      "BrowserSession": {
+        "additionalProperties": false,
+        "properties": {
+          "authenticated": {
+            "const": true,
+            "default": true,
+            "title": "Authenticated",
+            "type": "boolean"
+          },
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "device_id",
+          "expires_in"
+        ],
+        "title": "BrowserSession",
+        "type": "object"
+      },
       "Change": {
         "additionalProperties": false,
         "properties": {
@@ -504,9 +536,22 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
-      "HouseholdExport": {
+      "HouseholdExport-Input": {
         "additionalProperties": false,
         "properties": {
+          "accepted_suggestions": {
+            "additionalProperties": {
+              "maximum": 1000000.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "maxProperties": 10000,
+            "propertyNames": {
+              "format": "uuid"
+            },
+            "title": "Accepted Suggestions",
+            "type": "object"
+          },
           "entities": {
             "items": {
               "$ref": "#/components/schemas/ExportEntity"
@@ -539,8 +584,90 @@
             "title": "Media",
             "type": "array"
           },
+          "planning_preferences": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningPreferences-Input"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "version": {
-            "default": 2,
+            "default": 3,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "exported_at",
+          "household",
+          "entities"
+        ],
+        "title": "HouseholdExport",
+        "type": "object"
+      },
+      "HouseholdExport-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_suggestions": {
+            "additionalProperties": {
+              "maximum": 1000000.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "maxProperties": 10000,
+            "propertyNames": {
+              "format": "uuid"
+            },
+            "title": "Accepted Suggestions",
+            "type": "object"
+          },
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/ExportEntity"
+            },
+            "maxItems": 10000,
+            "title": "Entities",
+            "type": "array"
+          },
+          "exported_at": {
+            "title": "Exported At",
+            "type": "string"
+          },
+          "format": {
+            "default": "aircooker-household",
+            "title": "Format",
+            "type": "string"
+          },
+          "household": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Household",
+            "type": "object"
+          },
+          "media": {
+            "items": {
+              "$ref": "#/components/schemas/ExportMedia"
+            },
+            "maxItems": 5000,
+            "title": "Media",
+            "type": "array"
+          },
+          "planning_preferences": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningPreferences-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "default": 3,
             "title": "Version",
             "type": "integer"
           }
@@ -636,6 +763,18 @@
             "title": "Consent External Ai",
             "type": "boolean"
           },
+          "image_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Id"
+          },
           "request_id": {
             "format": "uuid",
             "title": "Request Id",
@@ -674,7 +813,7 @@
         "title": "ImportRequest",
         "type": "object"
       },
-      "Ingredient": {
+      "Ingredient-Input": {
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -724,6 +863,70 @@
                 "minimum": 0.0,
                 "type": "number"
               },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity Max"
+          },
+          "unit": {
+            "default": "",
+            "maxLength": 30,
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Ingredient",
+        "type": "object"
+      },
+      "Ingredient-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "original_text": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Original Text",
+            "type": "string"
+          },
+          "preparation": {
+            "default": "",
+            "maxLength": 300,
+            "title": "Preparation",
+            "type": "string"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "quantity_max": {
+            "anyOf": [
               {
                 "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
@@ -1066,7 +1269,7 @@
           "payload": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Recipe"
+                "$ref": "#/components/schemas/Recipe-Input"
               },
               {
                 "$ref": "#/components/schemas/Meal"
@@ -1159,6 +1362,18 @@
             "title": "Include This Week",
             "type": "boolean"
           },
+          "include_week_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Week Start"
+          },
           "name": {
             "maxLength": 200,
             "minLength": 1,
@@ -1193,6 +1408,181 @@
           "new_password"
         ],
         "title": "PasswordChange",
+        "type": "object"
+      },
+      "PlanningContext": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_counts": {
+            "additionalProperties": {
+              "maximum": 1000000.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "maxProperties": 10000,
+            "propertyNames": {
+              "format": "uuid"
+            },
+            "title": "Accepted Counts",
+            "type": "object"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PlanningPreferences-Output"
+          },
+          "revision": {
+            "minimum": 0.0,
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "preferences",
+          "accepted_counts"
+        ],
+        "title": "PlanningContext",
+        "type": "object"
+      },
+      "PlanningPreferences-Input": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_repeats": {
+            "default": false,
+            "title": "Allow Repeats",
+            "type": "boolean"
+          },
+          "categories": {
+            "items": {
+              "enum": [
+                "breakfast",
+                "lunch",
+                "dinner"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Categories",
+            "type": "array"
+          },
+          "servings": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 100.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servings"
+          },
+          "use_leftovers": {
+            "default": true,
+            "title": "Use Leftovers",
+            "type": "boolean"
+          }
+        },
+        "title": "PlanningPreferences",
+        "type": "object"
+      },
+      "PlanningPreferences-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_repeats": {
+            "default": false,
+            "title": "Allow Repeats",
+            "type": "boolean"
+          },
+          "categories": {
+            "items": {
+              "enum": [
+                "breakfast",
+                "lunch",
+                "dinner"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Categories",
+            "type": "array"
+          },
+          "servings": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servings"
+          },
+          "use_leftovers": {
+            "default": true,
+            "title": "Use Leftovers",
+            "type": "boolean"
+          }
+        },
+        "title": "PlanningPreferences",
+        "type": "object"
+      },
+      "PreferenceReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "conflict": {
+            "title": "Conflict",
+            "type": "boolean"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "request_id",
+          "revision",
+          "conflict"
+        ],
+        "title": "PreferenceReceipt",
+        "type": "object"
+      },
+      "PreferenceWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "base_revision": {
+            "minimum": 0.0,
+            "title": "Base Revision",
+            "type": "integer"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PlanningPreferences-Input"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "base_revision",
+          "preferences"
+        ],
+        "title": "PreferenceWrite",
         "type": "object"
       },
       "Pull": {
@@ -1256,7 +1646,200 @@
         "title": "Push",
         "type": "object"
       },
-      "Recipe": {
+      "PushKeys": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "maxLength": 40,
+            "title": "Auth",
+            "type": "string"
+          },
+          "p256dh": {
+            "maxLength": 100,
+            "title": "P256Dh",
+            "type": "string"
+          }
+        },
+        "required": [
+          "p256dh",
+          "auth"
+        ],
+        "title": "PushKeys",
+        "type": "object"
+      },
+      "PushQueued": {
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "const": "queued",
+            "default": "queued",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "title": "PushQueued",
+        "type": "object"
+      },
+      "PushRegistration": {
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "maxLength": 4096,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "keys": {
+            "$ref": "#/components/schemas/PushKeys"
+          },
+          "language": {
+            "default": "en",
+            "enum": [
+              "en",
+              "de"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/ReminderPreferences"
+          }
+        },
+        "required": [
+          "endpoint",
+          "keys"
+        ],
+        "title": "PushRegistration",
+        "type": "object"
+      },
+      "PushRetried": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "state": {
+            "const": "queued",
+            "default": "queued",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "title": "PushRetried",
+        "type": "object"
+      },
+      "PushSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "language": {
+            "default": "en",
+            "enum": [
+              "en",
+              "de"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/ReminderPreferences"
+          }
+        },
+        "required": [
+          "preferences"
+        ],
+        "title": "PushSettings",
+        "type": "object"
+      },
+      "PushStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "failed_jobs": {
+            "default": 0,
+            "title": "Failed Jobs",
+            "type": "integer"
+          },
+          "last_success": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success"
+          },
+          "pending_jobs": {
+            "default": 0,
+            "title": "Pending Jobs",
+            "type": "integer"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/ReminderPreferences"
+          },
+          "public_key": {
+            "title": "Public Key",
+            "type": "string"
+          },
+          "subscribed": {
+            "title": "Subscribed",
+            "type": "boolean"
+          },
+          "subscription_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription Fingerprint"
+          }
+        },
+        "required": [
+          "available",
+          "public_key",
+          "subscribed",
+          "preferences"
+        ],
+        "title": "PushStatus",
+        "type": "object"
+      },
+      "PushTest": {
+        "additionalProperties": false,
+        "properties": {
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id"
+        ],
+        "title": "PushTest",
+        "type": "object"
+      },
+      "Recipe-Input": {
         "additionalProperties": false,
         "properties": {
           "description": {
@@ -1279,7 +1862,7 @@
           },
           "ingredients": {
             "items": {
-              "$ref": "#/components/schemas/Ingredient"
+              "$ref": "#/components/schemas/Ingredient-Input"
             },
             "maxItems": 300,
             "title": "Ingredients",
@@ -1394,6 +1977,240 @@
         "title": "Recipe",
         "type": "object"
       },
+      "Recipe-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Description",
+            "type": "string"
+          },
+          "image_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Id"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/Ingredient-Output"
+            },
+            "maxItems": 300,
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 10000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "nutrition": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nutrition"
+          },
+          "nutrition_source": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nutrition Source"
+          },
+          "provenance": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "maxProperties": 50,
+            "title": "Provenance",
+            "type": "object"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "servings": {
+            "default": "2",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Servings",
+            "type": "string"
+          },
+          "source_platform": {
+            "default": "manual",
+            "maxLength": 50,
+            "title": "Source Platform",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "steps": {
+            "items": {
+              "maxLength": 5000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Steps",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "Recipe",
+        "type": "object"
+      },
+      "RecipeImportStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed_recipe_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed Recipe Id"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "number"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "recipe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Recipe-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recognized_text": {
+            "anyOf": [
+              {
+                "maxLength": 100000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recognized Text"
+          },
+          "source_platform": {
+            "title": "Source Platform",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "preview",
+              "needs_input",
+              "confirmed",
+              "cancelled"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "source_url",
+          "source_platform",
+          "state",
+          "recipe",
+          "warnings",
+          "error_code",
+          "confirmed_recipe_id",
+          "created_at"
+        ],
+        "title": "RecipeImportStatus",
+        "type": "object"
+      },
       "Recurrence": {
         "additionalProperties": false,
         "properties": {
@@ -1439,6 +2256,54 @@
           "refresh_token"
         ],
         "title": "Refresh",
+        "type": "object"
+      },
+      "ReminderPreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "breakfast": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "07:30",
+            "title": "Breakfast"
+          },
+          "dinner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "18:00",
+            "title": "Dinner"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "lunch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "12:00",
+            "title": "Lunch"
+          }
+        },
+        "title": "ReminderPreferences",
         "type": "object"
       },
       "SessionInfo": {
@@ -1540,9 +2405,26 @@
         "additionalProperties": false,
         "properties": {
           "basis": {
-            "pattern": "^[a-f0-9]{64}$",
-            "title": "Basis",
-            "type": "string"
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis"
+          },
+          "checkpoint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncAnchor"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "monday": {
             "format": "date",
@@ -1567,7 +2449,6 @@
         "required": [
           "request_id",
           "monday",
-          "basis",
           "mutations"
         ],
         "title": "SuggestionApply",
@@ -1950,7 +2831,7 @@
     }
   },
   "info": {
-    "title": "aircooker server",
+    "title": "mealf server",
     "version": "0.1.0"
   },
   "openapi": "3.1.0",
@@ -2095,7 +2976,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HouseholdExport"
+                  "$ref": "#/components/schemas/HouseholdExport-Output"
                 }
               }
             },
@@ -2141,7 +3022,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/HouseholdExport"
+                "$ref": "#/components/schemas/HouseholdExport-Input"
               }
             }
           },
@@ -2939,6 +3820,70 @@
         "summary": "Update Household"
       }
     },
+    "/api/v1/household/planning-preferences": {
+      "get": {
+        "operationId": "get_preferences_api_v1_household_planning_preferences_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningContext"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Preferences"
+      },
+      "put": {
+        "operationId": "put_preferences_api_v1_household_planning_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferenceWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferenceReceipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Preferences"
+      }
+    },
     "/api/v1/imports": {
       "post": {
         "operationId": "start_import_api_v1_imports_post",
@@ -3035,7 +3980,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeImportStatus"
+                }
               }
             },
             "description": "Successful Response"
@@ -3071,6 +4018,40 @@
               "format": "uuid",
               "title": "Import Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-aircooker-sync-cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Aircooker-Sync-Cursor"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-aircooker-sync-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(root|[a-f0-9]{32})$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Aircooker-Sync-Token"
             }
           }
         ],
@@ -3664,6 +4645,195 @@
         "summary": "Photo Info"
       }
     },
+    "/api/v1/notifications/push": {
+      "get": {
+        "operationId": "status_api_v1_notifications_push_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Status"
+      }
+    },
+    "/api/v1/notifications/push/preferences": {
+      "put": {
+        "operationId": "preferences_api_v1_notifications_push_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preferences"
+      }
+    },
+    "/api/v1/notifications/push/retry": {
+      "post": {
+        "operationId": "retry_api_v1_notifications_push_retry_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushRetried"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Retry"
+      }
+    },
+    "/api/v1/notifications/push/subscription": {
+      "delete": {
+        "operationId": "unsubscribe_api_v1_notifications_push_subscription_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Unsubscribe"
+      },
+      "put": {
+        "operationId": "subscribe_api_v1_notifications_push_subscription_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushRegistration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Subscribe"
+      }
+    },
+    "/api/v1/notifications/push/test": {
+      "post": {
+        "operationId": "test_api_v1_notifications_push_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushTest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushQueued"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Test"
+      }
+    },
     "/api/v1/pantry": {
       "get": {
         "operationId": "list_pantry",
@@ -3928,6 +5098,141 @@
           }
         ],
         "summary": "Projection"
+      }
+    },
+    "/api/v1/pwa/auth/login": {
+      "post": {
+        "operationId": "browser_login_api_v1_pwa_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserSession"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Browser Login"
+      }
+    },
+    "/api/v1/pwa/auth/logout": {
+      "post": {
+        "operationId": "browser_logout_api_v1_pwa_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Browser Logout"
+      }
+    },
+    "/api/v1/pwa/auth/refresh": {
+      "post": {
+        "operationId": "browser_refresh_api_v1_pwa_auth_refresh_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserSession"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Browser Refresh"
+      }
+    },
+    "/api/v1/pwa/auth/session": {
+      "get": {
+        "operationId": "browser_session_api_v1_pwa_auth_session_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserSession"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Browser Session"
+      }
+    },
+    "/api/v1/pwa/auth/setup": {
+      "post": {
+        "operationId": "browser_setup_api_v1_pwa_auth_setup_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-setup-token",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "X-Setup-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Setup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserSession"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Browser Setup"
       }
     },
     "/api/v1/recipes": {
@@ -4303,21 +5608,25 @@
             "name": "categories",
             "required": false,
             "schema": {
-              "default": [
-                "dinner"
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "breakfast",
+                      "lunch",
+                      "dinner"
+                    ],
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
               ],
-              "items": {
-                "enum": [
-                  "breakfast",
-                  "lunch",
-                  "dinner"
-                ],
-                "type": "string"
-              },
-              "maxItems": 3,
-              "minItems": 1,
-              "title": "Categories",
-              "type": "array"
+              "title": "Categories"
             }
           },
           {
@@ -4325,9 +5634,15 @@
             "name": "allow_repeats",
             "required": false,
             "schema": {
-              "default": false,
-              "title": "Allow Repeats",
-              "type": "boolean"
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Allow Repeats"
             }
           },
           {

@@ -1,5 +1,12 @@
 # Changelog
 
+- Deliberately refresh the canonical v1 server contract pin for optional image imports
+  and the typed reviewed-import response. Recipe/Ingredient input/output schema names
+  reflect FastAPI decimal serialization. Review earlier additive optional planning-export,
+  pantry week-override and suggestion-checkpoint fields; the checker explicitly verifies
+  optional compatibility while retaining exact required native wire checks.
+  Camera/OCR UI ships in the primary PWA; no native UI feature is claimed by this pin.
+
 - Make simulator keyboard setup explicit and wait for keyboard readiness before demo
   recipe/search text entry. The mealf build/core checks passed; the prior UI run exposed
   missing input focus and requires a new verified simulator run.

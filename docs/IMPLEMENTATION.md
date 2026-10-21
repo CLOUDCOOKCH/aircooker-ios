@@ -1,5 +1,13 @@
 # Native implementation status
 
+**API contract refresh, 2026-10-21:** deliberately pinned server c97bf16 for the
+primary PWA’s image-import extension and typed import response. Reviewed the existing
+optional planning-export, pantry override and suggestion-checkpoint additions since the
+previous native pin; exact native field checks and optional compatibility checks pass.
+Native photo/OCR import UI is not added by this contract-only refresh. Local contract and
+296-key localisation checks pass; Swift/Xcode validation is delegated to the native CI
+because this Linux session has no Swift toolchain installed.
+
 **Brand update, 2026-10-21:** the product is now mealf. App/Share/widget display names,
 onboarding and English/German copy are updated; bundle IDs, App Groups, Keychain, paths and
 build targets remain compatible. The original supplied peach icon/wordmark PNG files are

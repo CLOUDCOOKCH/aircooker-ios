@@ -21,7 +21,7 @@ expected={
 'AdministrationStatus':{'database_bytes','media_bytes','disk_free_bytes','pending_jobs','recipes'},
 'Leftover':{'recipe_id','portions','produced_on','discarded'},
 'SuggestionPreview':{'preview','monday','basis','meals'},
-'SuggestionApply':{'request_id','monday','basis','mutations'},
+'SuggestionApply':{'request_id','monday','basis','mutations','checkpoint'},
 'MediaInfo':{'id','content_type','sha256','byte_count','width','height','created_at'},
 'Recurrence':{'interval_weeks','until','exceptions'},
 'Template':{'name','meals'},
@@ -52,3 +52,12 @@ assert json.loads(history.read_text())["format_version"]==1
 revocation=schema["paths"]["/api/v1/auth/revoke"]["post"]
 assert "204" in revocation["responses"]
 assert revocation["requestBody"]["content"]["application/json"]["schema"]["$ref"].endswith("/Refresh")
+
+# Reviewed additive fields remain optional for the retained native v1 client.
+for name, field in [("ImportRequest", "image_id"), ("SuggestionApply", "checkpoint"), ("Pantry", "include_week_start"), ("HouseholdExport", "planning_preferences"), ("HouseholdExport", "accepted_suggestions")]:
+    candidates = [schemas[n] for n in (name, name+"-Input", name+"-Output") if n in schemas]
+    assert candidates, name
+    for candidate in candidates:
+        assert field in candidate["properties"]
+        assert field not in candidate.get("required", []), (name, field)
+assert "recognized_text" in schemas["RecipeImportStatus"]["properties"]
