@@ -22,3 +22,11 @@ and manual request. Offline sign-out cannot immediately revoke a server session.
 controls, retention periods, operator contact, support URL, jurisdiction and accurate App
 Privacy disclosures must be finalised before distribution. Users should not be told that
 unimplemented deletion or anonymisation controls already exist.
+
+The app's `PrivacyInfo.xcprivacy` declares no tracking and required-reason UserDefaults
+access under CA92.1: settings, server selection, import identifiers and local signed-out
+state are used only within this app. Authentication tokens remain in Keychain. No required
+reason is used to permit cross-app tracking or advertising. The manifest is not a substitute
+for App Store privacy answers: review user-configured server, AI and Bring data flows and
+Apple's current reason definitions before distribution. Validate the archived privacy report
+and audit any new APIs or dependencies when they are added.

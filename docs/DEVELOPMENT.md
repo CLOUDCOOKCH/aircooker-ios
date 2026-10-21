@@ -27,6 +27,19 @@ native controls and semantic colours. Test large Dynamic Type, VoiceOver, contra
 navigation and reduced motion on simulator/device; source-level design is not an accessibility
 audit. Date-only fields use the household time zone, never a floating device UTC conversion.
 
+## Original icon and privacy manifest
+
+`Design/AppIconSource.png` is original generated artwork, not a screenshot or third-party
+brand asset. The app target's declared build step uses Apple's `sips` to package that opaque
+square source at the required 1024-pixel size before asset compilation. The generated
+catalog PNG is ignored; no image editor, network request or package dependency is needed
+for this step. Keep the source opaque and square when replacing it. Inspect small-size,
+dark and tinted Home Screen appearances on real Apple tooling before release.
+
+`App/PrivacyInfo.xcprivacy` declares the required-reason use of local UserDefaults and no
+tracking. Review the archive privacy report and current Apple policy before distribution;
+the manifest does not finalise the App Store privacy questionnaire.
+
 ## Offline test matrix
 
 Core tests exercise local restart with pending changes, incoming remote edits while a local

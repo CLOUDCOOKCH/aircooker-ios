@@ -16,3 +16,4 @@ dist/
 *.p12
 *.mobileprovision
 *.p8
+Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png

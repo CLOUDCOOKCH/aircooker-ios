@@ -5,6 +5,11 @@
 Initial independently versioned repository. This is not a stable or production release.
 See the implementation checklist for feature status and verification limits.
 
+- Publish both repositories and begin real GitHub backend/browser/core/native CI checks.
+- Check the installed supported Apple SDK instead of requiring an unavailable Xcode version.
+- Add original icon artwork with reproducible Apple asset preparation and the app's
+  required-reason UserDefaults privacy manifest. Native validation remains in progress.
+
 - Use native Liquid Glass for planning controls, over-photo labels, create/suggestion
   actions and sync notices, with opaque custom-surface accessibility fallbacks.
 - Keep the native tab bar; disable scroll minimisation for Reduce Motion/accessibility

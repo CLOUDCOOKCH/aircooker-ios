@@ -18,6 +18,14 @@ targets:
   aircooker:
     type: application
     platform: iOS
+    preBuildScripts:
+      - name: Prepare original app icon
+        script: |
+          /usr/bin/sips --resampleHeightWidth 1024 1024 "$SRCROOT/Design/AppIconSource.png" --out "$SRCROOT/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+        inputFiles:
+          - $(SRCROOT)/Design/AppIconSource.png
+        outputFiles:
+          - $(SRCROOT)/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
     sources:
       - App
       - Resources
