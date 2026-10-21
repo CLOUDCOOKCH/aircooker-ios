@@ -156,18 +156,16 @@ struct HomeView: View {
   private func kitchen(_ overview: PlannerOverview) -> some View {
     VStack(alignment: .leading, spacing: 28) {
       VStack(alignment: .leading, spacing: 14) {
-        Text("this_week").font(.title2.weight(.semibold))
-        Text("planned_slots_count \(overview.plannedSlots) \(overview.totalSlots)")
-          .font(.subheadline).foregroundStyle(.secondary)
-        ProgressView(value: Double(overview.plannedSlots), total: Double(overview.totalSlots))
-          .accessibilityLabel(Text("weekly_planning"))
-          .accessibilityValue(
-            Text("planned_slots_count \(overview.plannedSlots) \(overview.totalSlots)"))
+        NavigationLink {
+          CalendarView(initialDate: overview.selectedDate)
+        } label: {
+          WeeklyPlanSummary(overview: overview)
+        }.buttonStyle(.plain)
         NavigationLink {
           SuggestionsView(week: overview.monday)
         } label: {
           Label("weekly_suggestions", systemImage: "sparkles").frame(maxWidth: .infinity)
-        }.buttonStyle(.borderedProminent).controlSize(.large)
+        }.buttonStyle(.bordered).controlSize(.large)
         NavigationLink {
           LeftoversView()
         } label: {

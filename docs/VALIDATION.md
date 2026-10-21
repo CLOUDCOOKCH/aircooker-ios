@@ -115,3 +115,23 @@ content. Reference images were not successfully exposed by the connected image r
 no pixel-level comparison to those references or motion inference is claimed. The native
 layout, sheet dismiss/save lifecycle, VoiceOver, physical touch, dark appearance and large
 Dynamic Type remain unverified on Apple hardware. No backend code was changed in this pass.
+
+## Recipe layout and weekly summary
+
+The 80 existing portable Swift tests pass after the interface-only changes. Swift format
+and native source syntax parsing pass, along with the unchanged OpenAPI pin, 277-key
+English/German parity and whitespace checks. No new core business logic or API was added;
+these results do not test SwiftUI layout, UserDefaults persistence or animation.
+
+Changed files: `HomeView.swift`, `PlannerComponents.swift`, `RecipesView.swift`, English/German
+resources and implementation/presentation/changelog/validation documentation. Compact
+recipe rows reuse the existing photo cache and detail navigation. Both library layouts
+share the existing search and data source. Calendar navigation still receives the selected
+civil date. No backend files were changed.
+
+Reference images were accessible through the design connector in this pass, and a generated
+design brief was read. This improves reference evidence but supplies no native build or
+rendering evidence. On Apple tooling, verify layout switching with search active and after
+relaunch, empty/missing-photo/unrated/long-title recipes, German and accessibility text sizes,
+calendar navigation from earlier/later weeks, VoiceOver, Reduce Motion and both appearances.
+No native screenshot, Apple SDK build or device result is claimed.

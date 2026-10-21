@@ -412,3 +412,8 @@
 "sync_status" = "Synchronisation";
 "planning_unavailable" = "Your plan could not be loaded";
 "planning_retry_hint" = "Your saved meals are still on this device. Try loading the plan again.";
+
+"recipe_layout" = "Recipe layout";
+"recipe_grid" = "Cards";
+"recipe_list" = "List";
+"recipe_rating %lld" = "%lld out of 5";

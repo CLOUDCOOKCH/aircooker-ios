@@ -102,6 +102,36 @@ struct PlannerWeekStrip: View {
   }
 }
 
+struct WeeklyPlanSummary: View {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  let overview: PlannerOverview
+  var body: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      HStack(alignment: .firstTextBaseline) {
+        Text(
+          LocalizedStringKey(
+            overview.days.contains(where: \.isToday) ? "this_week" : "weekly_planning")
+        ).font(.headline)
+        Spacer(minLength: 12)
+        Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+          .foregroundStyle(.secondary).accessibilityHidden(true)
+      }
+      Text("planned_slots_count \(overview.plannedSlots) \(overview.totalSlots)")
+        .font(.title2.weight(.semibold)).monospacedDigit()
+        .contentTransition(.numericText())
+        .fixedSize(horizontal: false, vertical: true)
+      ProgressView(value: Double(overview.plannedSlots), total: Double(overview.totalSlots))
+        .accessibilityHidden(true)
+    }.foregroundStyle(.primary).padding(20)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(KitchenStyle.surface, in: RoundedRectangle(cornerRadius: KitchenStyle.radius))
+      .contentShape(RoundedRectangle(cornerRadius: KitchenStyle.radius))
+      .accessibilityElement(children: .combine)
+      .accessibilityHint(Text("view_in_calendar"))
+      .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: overview.plannedSlots)
+  }
+}
+
 struct FeaturedMealView: View {
   @Environment(AppModel.self) private var model
   let item: MealOccurrence
@@ -220,11 +250,19 @@ struct RecipeListRow: View {
       VStack(alignment: .leading, spacing: 6) {
         Text(recipe.title).font(.headline).foregroundStyle(.primary)
           .fixedSize(horizontal: false, vertical: true)
-        Text("ingredient_count \(recipe.ingredients.count)").font(.caption).foregroundStyle(
-          .secondary)
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 12) { details }
+          VStack(alignment: .leading, spacing: 4) { details }
+        }.font(.caption).foregroundStyle(.secondary)
       }
       Spacer(minLength: 0)
     }.padding(.vertical, 4).contentShape(Rectangle())
       .accessibilityElement(children: .combine)
+  }
+  @ViewBuilder private var details: some View {
+    Text("ingredient_count \(recipe.ingredients.count)")
+    if let rating = recipe.rating {
+      Label("recipe_rating \(rating)", systemImage: "star.fill")
+    }
   }
 }

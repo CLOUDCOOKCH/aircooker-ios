@@ -4,6 +4,7 @@ import SwiftUI
 
 struct RecipesView: View {
   @Environment(AppModel.self) private var model
+  @AppStorage("recipeLibraryLayout") private var layout = "grid"
   @State private var search = ""
   @State private var creating = false
   var filtered: [LocalEntity] {
@@ -13,6 +14,7 @@ struct RecipesView: View {
     }
   }
   var body: some View {
+    let rows = filtered
     ScrollView {
       if model.recipes.isEmpty {
         ContentUnavailableView {
@@ -23,14 +25,32 @@ struct RecipesView: View {
           Button("create_recipe") { creating = true }.buttonStyle(.borderedProminent)
           NavigationLink("import_recipe") { ImportView() }.buttonStyle(.bordered)
         }.padding(.top, 32)
-      } else if filtered.isEmpty {
+      } else if rows.isEmpty {
         ContentUnavailableView.search(text: search).padding(.top, 32)
+      } else if layout == "list" {
+        LazyVStack(spacing: 0) {
+          ForEach(rows) { row in
+            if let recipe = try? row.decode(Recipe.self) {
+              NavigationLink {
+                RecipeDetail(id: row.id)
+              } label: {
+                HStack(spacing: 12) {
+                  RecipeListRow(recipe: recipe)
+                  Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary).accessibilityHidden(true)
+                }.padding(.vertical, 8).contentShape(Rectangle())
+              }.buttonStyle(.plain)
+              if row.id != rows.last?.id { Divider() }
+            }
+          }
+        }.padding(.horizontal, 20).padding(.vertical, 8)
+          .frame(maxWidth: 760).frame(maxWidth: .infinity)
       } else {
         LazyVGrid(
           columns: [GridItem(.adaptive(minimum: 250), alignment: .top)], alignment: .leading,
           spacing: 20
         ) {
-          ForEach(filtered) { row in
+          ForEach(rows) { row in
             if let recipe = try? row.decode(Recipe.self) {
               NavigationLink {
                 RecipeDetail(id: row.id)
@@ -40,12 +60,20 @@ struct RecipesView: View {
               .buttonStyle(.plain)
             }
           }
-        }.padding(20)
+        }.padding(20).frame(maxWidth: 1100).frame(maxWidth: .infinity)
       }
     }.background(KitchenStyle.background)
       .searchable(text: $search).navigationTitle("recipes")
       .toolbar {
         ToolbarItemGroup(placement: .topBarTrailing) {
+          Menu {
+            Picker("recipe_layout", selection: $layout) {
+              Label("recipe_grid", systemImage: "square.grid.2x2").tag("grid")
+              Label("recipe_list", systemImage: "list.bullet").tag("list")
+            }
+          } label: {
+            Label("recipe_layout", systemImage: "slider.horizontal.3")
+          }
           NavigationLink {
             ImportView()
           } label: {

@@ -412,3 +412,8 @@
 "sync_status" = "Synchronisierung";
 "planning_unavailable" = "Dein Plan konnte nicht geladen werden";
 "planning_retry_hint" = "Deine gespeicherten Gerichte bleiben auf diesem Gerät. Versuche, den Plan erneut zu laden.";
+
+"recipe_layout" = "Rezeptansicht";
+"recipe_grid" = "Karten";
+"recipe_list" = "Liste";
+"recipe_rating %lld" = "%lld von 5";

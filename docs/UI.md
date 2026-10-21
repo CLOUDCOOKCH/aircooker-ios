@@ -40,3 +40,15 @@ column and a secondary planning/library column. Accessibility text sizes retain 
 column and scrollable date controls. These are implemented sources, not a claim of tested
 Apple layouts. The accompanying illustrative visual concept is separate from app captures;
 no generated meal photograph or sample recipe is inserted into the live library.
+
+The weekly summary is now one calendar navigation target, with the selected week's real
+slot count and a subdued progress indicator. Its heading uses “This week” only when the
+selected week contains today. Count transitions respect Reduce Motion; suggestion approval
+and leftover navigation remain separate actions.
+
+Recipes offers a native layout menu for photo cards or a compact list. The choice is a
+device-local UserDefaults preference and survives relaunch; both presentations use the same
+search results and recipe destinations. Shared list rows show actual ingredient counts and
+optional ratings, with vertical metadata fallback when horizontal space is insufficient.
+The layout choice, long German labels, large text, screen-reader output, Reduce Motion and
+light/dark rendering still need simulator/device verification. No native capture is claimed.

@@ -5,6 +5,10 @@
 Initial independently versioned repository. This is not a stable or production release.
 See the implementation checklist for feature status and verification limits.
 
+- Add a remembered recipe Cards/List choice and shared compact rows with actual ratings.
+- Make the weekly summary open its calendar, distinguish the selected week from this week,
+  and respect Reduce Motion for count transitions. Native SDK/rendering validation pending.
+
 - Persist prepared recipe photos with recipe edits and the outgoing queue atomically;
   upload before recipe sync and keep a durable offline photo cache.
 - Add native system photo selection and local recipe image views (Apple SDK unverified).
