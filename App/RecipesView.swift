@@ -179,7 +179,7 @@ struct RecipeEditor: View {
   }
   var valid: Bool {
     !recipe.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-      && (Decimal(string: recipe.servings) ?? 0) > 0
+      && (try? CookingQuantity.normalise(recipe)) != nil
       && recipe.ingredients.allSatisfy {
         !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
       }
@@ -224,7 +224,10 @@ struct RecipeEditor: View {
           TextField("recipe_title", text: $recipe.title)
             .accessibilityIdentifier("recipe.title")
           TextField("description", text: $recipe.description, axis: .vertical)
-          TextField("servings", text: $recipe.servings).keyboardType(.decimalPad)
+          TextField("servings", text: $recipe.servings).keyboardType(.numbersAndPunctuation)
+          if (try? CookingQuantity.normalise(recipeWithServings)) == nil {
+            Text("servings_invalid").font(.caption).foregroundStyle(.red)
+          }
         }
         Section("ingredients") {
           ForEach($recipe.ingredients) { $item in
@@ -234,9 +237,21 @@ struct RecipeEditor: View {
                 TextField(
                   "quantity",
                   text: Binding(
-                    get: { item.quantity ?? "" }, set: { item.quantity = $0.isEmpty ? nil : $0 })
-                ).keyboardType(.decimalPad)
+                    get: { CookingQuantity.display(item) },
+                    set: {
+                      item.quantity = $0.isEmpty ? nil : $0
+                      item.quantityMax = nil
+                    })
+                ).keyboardType(.numbersAndPunctuation)
+                  .textInputAutocapitalization(.never).autocorrectionDisabled()
                 TextField("unit", text: $item.unit)
+              }
+              if let amount = try? CookingQuantity.parse(CookingQuantity.display(item)) {
+                if amount.unquantified != nil {
+                  Text("quantity_unquantified").font(.caption).foregroundStyle(.secondary)
+                }
+              } else {
+                Text("quantity_invalid").font(.caption).foregroundStyle(.red)
               }
               TextField("original_text", text: $item.originalText)
               TextField("preparation", text: $item.preparation)
@@ -245,6 +260,7 @@ struct RecipeEditor: View {
             recipe.ingredients.move(fromOffsets: $0, toOffset: $1)
           }
           Button("add_ingredient") { recipe.ingredients.append(Ingredient()) }
+          Text("quantity_entry_hint").font(.caption).foregroundStyle(.secondary)
         }
         Section("instructions") {
           ForEach(recipe.steps.indices, id: \.self) { index in
@@ -279,8 +295,13 @@ struct RecipeEditor: View {
               recipe.sourceURL = source.isEmpty ? nil : source
               recipe.steps.removeAll { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
               Task {
-                if await model.saveRecipe(id: id, recipe: recipe, photo: preparedPhoto) {
-                  dismiss()
+                do {
+                  let normal = try CookingQuantity.normalise(recipe)
+                  if await model.saveRecipe(id: id, recipe: normal, photo: preparedPhoto) {
+                    dismiss()
+                  }
+                } catch {
+                  model.error = String(localized: "quantity_invalid")
                 }
                 saving = false
               }
@@ -317,5 +338,10 @@ struct RecipeEditor: View {
     case "ingredient_text_truncated": return "import_notice_truncated"
     default: return "import_notice_unknown"
     }
+  }
+  private var recipeWithServings: Recipe {
+    var value = Recipe()
+    value.servings = recipe.servings
+    return value
   }
 }

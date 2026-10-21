@@ -430,3 +430,8 @@
 "exit_demo" = "Exit demo";
 "demo_intro" = "Try recipes, planning, pantry and leftovers without a server. Sample recipes and illustrative photos are kept in a separate local demo. Your edits stay on this device.";
 "demo_server_features" = "Connect your self-hosted server to use synchronisation, imports, AI and Bring!. These services are not simulated in the demo. Exit the demo to connect.";
+
+"servings_invalid" = "Enter one positive serving amount, such as 2 or 1 1/2.";
+"quantity_invalid" = "Enter a valid amount or range, such as 1/2 or 1–2. Put the unit in its own field.";
+"quantity_unquantified" = "This amount will be kept in Original text. It will not be multiplied when servings change.";
+"quantity_entry_hint" = "Amounts can use decimals, fractions or ranges. Both comma and point mean decimals; do not use thousands separators. Fractions are rounded to 12 decimal places. Leave amounts empty for unmeasured ingredients.";

@@ -430,3 +430,8 @@
 "exit_demo" = "Demo verlassen";
 "demo_intro" = "Probiere Rezepte, Planung, Vorräte und Reste ohne Server aus. Beispielrezepte und illustrative Fotos bleiben in einer getrennten lokalen Demo. Deine Änderungen bleiben auf diesem Gerät.";
 "demo_server_features" = "Verbinde deinen selbst gehosteten Server für Synchronisierung, Importe, KI und Bring!. Diese Dienste werden in der Demo nicht simuliert. Verlasse die Demo, um einen Server zu verbinden.";
+
+"servings_invalid" = "Gib eine positive Portionsmenge ein, zum Beispiel 2 oder 1 1/2.";
+"quantity_invalid" = "Gib eine gültige Menge oder einen Bereich ein, zum Beispiel 1/2 oder 1–2. Trage die Einheit separat ein.";
+"quantity_unquantified" = "Diese Angabe wird als Originaltext gespeichert und beim Ändern der Portionen nicht multipliziert.";
+"quantity_entry_hint" = "Mengen können Dezimalzahlen, Brüche oder Bereiche sein. Komma und Punkt sind Dezimalzeichen; verwende keine Tausendertrennzeichen. Brüche werden auf 12 Nachkommastellen gerundet. Bei ungemessenen Zutaten kann die Menge leer bleiben.";

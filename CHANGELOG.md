@@ -5,6 +5,11 @@
 Initial independently versioned repository. This is not a stable or production release.
 See the implementation checklist for feature status and verification limits.
 
+- Normalise manual ingredient fractions, ranges and decimal commas before offline save;
+  show invalid amounts inline and preserve unmeasured phrases without multiplying them.
+- Add five quantity/recipe persistence tests and pin the additive server diagnostics
+  contract; existing native resource and sync wire schemas remain unchanged.
+
 - Add an explicit offline demo with a separate database/identity and original illustrative
   food artwork; household data, credentials and pending edits are never reused for samples.
 - Add five atomic-seed/isolation/restart tests and native demo persistence/localisation

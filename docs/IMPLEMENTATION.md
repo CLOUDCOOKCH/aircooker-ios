@@ -24,7 +24,10 @@ local suggestion preferences/review/selection, import queue/review sources, App 
 share inbox, 14-day widget snapshots/timeline sources, deferred deep links, reminder preferences
 opt-in notification reconciliation, rejected-change review and saved local draft recovery, explicit server-history rebuild, durable snapshot staging and reauthentication. English/German resources are present. The isolated offline demo includes atomic sample
 seeding, persistent editing, explicit service limitations and a visible sample-data notice;
-85 portable tests pass, including five new demo isolation/restart/rollback tests.
+90 portable tests pass, including five demo isolation/restart/rollback tests and five
+manual quantity normalisation, invalid-input and persistent-outbox checks. The editor
+accepts fractions/ranges/decimal commas and preserves unmeasured phrases as text; its native
+keyboard, validation and save lifecycle require current Apple CI validation.
 
 Tested core: prepared photo + recipe + outbox atomic persistence, upload-before-recipe sync,
 replay after lost responses/restart, photo cache, v1→v2 local migration, bounded recurrence,

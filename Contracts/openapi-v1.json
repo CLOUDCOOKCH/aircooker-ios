@@ -195,6 +195,43 @@
         "title": "AISettingsStatus",
         "type": "object"
       },
+      "AdministrationDiagnostics": {
+        "additionalProperties": false,
+        "properties": {
+          "captured_at": {
+            "format": "date-time",
+            "title": "Captured At",
+            "type": "string"
+          },
+          "job_counts": {
+            "$ref": "#/components/schemas/JobCounts"
+          },
+          "recent_imports": {
+            "items": {
+              "$ref": "#/components/schemas/ImportDiagnostic"
+            },
+            "maxItems": 100,
+            "title": "Recent Imports",
+            "type": "array"
+          },
+          "recent_jobs": {
+            "items": {
+              "$ref": "#/components/schemas/JobInfo"
+            },
+            "maxItems": 100,
+            "title": "Recent Jobs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "captured_at",
+          "job_counts",
+          "recent_jobs",
+          "recent_imports"
+        ],
+        "title": "AdministrationDiagnostics",
+        "type": "object"
+      },
       "AdministrationStatus": {
         "additionalProperties": false,
         "properties": {
@@ -546,6 +583,51 @@
         "title": "HouseholdSettings",
         "type": "object"
       },
+      "ImportDiagnostic": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "number"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "preview",
+              "needs_input",
+              "confirmed",
+              "cancelled",
+              "unknown"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "error_code",
+          "created_at"
+        ],
+        "title": "ImportDiagnostic",
+        "type": "object"
+      },
       "ImportRequest": {
         "additionalProperties": false,
         "properties": {
@@ -664,6 +746,96 @@
           "name"
         ],
         "title": "Ingredient",
+        "type": "object"
+      },
+      "JobCounts": {
+        "additionalProperties": false,
+        "properties": {
+          "done": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Done",
+            "type": "integer"
+          },
+          "failed": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Failed",
+            "type": "integer"
+          },
+          "queued": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Queued",
+            "type": "integer"
+          },
+          "running": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Running",
+            "type": "integer"
+          }
+        },
+        "title": "JobCounts",
+        "type": "object"
+      },
+      "JobInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "minimum": 0.0,
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "available_at": {
+            "title": "Available At",
+            "type": "number"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "recipe.import",
+              "shopping.reconcile",
+              "unknown"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "state",
+          "attempts",
+          "error_code",
+          "available_at"
+        ],
+        "title": "JobInfo",
         "type": "object"
       },
       "Leftover": {
@@ -1868,6 +2040,53 @@
         "summary": "Test Ai"
       }
     },
+    "/api/v1/admin/diagnostics": {
+      "get": {
+        "operationId": "administration_diagnostics_api_v1_admin_diagnostics_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministrationDiagnostics"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Administration Diagnostics"
+      }
+    },
     "/api/v1/admin/export": {
       "get": {
         "operationId": "export_data_api_v1_admin_export_get",
@@ -1991,14 +2210,66 @@
     "/api/v1/admin/jobs": {
       "get": {
         "operationId": "jobs_api_v1_admin_jobs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "queued",
+                    "running",
+                    "done",
+                    "failed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/JobInfo"
+                  },
+                  "title": "Response Jobs Api V1 Admin Jobs Get",
+                  "type": "array"
+                }
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "security": [

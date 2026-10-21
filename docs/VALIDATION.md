@@ -184,3 +184,10 @@ Its UI step never reached XCTest: first-boot CoreLocation system-data migration 
 the original 180-second readiness limit. The runner now allows a bounded ten-minute boot
 with progress messages and still fails if readiness is not reached. This is infrastructure
 handling, not UI acceptance; no demo capture or passing workflow is claimed from that run.
+
+Manual quantity editing adds five portable tests; all 90 pass. Formatting, native syntax
+parsing, 292-key EN/DE parity and the reviewed OpenAPI pin pass. Existing wire schemas and
+native routes are unchanged; the server contract adds diagnostics models/routes and types
+the admin jobs response. Native editor fields now accept punctuation, show validation and
+normalise before the existing offline save. Native build/UI results for this change are
+pending. See RECIPE_EDITING.md for bounds, precision and unmeasured-text semantics.
