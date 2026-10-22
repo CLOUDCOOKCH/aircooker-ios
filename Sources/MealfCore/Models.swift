@@ -48,11 +48,17 @@ public struct Ingredient: Codable, Identifiable, Equatable, Sendable {
   public var unit: String = ""
   public var preparation: String = ""
   public var originalText: String = ""
+  public var quantityText: String? = nil
+  public var notes: String? = nil
+  public var optional: Bool? = nil
+  public var group: String? = nil
   public init(name: String = "") { self.name = name }
   enum CodingKeys: String, CodingKey {
     case id, name, quantity, unit, preparation
     case quantityMax = "quantity_max"
     case originalText = "original_text"
+    case quantityText = "quantity_text"
+    case notes, optional, group
   }
   public func scaled(by ratio: Decimal) -> Ingredient {
     var result = self
@@ -83,6 +89,15 @@ public struct Recipe: Codable, Equatable, Sendable {
   public var nutrition: [String: String]? = nil
   public var nutritionSource: String? = nil
   public var provenance: [String: String] = [:]
+  // Preserve optional PWA/import metadata even before native editors expose it.
+  public var schemaVersion: String? = nil
+  public var instructionDetails: JSONValue? = nil
+  public var times: JSONValue? = nil
+  public var language: String? = nil
+  public var yieldInfo: JSONValue? = nil
+  public var category: String? = nil
+  public var cuisine: String? = nil
+  public var tags: [String]? = nil
   public init(title: String = "") { self.title = title }
   enum CodingKeys: String, CodingKey {
     case title, description, servings, ingredients, steps, notes, rating, nutrition, provenance
@@ -90,6 +105,10 @@ public struct Recipe: Codable, Equatable, Sendable {
     case sourcePlatform = "source_platform"
     case imageID = "image_id"
     case nutritionSource = "nutrition_source"
+    case schemaVersion = "schema_version"
+    case instructionDetails = "instruction_details"
+    case yieldInfo = "yield_info"
+    case times, language, category, cuisine, tags
   }
 }
 public struct Meal: Codable, Sendable {

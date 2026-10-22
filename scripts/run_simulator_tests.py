@@ -48,7 +48,7 @@ with subprocess.Popen(["xcrun", "simctl", "bootstatus", udid, "-b"]) as boot:
             raise subprocess.CalledProcessError(status, boot.args)
         break
 command = [
-    "xcodebuild", "-project", "aircooker.xcodeproj", "-scheme", "aircooker",
+    "xcodebuild", "-project", "mealf.xcodeproj", "-scheme", "mealf",
     "-derivedDataPath", "build/DerivedData",
     "-destination", "id=" + udid, "-parallel-testing-enabled", "NO",
     "CODE_SIGNING_ALLOWED=NO", "test",
@@ -57,7 +57,7 @@ try:
     for appearance in ["light", "dark"]:
         subprocess.run(["xcrun", "simctl", "ui", udid, "appearance", appearance], check=True)
         bundle = f"build/NativeTests-{appearance}.xcresult"
-        selected = [] if appearance == "light" else ["-only-testing:AirCookerUITests/DemoTests/testGermanDemoNavigation"]
+        selected = [] if appearance == "light" else ["-only-testing:MealfUITests/DemoTests/testGermanDemoNavigation"]
         subprocess.run(command + ["-resultBundlePath", bundle] + selected, check=True, timeout=900)
         output = f"build/screenshots/{appearance}"
         Path(output).mkdir(parents=True, exist_ok=True)

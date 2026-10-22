@@ -1,5 +1,5 @@
-import AirCookerCore
 import ImageIO
+import MealfCore
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers

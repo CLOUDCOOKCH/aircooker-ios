@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 private func overviewRow(_ meal: Meal, deleted: Bool = false) throws -> LocalEntity {
   LocalEntity(id: UUID(), kind: .meal, revision: 1, deleted: deleted, payload: try Codec.json(meal))

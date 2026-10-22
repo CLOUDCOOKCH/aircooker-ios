@@ -1,6 +1,6 @@
 # Privacy policy draft — not final legal text
 
-mealf (formerly aircooker) is an independent, free, open-source application that connects to a server operated
+Mealf is an independent, free, open-source application that connects to a server operated
 by you or your household. It does not include mandatory analytics, advertising or tracking.
 Recipes, meal plans, pantry items, leftovers and queued changes are stored on your device
 and the configured self-hosted server. Device sessions permit per-device revocation.

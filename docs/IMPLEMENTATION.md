@@ -20,7 +20,7 @@ development remains retained for later. Name/keyboard source at 805d043 passed X
 
 Delivery direction changed to PWA-first by explicit user choice on 2026-10-21. Native
 feature development is paused; keep the tested sources available for later. The web client
-is implemented in the independent aircooker-server repository, not in a third repository.
+is implemented in the independent mealf-server repository, not in a third repository.
 Native signing/TestFlight/device gates remain deferred and are not considered PWA blockers.
 The latest native source validation at 805d043 passes 90 core tests, all three native targets,
 and demo/onboarding/localisation simulator workflows on Xcode 26.6 (run 39590881768).
@@ -85,3 +85,17 @@ first GitHub run passed core tests/secret scanning but stopped before native com
 because the runner had Xcode 26.6 rather than the previously hard-coded version 27.
 CI now checks actual iOS 26+ capability; the foundation native run passes as recorded
 above. Current demo UI acceptance remains open.
+
+## Mealf identifiers and contract — 2026-10-22
+
+Swift package/module and native targets, bundle identifiers, App Group, Keychain service,
+deep links, notifications/widgets and CI scripts use Mealf. This is retained prerelease
+native development: new Apple identifiers need provisioning and a fresh development
+install. No migration across application sandboxes or physical-device acceptance is claimed.
+The primary PWA and its data remain independent.
+
+The canonical server OpenAPI is deliberately pinned to exact source 753e1ff. Optional
+imported recipe/ingredient metadata now round-trips without being cleared by native edits.
+Contract checksum/routes/field sets and 296 English/German localization keys pass locally.
+Swift compilation/format and Apple target/simulator checks await the independent CI run.
+GitHub URLs retain their actual repository names until renamed by the owner.

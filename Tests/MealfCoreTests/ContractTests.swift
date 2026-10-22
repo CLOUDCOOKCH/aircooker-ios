@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 @Test func recipeCodecMatchesCanonicalServerFixture() throws {
   let url = try #require(
@@ -27,6 +27,44 @@ import Testing
   #expect(object["base_revision"] as? Int == 0)
   #expect(object["device_id"] is String)
   #expect(object["client_timestamp"] is String)
+}
+
+@Test func editingImportedRecipePreservesExtendedServerMetadata() throws {
+  let url = try #require(
+    Bundle.module.url(forResource: "recipe", withExtension: "json", subdirectory: "Fixtures"))
+  var object = try #require(
+    JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+  object["schema_version"] = "1.0.0"
+  object["instruction_details"] = [["text": "Simmer", "section": "Cooking"]]
+  object["times"] = ["prep_minutes": 10, "cook_minutes": 20]
+  object["yield_info"] = ["text": "2 bowls"]
+  object["language"] = "de"
+  object["category"] = "Soup"
+  object["cuisine"] = "Swiss"
+  object["tags"] = ["quick"]
+  var ingredients = try #require(object["ingredients"] as? [[String: Any]])
+  ingredients[0]["quantity_text"] = "a generous handful"
+  ingredients[0]["notes"] = "Keep the original wording"
+  ingredients[0]["optional"] = true
+  ingredients[0]["group"] = "Garnish"
+  object["ingredients"] = ingredients
+  var recipe = try JSONDecoder().decode(
+    Recipe.self, from: JSONSerialization.data(withJSONObject: object))
+  recipe.title = "Edited offline"
+  object["title"] = recipe.title
+  let encoded = try JSONEncoder().encode(recipe)
+  let expected = try JSONDecoder().decode(
+    Recipe.self, from: JSONSerialization.data(withJSONObject: object))
+  #expect(try JSONDecoder().decode(Recipe.self, from: encoded) == expected)
+  let output = try #require(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+  let preservedKeys = [
+    "instruction_details", "times", "yield_info", "language", "category", "cuisine", "tags",
+  ]
+  for key in preservedKeys {
+    #expect((output[key] as? NSObject) == (object[key] as? NSObject))
+  }
+  #expect(recipe.ingredients[0].quantityText == "a generous handful")
+  #expect(recipe.ingredients[0].optional == true)
 }
 
 @Test func planningCodecsMatchCanonicalServerFixtures() throws {

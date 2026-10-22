@@ -106,3 +106,9 @@ See the implementation checklist for feature status and verification limits.
   from cached data. Reuse one searchable offline recipe/leftover picker across Home/Calendar.
 - Group settings by preferences, sync/recovery and server connection; keep native type,
   adaptive layout and direct secure console access. Native Apple validation remains open.
+
+## Mealf native identifiers — 2026-10-22
+
+- Rename Swift module/package, app/extension/test targets, URL scheme, bundle IDs, App Group and current development tooling to Mealf. Provision the new identifiers and install a fresh development build; PWA data is unaffected.
+- Pin the reviewed server contract at 753e1ff, using current Mealf sync headers.
+- Preserve optional imported recipe and ingredient metadata during decode/edit/encode, with a round-trip regression test. Native UI parity for the newer web imports remains future work.

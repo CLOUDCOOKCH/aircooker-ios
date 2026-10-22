@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 private func delta(id: UUID, title: String, revision: Int, deleted: Bool = false) throws -> Change {
   Change(

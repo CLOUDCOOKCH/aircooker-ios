@@ -1,6 +1,6 @@
-import AirCookerCore
 import Foundation
 import LocalAuthentication
+import MealfCore
 import Observation
 import UserNotifications
 import WidgetKit
@@ -124,12 +124,12 @@ import WidgetKit
       try FileManager.default.createDirectory(
         at: directory, withIntermediateDirectories: true,
         attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
-      if let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
+      if let group = Bundle.main.object(forInfoDictionaryKey: "MealfAppGroup") as? String,
         let shared = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
       {
         inbox = try ShareInbox(directory: shared)
       }
-      store = try LocalStore(url: directory.appending(path: "aircooker.sqlite3"))
+      store = try LocalStore(url: directory.appending(path: "mealf.sqlite3"))
       if !server.isEmpty {
         try configureClient()
         let active = try await vault?.read().active
@@ -721,7 +721,7 @@ import WidgetKit
     }
   }
   func clearWidget() {
-    guard let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
+    guard let group = Bundle.main.object(forInfoDictionaryKey: "MealfAppGroup") as? String,
       let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
     else { return }
     for name in ["today.json", "meals-widget-v1.json"] {
@@ -730,7 +730,7 @@ import WidgetKit
     WidgetCenter.shared.reloadAllTimelines()
   }
   func publishWidget() throws {
-    guard let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
+    guard let group = Bundle.main.object(forInfoDictionaryKey: "MealfAppGroup") as? String,
       let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
     else { return }
     let snapshot = try MealWidgetSnapshot.build(

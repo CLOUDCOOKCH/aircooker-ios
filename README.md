@@ -1,18 +1,20 @@
 # mealf for iOS
 
-Formerly aircooker. Display names and English/German copy now use **mealf**; existing bundle
-IDs, Keychain/App Group storage and build target names are retained for compatibility.
-The supplied new icon/wordmark files are pending workspace access; the previous icon remains
-until the original PNG is available.
+The product, Swift module, app/extension targets, bundle IDs and App Group use **Mealf**.
+Generate and build the `mealf` scheme. Native development builds now require the matching
+`ch.cloudcook.mealf` identifiers and `group.ch.cloudcook.mealf` entitlements; install a
+fresh development build after provisioning. Cross-bundle sandbox migration is not claimed.
+The supplied peach/wordmark already ship in the primary PWA. Native artwork remains
+separate future work.
 
 **Native development is retained for later.** The user chose PWA-first delivery on
 2026-10-21. The primary client now lives in
-[aircooker-server/frontend](https://github.com/CLOUDCOOKCH/aircooker-server/tree/main/frontend)
+[mealf-server/frontend](https://github.com/CLOUDCOOKCH/aircooker-server/tree/main/frontend)
 and ships in the existing backend container. No Mac, signing or App Store account is
 required for that browser client. This repository preserves the native app, Share Extension
 and widgets for a future native release.
 
-Native SwiftUI companion to the independently self-hosted aircooker-server.
+Native SwiftUI companion to the independently self-hosted mealf-server.
 Apache-2.0. No hosted account, payment flow, mandatory analytics or advertising SDK.
 
 **Development sources; not a TestFlight-ready application.** The platform-independent Swift
@@ -33,11 +35,11 @@ app/extension targets. Install the pinned generator using Mint, then generate lo
 
 ```sh
 mint run yonaskolb/XcodeGen@2.44.1 xcodegen generate
-open aircooker.xcodeproj
+open mealf.xcodeproj
 ```
 
 Choose your development team, unique bundle IDs and a matching App Group for app, Share
-Extension and WidgetKit. Run the `aircooker` scheme on an iOS 26+ simulator. Generated project
+Extension and WidgetKit. Run the `mealf` scheme on an iOS 26+ simulator. Generated project
 files are ignored; the reviewed project definition is `project.yml`. There are no external
 Swift runtime package dependencies. XcodeGen/Mint are development tools only.
 
@@ -46,8 +48,8 @@ Swift runtime package dependencies. XcodeGen/Mint are development tools only.
 On macOS, `swift test`. On Linux with Docker:
 
 ```sh
-docker build -f scripts/Dockerfile.swift-tests -t aircooker-swift-tests .
-docker run --rm -v "$PWD:/work" -w /work aircooker-swift-tests
+docker build -f scripts/Dockerfile.swift-tests -t mealf-swift-tests .
+docker run --rm -v "$PWD:/work" -w /work mealf-swift-tests
 ```
 
 These tests validate SQLite persistence, outbox restart survival, pending-edit protection,

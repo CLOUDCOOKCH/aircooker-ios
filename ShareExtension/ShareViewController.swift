@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import UIKit
 import UniformTypeIdentifiers
 
@@ -62,7 +62,7 @@ import UniformTypeIdentifiers
           parsed.user == nil, parsed.password == nil
         else { throw StoreError.invalidRecord }
       }
-      guard let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
+      guard let group = Bundle.main.object(forInfoDictionaryKey: "MealfAppGroup") as? String,
         let directory = FileManager.default.containerURL(
           forSecurityApplicationGroupIdentifier: group)
       else { throw StoreError.invalidRecord }

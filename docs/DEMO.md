@@ -1,7 +1,7 @@
 # Isolated offline demonstration
 
 Choose **Explore the app** on onboarding. No server URL, household password or hosted
-account is needed. The persistent demo uses `offline-demo/aircooker.sqlite3`, a separate
+account is needed. The persistent demo uses `offline-demo/mealf.sqlite3`, a separate
 identity and SQLite/outbox transactions. It seeds sample recipes, eight planned slots in
 the initial week, cooking history, pantry staples, leftovers and a template. Changes and
 deletions survive relaunch and re-entering the demo; reopening never overwrites them.
@@ -51,7 +51,7 @@ all planning/editor/leftover/template workflows, signed extensions, real backend
 sync and credential-gated integrations. A useful demo does not establish release acceptance.
 
 A successful native CI run publishes a `simulator-development-build` artifact. On a compatible Apple Silicon Mac,
-unzip its `aircooker-simulator.zip`, boot a compatible simulator and install with
-`xcrun simctl install booted aircooker.app`. This is an unsigned simulator development app,
+unzip its `mealf-simulator.zip`, boot a compatible simulator and install with
+`xcrun simctl install booted mealf.app`. This is an unsigned simulator development app,
 not an iPhone installation package or TestFlight release. UI/screenshot artifacts are
 published separately and should be inspected against the exact source commit.

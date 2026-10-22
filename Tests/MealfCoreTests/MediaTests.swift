@@ -2,7 +2,7 @@ import CSQLite
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 func photoFixture() throws -> Data {
   let url = try #require(

@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import PhotosUI
 import SwiftUI
 

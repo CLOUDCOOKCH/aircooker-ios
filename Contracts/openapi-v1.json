@@ -1,6 +1,33 @@
 {
   "components": {
     "schemas": {
+      "AIProviderCatalog": {
+        "additionalProperties": false,
+        "properties": {
+          "default_provider": {
+            "title": "Default Provider",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "profiles": {
+            "items": {
+              "$ref": "#/components/schemas/AISettingsStatus"
+            },
+            "title": "Profiles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "enabled",
+          "default_provider",
+          "profiles"
+        ],
+        "title": "AIProviderCatalog",
+        "type": "object"
+      },
       "AISettings": {
         "additionalProperties": false,
         "properties": {
@@ -23,9 +50,8 @@
             "writeOnly": true
           },
           "base_url": {
-            "default": "https://api.openai.com/v1",
+            "default": "",
             "maxLength": 2048,
-            "minLength": 1,
             "title": "Base Url",
             "type": "string"
           },
@@ -33,6 +59,24 @@
             "default": true,
             "title": "Enabled",
             "type": "boolean"
+          },
+          "input_formats": {
+            "default": [
+              "text"
+            ],
+            "items": {
+              "enum": [
+                "text",
+                "image",
+                "pdf",
+                "video",
+                "youtube"
+              ],
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Input Formats",
+            "type": "array"
           },
           "max_content": {
             "default": 50000,
@@ -48,9 +92,11 @@
             "type": "string"
           },
           "provider": {
-            "default": "openai",
+            "default": "gemini",
             "enum": [
+              "gemini",
               "openai",
+              "openrouter",
               "openai-compatible",
               "anthropic",
               "ollama",
@@ -90,6 +136,13 @@
             "title": "Allow Local Http",
             "type": "boolean"
           },
+          "available_formats": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Available Formats",
+            "type": "array"
+          },
           "base_url": {
             "anyOf": [
               {
@@ -120,6 +173,13 @@
             "default": false,
             "title": "Image Extraction",
             "type": "boolean"
+          },
+          "input_formats": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Input Formats",
+            "type": "array"
           },
           "key_configured": {
             "default": false,
@@ -156,6 +216,11 @@
             "title": "Origin",
             "type": "string"
           },
+          "pdf_extraction": {
+            "default": false,
+            "title": "Pdf Extraction",
+            "type": "boolean"
+          },
           "provider": {
             "anyOf": [
               {
@@ -186,6 +251,11 @@
             "default": 30,
             "title": "Timeout",
             "type": "integer"
+          },
+          "video_extraction": {
+            "default": false,
+            "title": "Video Extraction",
+            "type": "boolean"
           }
         },
         "required": [
@@ -266,6 +336,20 @@
         "title": "AdministrationStatus",
         "type": "object"
       },
+      "Body_upload_import_source_api_v1_import_sources__source_id__put": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_import_source_api_v1_import_sources__source_id__put",
+        "type": "object"
+      },
       "Body_upload_photo_api_v1_media__image_id__put": {
         "properties": {
           "file": {
@@ -316,6 +400,27 @@
           "password"
         ],
         "title": "BringCredentials",
+        "type": "object"
+      },
+      "BringVerification": {
+        "additionalProperties": false,
+        "properties": {
+          "dedicated_test_list_confirmed": {
+            "const": true,
+            "title": "Dedicated Test List Confirmed",
+            "type": "boolean"
+          },
+          "list_id": {
+            "format": "uuid",
+            "title": "List Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id",
+          "dedicated_test_list_confirmed"
+        ],
+        "title": "BringVerification",
         "type": "object"
       },
       "BrowserSession": {
@@ -396,6 +501,340 @@
           "updated_at"
         ],
         "title": "Change",
+        "type": "object"
+      },
+      "ChatGPTBootstrap": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "title": "Client Id",
+            "type": "string"
+          },
+          "host_id": {
+            "title": "Host Id",
+            "type": "string"
+          },
+          "id_token_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Token Hint"
+          },
+          "nonce": {
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nonce",
+          "client_id",
+          "host_id"
+        ],
+        "title": "ChatGPTBootstrap",
+        "type": "object"
+      },
+      "ChatGPTClaim": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "format": "password",
+            "maxLength": 128,
+            "minLength": 32,
+            "title": "Code",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "ChatGPTClaim",
+        "type": "object"
+      },
+      "ChatGPTComplete": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "pattern": "^oaiapp_[A-Za-z0-9_-]{3,200}$",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "code": {
+            "format": "password",
+            "maxLength": 128,
+            "minLength": 32,
+            "title": "Code",
+            "type": "string",
+            "writeOnly": true
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/ChatGPTTokenSet"
+          }
+        },
+        "required": [
+          "code",
+          "client_id",
+          "tokens"
+        ],
+        "title": "ChatGPTComplete",
+        "type": "object"
+      },
+      "ChatGPTDisconnect": {
+        "additionalProperties": false,
+        "properties": {
+          "remote_revocation_confirmed": {
+            "title": "Remote Revocation Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "remote_revocation_confirmed"
+        ],
+        "title": "ChatGPTDisconnect",
+        "type": "object"
+      },
+      "ChatGPTModel": {
+        "additionalProperties": false,
+        "properties": {
+          "display_name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "display_name"
+        ],
+        "title": "ChatGPTModel",
+        "type": "object"
+      },
+      "ChatGPTModelCatalog": {
+        "additionalProperties": false,
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ChatGPTModel"
+            },
+            "maxItems": 100,
+            "title": "Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "models"
+        ],
+        "title": "ChatGPTModelCatalog",
+        "type": "object"
+      },
+      "ChatGPTPairRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "personal_use_confirmed": {
+            "const": true,
+            "title": "Personal Use Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "personal_use_confirmed"
+        ],
+        "title": "ChatGPTPairRequest",
+        "type": "object"
+      },
+      "ChatGPTPairing": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "expires_at"
+        ],
+        "title": "ChatGPTPairing",
+        "type": "object"
+      },
+      "ChatGPTSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "connection_id": {
+            "format": "uuid",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id",
+          "model"
+        ],
+        "title": "ChatGPTSelection",
+        "type": "object"
+      },
+      "ChatGPTStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "account_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Label"
+          },
+          "connection_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Id"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "input_formats": {
+            "default": [
+              "text"
+            ],
+            "items": {
+              "const": "text",
+              "type": "string"
+            },
+            "title": "Input Formats",
+            "type": "array"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "state": {
+            "enum": [
+              "disconnected",
+              "connected",
+              "reconnect_required"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "ChatGPTStatus",
+        "type": "object"
+      },
+      "ChatGPTTokenSet": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "format": "password",
+            "maxLength": 16384,
+            "minLength": 1,
+            "title": "Access Token",
+            "type": "string",
+            "writeOnly": true
+          },
+          "earliest_refresh_at": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Earliest Refresh At",
+            "type": "number"
+          },
+          "expires_in": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 86400.0,
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "id_token": {
+            "format": "password",
+            "maxLength": 16384,
+            "minLength": 1,
+            "title": "Id Token",
+            "type": "string",
+            "writeOnly": true
+          },
+          "refresh_token": {
+            "format": "password",
+            "maxLength": 16384,
+            "minLength": 1,
+            "title": "Refresh Token",
+            "type": "string",
+            "writeOnly": true
+          },
+          "scope": {
+            "maxLength": 2048,
+            "title": "Scope",
+            "type": "string"
+          },
+          "token_type": {
+            "maxLength": 20,
+            "title": "Token Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "id_token",
+          "token_type",
+          "expires_in",
+          "scope"
+        ],
+        "title": "ChatGPTTokenSet",
         "type": "object"
       },
       "Credentials": {
@@ -523,6 +962,325 @@
         "title": "ExportMedia",
         "type": "object"
       },
+      "ExtractedIngredient": {
+        "additionalProperties": false,
+        "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "optional": {
+            "title": "Optional",
+            "type": "boolean"
+          },
+          "originalText": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Originaltext"
+          },
+          "preparation": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preparation"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/ExtractedQuantity"
+          }
+        },
+        "required": [
+          "name",
+          "quantity",
+          "preparation",
+          "notes",
+          "optional",
+          "group",
+          "originalText"
+        ],
+        "title": "ExtractedIngredient",
+        "type": "object"
+      },
+      "ExtractedInstruction": {
+        "additionalProperties": false,
+        "properties": {
+          "durationMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationminutes"
+          },
+          "group": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Temperature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "group",
+          "durationMinutes",
+          "temperature"
+        ],
+        "title": "ExtractedInstruction",
+        "type": "object"
+      },
+      "ExtractedQuantity": {
+        "additionalProperties": false,
+        "properties": {
+          "maxValue": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maxvalue"
+          },
+          "rawText": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rawtext"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "maxValue",
+          "unit",
+          "rawText"
+        ],
+        "title": "ExtractedQuantity",
+        "type": "object"
+      },
+      "ExtractedTimes": {
+        "additionalProperties": false,
+        "properties": {
+          "cookMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cookminutes"
+          },
+          "prepMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prepminutes"
+          },
+          "totalMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Totalminutes"
+          }
+        },
+        "required": [
+          "prepMinutes",
+          "cookMinutes",
+          "totalMinutes"
+        ],
+        "title": "ExtractedTimes",
+        "type": "object"
+      },
+      "ExtractionIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 500,
+            "pattern": "^(?:/(?:[^~]|~[01])*)?$",
+            "title": "Path",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "warning",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "message",
+          "severity"
+        ],
+        "title": "ExtractionIssue",
+        "type": "object"
+      },
+      "ExtractionResult": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionIssue"
+            },
+            "maxItems": 100,
+            "title": "Issues",
+            "type": "array"
+          },
+          "recipe": {
+            "$ref": "#/components/schemas/RecipeContent"
+          },
+          "schemaVersion": {
+            "const": "1.0.0",
+            "title": "Schemaversion",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "recipe",
+          "issues"
+        ],
+        "title": "ExtractionResult",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -565,7 +1323,7 @@
             "type": "string"
           },
           "format": {
-            "default": "aircooker-household",
+            "default": "mealf-household",
             "title": "Format",
             "type": "string"
           },
@@ -637,7 +1395,7 @@
             "type": "string"
           },
           "format": {
-            "default": "aircooker-household",
+            "default": "mealf-household",
             "title": "Format",
             "type": "string"
           },
@@ -758,6 +1516,62 @@
       "ImportRequest": {
         "additionalProperties": false,
         "properties": {
+          "ai_account": {
+            "default": "household",
+            "enum": [
+              "household",
+              "chatgpt"
+            ],
+            "title": "Ai Account",
+            "type": "string"
+          },
+          "ai_destination": {
+            "anyOf": [
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "maxLength": 2048,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "maxLength": 2048,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "maxLength": 2048,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Destination"
+          },
+          "chatgpt_connection_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chatgpt Connection Id"
+          },
+          "consent_chatgpt_background": {
+            "default": false,
+            "title": "Consent Chatgpt Background",
+            "type": "boolean"
+          },
           "consent_external_ai": {
             "default": false,
             "title": "Consent External Ai",
@@ -779,6 +1593,18 @@
             "format": "uuid",
             "title": "Request Id",
             "type": "string"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
           },
           "source_url": {
             "anyOf": [
@@ -813,9 +1639,69 @@
         "title": "ImportRequest",
         "type": "object"
       },
+      "ImportSourceInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_count": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 8388608.0,
+            "title": "Byte Count",
+            "type": "integer"
+          },
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "content_type",
+          "byte_count"
+        ],
+        "title": "ImportSourceInfo",
+        "type": "object"
+      },
+      "ImportSourcePhoto": {
+        "additionalProperties": false,
+        "properties": {
+          "image_id": {
+            "format": "uuid",
+            "title": "Image Id",
+            "type": "string"
+          },
+          "source_url": {
+            "maxLength": 2048,
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_id",
+          "source_url"
+        ],
+        "title": "ImportSourcePhoto",
+        "type": "object"
+      },
       "Ingredient-Input": {
         "additionalProperties": false,
         "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -826,6 +1712,17 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "optional": {
+            "default": false,
+            "title": "Optional",
+            "type": "boolean"
           },
           "original_text": {
             "default": "",
@@ -872,6 +1769,12 @@
               }
             ],
             "title": "Quantity Max"
+          },
+          "quantity_text": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Quantity Text",
+            "type": "string"
           },
           "unit": {
             "default": "",
@@ -890,6 +1793,18 @@
       "Ingredient-Output": {
         "additionalProperties": false,
         "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -900,6 +1815,17 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "optional": {
+            "default": false,
+            "title": "Optional",
+            "type": "boolean"
           },
           "original_text": {
             "default": "",
@@ -936,6 +1862,12 @@
               }
             ],
             "title": "Quantity Max"
+          },
+          "quantity_text": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Quantity Text",
+            "type": "string"
           },
           "unit": {
             "default": "",
@@ -1014,6 +1946,7 @@
             "enum": [
               "recipe.import",
               "shopping.reconcile",
+              "bring.verify",
               "unknown"
             ],
             "title": "Kind",
@@ -1842,6 +2775,30 @@
       "Recipe-Input": {
         "additionalProperties": false,
         "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "cuisine": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuisine"
+          },
           "description": {
             "default": "",
             "maxLength": 5000,
@@ -1867,6 +2824,26 @@
             "maxItems": 300,
             "title": "Ingredients",
             "type": "array"
+          },
+          "instruction_details": {
+            "items": {
+              "$ref": "#/components/schemas/StepDetails"
+            },
+            "maxItems": 200,
+            "title": "Instruction Details",
+            "type": "array"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
           },
           "notes": {
             "default": "",
@@ -1920,6 +2897,12 @@
               }
             ],
             "title": "Rating"
+          },
+          "schema_version": {
+            "const": "1.0.0",
+            "default": "1.0.0",
+            "title": "Schema Version",
+            "type": "string"
           },
           "servings": {
             "anyOf": [
@@ -1964,11 +2947,34 @@
             "title": "Steps",
             "type": "array"
           },
+          "tags": {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Tags",
+            "type": "array"
+          },
+          "times": {
+            "$ref": "#/components/schemas/RecipeTimes"
+          },
           "title": {
             "maxLength": 200,
             "minLength": 1,
             "title": "Title",
             "type": "string"
+          },
+          "yield_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeYield"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1980,6 +2986,30 @@
       "Recipe-Output": {
         "additionalProperties": false,
         "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "cuisine": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuisine"
+          },
           "description": {
             "default": "",
             "maxLength": 5000,
@@ -2005,6 +3035,26 @@
             "maxItems": 300,
             "title": "Ingredients",
             "type": "array"
+          },
+          "instruction_details": {
+            "items": {
+              "$ref": "#/components/schemas/StepDetails"
+            },
+            "maxItems": 200,
+            "title": "Instruction Details",
+            "type": "array"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
           },
           "notes": {
             "default": "",
@@ -2059,6 +3109,12 @@
             ],
             "title": "Rating"
           },
+          "schema_version": {
+            "const": "1.0.0",
+            "default": "1.0.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
           "servings": {
             "default": "2",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
@@ -2093,17 +3149,191 @@
             "title": "Steps",
             "type": "array"
           },
+          "tags": {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Tags",
+            "type": "array"
+          },
+          "times": {
+            "$ref": "#/components/schemas/RecipeTimes"
+          },
           "title": {
             "maxLength": 200,
             "minLength": 1,
             "title": "Title",
             "type": "string"
+          },
+          "yield_info": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeYield"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
           "title"
         ],
         "title": "Recipe",
+        "type": "object"
+      },
+      "RecipeContent": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "cuisine": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cuisine"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractedIngredient"
+            },
+            "maxItems": 300,
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "instructions": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractedInstruction"
+            },
+            "maxItems": 200,
+            "title": "Instructions",
+            "type": "array"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "servings": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servings"
+          },
+          "tags": {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Tags",
+            "type": "array"
+          },
+          "times": {
+            "$ref": "#/components/schemas/ExtractedTimes"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "yield": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecipeYield"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "language",
+          "servings",
+          "yield",
+          "times",
+          "ingredients",
+          "instructions",
+          "category",
+          "cuisine",
+          "tags",
+          "notes"
+        ],
+        "title": "RecipeContent",
         "type": "object"
       },
       "RecipeImportStatus": {
@@ -2136,6 +3366,16 @@
             ],
             "title": "Error Code"
           },
+          "extraction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExtractionResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -2162,6 +3402,16 @@
               }
             ],
             "title": "Recognized Text"
+          },
+          "source_photo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImportSourcePhoto"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "source_platform": {
             "title": "Source Platform",
@@ -2209,6 +3459,103 @@
           "created_at"
         ],
         "title": "RecipeImportStatus",
+        "type": "object"
+      },
+      "RecipeTimes": {
+        "additionalProperties": false,
+        "properties": {
+          "cookMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cookminutes"
+          },
+          "prepMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prepminutes"
+          },
+          "totalMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Totalminutes"
+          }
+        },
+        "title": "RecipeTimes",
+        "type": "object"
+      },
+      "RecipeYield": {
+        "additionalProperties": false,
+        "properties": {
+          "quantity": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "rawText": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rawtext"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          }
+        },
+        "required": [
+          "quantity",
+          "unit",
+          "rawText"
+        ],
+        "title": "RecipeYield",
         "type": "object"
       },
       "Recurrence": {
@@ -2399,6 +3746,227 @@
           "name"
         ],
         "title": "Setup",
+        "type": "object"
+      },
+      "ShoppingItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sources": {
+            "title": "Sources",
+            "type": "integer"
+          },
+          "spec": {
+            "title": "Spec",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "not_sent",
+              "pending",
+              "synced",
+              "purchased",
+              "removed_by_user",
+              "manual"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "spec",
+          "sources",
+          "state"
+        ],
+        "title": "ShoppingItem",
+        "type": "object"
+      },
+      "ShoppingSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "calculated_at": {
+            "title": "Calculated At",
+            "type": "number"
+          },
+          "connection_state": {
+            "enum": [
+              "not_configured",
+              "list_not_selected",
+              "compatibility_unverified",
+              "ready"
+            ],
+            "title": "Connection State",
+            "type": "string"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "excluded_staples": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Excluded Staples",
+            "type": "array"
+          },
+          "job_state": {
+            "enum": [
+              "idle",
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Job State",
+            "type": "string"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success At"
+          },
+          "list_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "List Id"
+          },
+          "list_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "List Name"
+          },
+          "period": {
+            "format": "date",
+            "title": "Period",
+            "type": "string"
+          },
+          "planned_meals": {
+            "title": "Planned Meals",
+            "type": "integer"
+          },
+          "requirements": {
+            "items": {
+              "$ref": "#/components/schemas/ShoppingItem"
+            },
+            "title": "Requirements",
+            "type": "array"
+          },
+          "verification_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Error"
+          },
+          "verification_state": {
+            "enum": [
+              "idle",
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Verification State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "period",
+          "calculated_at",
+          "planned_meals",
+          "excluded_staples",
+          "requirements",
+          "last_success_at",
+          "job_state",
+          "error_code",
+          "verification_state",
+          "verification_error",
+          "list_id",
+          "list_name",
+          "connection_state"
+        ],
+        "title": "ShoppingSnapshot",
+        "type": "object"
+      },
+      "StepDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "durationMinutes": {
+            "anyOf": [
+              {
+                "maximum": 525600.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationminutes"
+          },
+          "group": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Temperature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "StepDetails",
         "type": "object"
       },
       "SuggestionApply": {
@@ -2592,6 +4160,31 @@
           "requested_token"
         ],
         "title": "SyncState",
+        "type": "object"
+      },
+      "Temperature": {
+        "additionalProperties": false,
+        "properties": {
+          "unit": {
+            "enum": [
+              "C",
+              "F"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "maximum": 2000.0,
+            "minimum": -273.15,
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "unit"
+        ],
+        "title": "Temperature",
         "type": "object"
       },
       "Template": {
@@ -2898,6 +4491,29 @@
           }
         ],
         "summary": "Configure Ai"
+      }
+    },
+    "/api/v1/admin/ai/providers": {
+      "get": {
+        "operationId": "ai_profiles_api_v1_admin_ai_providers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIProviderCatalog"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Ai Profiles"
       }
     },
     "/api/v1/admin/ai/test": {
@@ -3884,6 +5500,61 @@
         "summary": "Put Preferences"
       }
     },
+    "/api/v1/import-sources/{source_id}": {
+      "put": {
+        "operationId": "upload_import_source_api_v1_import_sources__source_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_import_source_api_v1_import_sources__source_id__put"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSourceInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Import Source"
+      }
+    },
     "/api/v1/imports": {
       "post": {
         "operationId": "start_import_api_v1_imports_post",
@@ -4022,7 +5693,7 @@
           },
           {
             "in": "header",
-            "name": "x-aircooker-sync-cursor",
+            "name": "x-mealf-sync-cursor",
             "required": false,
             "schema": {
               "anyOf": [
@@ -4034,12 +5705,12 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Aircooker-Sync-Cursor"
+              "title": "X-Mealf-Sync-Cursor"
             }
           },
           {
             "in": "header",
-            "name": "x-aircooker-sync-token",
+            "name": "x-mealf-sync-token",
             "required": false,
             "schema": {
               "anyOf": [
@@ -4051,7 +5722,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Aircooker-Sync-Token"
+              "title": "X-Mealf-Sync-Token"
             }
           }
         ],
@@ -4254,6 +5925,299 @@
           }
         ],
         "summary": "Bring Status"
+      }
+    },
+    "/api/v1/integrations/bring/verify": {
+      "post": {
+        "operationId": "bring_verify_api_v1_integrations_bring_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BringVerification"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bring Verify"
+      }
+    },
+    "/api/v1/integrations/chatgpt": {
+      "delete": {
+        "operationId": "disconnect_api_v1_integrations_chatgpt_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTDisconnect"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Disconnect"
+      },
+      "get": {
+        "operationId": "status_api_v1_integrations_chatgpt_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Status"
+      },
+      "put": {
+        "operationId": "select_api_v1_integrations_chatgpt_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatGPTSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Select"
+      }
+    },
+    "/api/v1/integrations/chatgpt/helper": {
+      "get": {
+        "operationId": "helper_api_v1_integrations_chatgpt_helper_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Helper"
+      }
+    },
+    "/api/v1/integrations/chatgpt/models": {
+      "get": {
+        "operationId": "models_api_v1_integrations_chatgpt_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTModelCatalog"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Models"
+      }
+    },
+    "/api/v1/integrations/chatgpt/pairing": {
+      "delete": {
+        "operationId": "cancel_api_v1_integrations_chatgpt_pairing_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cancel"
+      },
+      "post": {
+        "operationId": "prepare_api_v1_integrations_chatgpt_pairing_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatGPTPairRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTPairing"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Prepare"
+      }
+    },
+    "/api/v1/integrations/chatgpt/pairing/claim": {
+      "post": {
+        "operationId": "claim_api_v1_integrations_chatgpt_pairing_claim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatGPTClaim"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTBootstrap"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Claim"
+      }
+    },
+    "/api/v1/integrations/chatgpt/pairing/complete": {
+      "post": {
+        "operationId": "complete_api_v1_integrations_chatgpt_pairing_complete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatGPTComplete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatGPTStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Complete"
       }
     },
     "/api/v1/leftovers": {
@@ -5077,6 +7041,29 @@
           }
         ],
         "summary": "Update Entity"
+      }
+    },
+    "/api/v1/planning/shopping": {
+      "get": {
+        "operationId": "shopping_api_v1_planning_shopping_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShoppingSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Shopping"
       }
     },
     "/api/v1/planning/shopping-projection": {

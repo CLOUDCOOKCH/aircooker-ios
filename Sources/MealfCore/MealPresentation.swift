@@ -8,7 +8,7 @@ public enum AppDestination: Equatable, Sendable, Identifiable {
   public var id: String { url.absoluteString }
   public var url: URL {
     var c = URLComponents()
-    c.scheme = "aircooker"
+    c.scheme = "mealf"
     switch self {
     case .calendar(let date):
       c.host = "calendar"
@@ -25,7 +25,7 @@ public enum AppDestination: Equatable, Sendable, Identifiable {
   }
   public init?(url: URL) {
     guard let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
-      c.scheme?.lowercased() == "aircooker",
+      c.scheme?.lowercased() == "mealf",
       c.user == nil, c.password == nil, c.port == nil, c.fragment == nil
     else { return nil }
     let items = c.queryItems ?? []
@@ -149,7 +149,7 @@ public enum MealPresentation {
         group.count == 1 ? .meal(id: first.entityID, date: first.date) : .calendar(date: first.date)
       result.append(
         PlannedReminder(
-          id: "aircooker.meal." + key, fireDate: fireDate,
+          id: "mealf.meal." + key, fireDate: fireDate,
           date: first.date, category: first.meal.category, time: time, timeZone: timeZone,
           destination: destination,
           recipeTitles: group.compactMap { recipes[$0.meal.recipeID]?.title }))

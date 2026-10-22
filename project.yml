@@ -1,4 +1,4 @@
-name: aircooker
+name: mealf
 options:
   bundleIdPrefix: ch.cloudcook
   deploymentTarget:
@@ -11,26 +11,26 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 0.1.0
     DEVELOPMENT_TEAM: ""
-    AIRCOOKER_APP_GROUP: group.ch.cloudcook.aircooker
+    MEALF_APP_GROUP: group.ch.cloudcook.mealf
 packages:
-  AirCookerCore:
+  MealfCore:
     path: .
 targets:
-  aircooker:
+  mealf:
     type: application
     platform: iOS
     sources:
       - App
       - Resources
     dependencies:
-      - package: AirCookerCore
-      - target: AirCookerShare
+      - package: MealfCore
+      - target: MealfShare
         embed: true
-      - target: AirCookerWidget
+      - target: MealfWidget
         embed: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.aircooker
+        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.mealf
         INFOPLIST_KEY_NSCameraUsageDescription: Scan a QR code containing your server address.
     info:
       path: Config/App-Info.plist
@@ -38,30 +38,30 @@ targets:
         CFBundleDisplayName: mealf
         UILaunchScreen: {}
         NSFaceIDUsageDescription: Unlock your household recipes and meal plan.
-        AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
+        MealfAppGroup: $(MEALF_APP_GROUP)
         CFBundleURLTypes:
-          - CFBundleURLSchemes: [aircooker]
+          - CFBundleURLSchemes: [mealf]
     entitlements:
       path: Config/App.entitlements
       properties:
-        com.apple.security.application-groups: [$(AIRCOOKER_APP_GROUP)]
-  AirCookerShare:
+        com.apple.security.application-groups: [$(MEALF_APP_GROUP)]
+  MealfShare:
     type: app-extension
     platform: iOS
     sources:
       - ShareExtension
       - Resources
     dependencies:
-      - package: AirCookerCore
+      - package: MealfCore
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.aircooker.share
+        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.mealf.share
         APPLICATION_EXTENSION_API_ONLY: YES
     info:
       path: Config/Share-Info.plist
       properties:
         CFBundleDisplayName: mealf
-        AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
+        MealfAppGroup: $(MEALF_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.share-services
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
@@ -72,10 +72,10 @@ targets:
     entitlements:
       path: Config/Share.entitlements
       properties:
-        com.apple.security.application-groups: [$(AIRCOOKER_APP_GROUP)]
-  AirCookerWidget:
+        com.apple.security.application-groups: [$(MEALF_APP_GROUP)]
+  MealfWidget:
     dependencies:
-      - package: AirCookerCore
+      - package: MealfCore
     type: app-extension
     platform: iOS
     sources:
@@ -85,32 +85,32 @@ targets:
       path: Config/Widget-Info.plist
       properties:
         CFBundleDisplayName: mealf
-        AirCookerAppGroup: $(AIRCOOKER_APP_GROUP)
+        MealfAppGroup: $(MEALF_APP_GROUP)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.aircooker.widget
+        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.mealf.widget
         APPLICATION_EXTENSION_API_ONLY: YES
     entitlements:
       path: Config/Widget.entitlements
       properties:
-        com.apple.security.application-groups: [$(AIRCOOKER_APP_GROUP)]
-  AirCookerUITests:
+        com.apple.security.application-groups: [$(MEALF_APP_GROUP)]
+  MealfUITests:
     type: bundle.ui-testing
     platform: iOS
     sources: [UITests]
     dependencies:
-      - target: aircooker
+      - target: mealf
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.aircooker.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: ch.cloudcook.mealf.uitests
         GENERATE_INFOPLIST_FILE: YES
 schemes:
-  aircooker:
+  mealf:
     build:
       targets:
-        aircooker: all
+        mealf: all
     test:
       targets:
-        - AirCookerUITests
+        - MealfUITests

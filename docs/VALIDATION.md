@@ -67,7 +67,7 @@ receipts and response-origin checks. The final total is 76 passing Swift tests. 
 refresh still rotates and retries with the new access token. These tests use synthetic
 URLSession responses and an encoded in-memory vault; they do not test Apple's Keychain.
 
-The native source changes cover `AirCookerApp.swift`, `AppModel.swift`, `KeychainVault.swift`,
+The native source changes cover `MealfApp.swift`, `AppModel.swift`, `KeychainVault.swift`,
 `RootView.swift` and EN/DE resources. Core changes are `CredentialState.swift`, `APIClient.swift`
 and `Recommendations.swift`; tests are `SessionTests.swift` and
 `LeftoverRecommendationTests.swift`. Contract checks/pin, README, changelog, implementation,

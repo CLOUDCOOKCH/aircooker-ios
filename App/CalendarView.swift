@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import SwiftUI
 
 private struct PlanPreview: Identifiable {

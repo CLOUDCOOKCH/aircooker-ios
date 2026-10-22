@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking

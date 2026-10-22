@@ -1,6 +1,6 @@
 import SwiftUI
 
-@main struct AirCookerApp: App {
+@main struct MealfApp: App {
   @State private var model = AppModel()
   @Environment(\.scenePhase) private var scenePhase
   @AppStorage("biometricLock") private var biometricLock = false
