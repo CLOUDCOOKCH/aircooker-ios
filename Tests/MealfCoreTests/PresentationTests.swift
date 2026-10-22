@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 private func instant(_ text: String) -> Date { ISO8601DateFormatter().date(from: text)! }
 private func snapshot(_ meals: [Meal]) throws -> PlanningSnapshot {
@@ -19,11 +19,11 @@ private func snapshot(_ meals: [Meal]) throws -> PlanningSnapshot {
     #expect(AppDestination(url: value.url) == value)
   }
   for raw in [
-    "https://meal/" + id.uuidString, "aircooker://recipe/../settings",
-    "aircooker://calendar?date=2026-02-31", "aircooker://calendar?date=2026-10-20&date=2026-10-21",
-    "aircooker://calendar?date=2026-10-20&token=x",
-    "aircooker://user:password@calendar?date=2026-10-20",
-    "aircooker://recipe/" + id.uuidString + "#delete",
+    "https://meal/" + id.uuidString, "mealf://recipe/../settings",
+    "mealf://calendar?date=2026-02-31", "mealf://calendar?date=2026-10-20&date=2026-10-21",
+    "mealf://calendar?date=2026-10-20&token=x",
+    "mealf://user:password@calendar?date=2026-10-20",
+    "mealf://recipe/" + id.uuidString + "#delete",
   ] {
     #expect(AppDestination(url: URL(string: raw)!) == nil)
   }

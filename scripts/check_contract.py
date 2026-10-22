@@ -26,8 +26,8 @@ expected={
 'Recurrence':{'interval_weeks','until','exceptions'},
 'Template':{'name','meals'},
 'TemplateSlot':{'weekday','category','recipe_id','servings'},
-'Recipe':{'title','description','source_url','source_platform','image_id','servings','ingredients','steps','notes','rating','nutrition','nutrition_source','provenance'},
-'Ingredient':{'id','name','quantity','quantity_max','unit','preparation','original_text'},
+'Recipe':{'title','description','source_url','source_platform','image_id','servings','ingredients','steps','notes','rating','nutrition','nutrition_source','provenance','schema_version','instruction_details','times','language','yield_info','category','cuisine','tags'},
+'Ingredient':{'id','name','quantity','quantity_max','unit','preparation','original_text','quantity_text','notes','optional','group'},
 'Meal':{'recipe_id','date','category','servings','order','leftover_id','recurrence','cooked'},
 'Mutation':{'mutation_id','entity_id','kind','operation','base_revision','payload','device_id','client_timestamp','idempotency_key'},
 'Change':{'revision','kind','entity_id','deleted','payload','updated_at'},
@@ -42,10 +42,10 @@ for name,fields in expected.items():
         assert set(candidate['properties'])==fields,(name,set(candidate['properties'])^fields)
 print('Pinned OpenAPI checksum, native routes and wire field sets verified.')
 
-fixture=root/'Tests'/'AirCookerCoreTests'/'Fixtures'/'recommendations-v1.json'
+fixture=root/'Tests'/'MealfCoreTests'/'Fixtures'/'recommendations-v1.json'
 assert hashlib.sha256(fixture.read_bytes()).hexdigest()==pin['fixtures']['recommendations-v1']['sha256'], 'Recommendation fixture pin mismatch'
 
-history=root/"Tests"/"AirCookerCoreTests"/"Fixtures"/"sync-history-v1.json"
+history=root/"Tests"/"MealfCoreTests"/"Fixtures"/"sync-history-v1.json"
 assert hashlib.sha256(history.read_bytes()).hexdigest()==pin["fixtures"]["sync-history-v1"]["sha256"], "History fixture pin mismatch"
 assert json.loads(history.read_text())["format_version"]==1
 
@@ -61,3 +61,6 @@ for name, field in [("ImportRequest", "image_id"), ("SuggestionApply", "checkpoi
         assert field in candidate["properties"]
         assert field not in candidate.get("required", []), (name, field)
 assert "recognized_text" in schemas["RecipeImportStatus"]["properties"]
+
+assert "source_photo" in schemas["RecipeImportStatus"]["properties"]
+assert "source_photo" not in schemas["RecipeImportStatus"].get("required", [])

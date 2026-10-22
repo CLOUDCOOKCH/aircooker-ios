@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import Foundation
 import UserNotifications
 
@@ -21,7 +21,7 @@ actor MealReminders {
     }
   }
   func count() async -> Int {
-    await center.pendingNotificationRequests().filter { $0.identifier.hasPrefix("aircooker.meal.") }
+    await center.pendingNotificationRequests().filter { $0.identifier.hasPrefix("mealf.meal.") }
       .count
   }
   func reconcile(_ plan: [PlannedReminder], showRecipeNames: Bool) async throws {
@@ -37,7 +37,7 @@ actor MealReminders {
       let names = includeNames
       let permitted = await permission() == "authorized"
       let pending = await center.pendingNotificationRequests()
-      let owned = pending.filter { $0.identifier.hasPrefix("aircooker.meal.") }
+      let owned = pending.filter { $0.identifier.hasPrefix("mealf.meal.") }
       let ids = permitted ? Set(items.map(\.id)) : []
       center.removePendingNotificationRequests(
         withIdentifiers: owned.filter { !ids.contains($0.identifier) }.map(\.identifier))

@@ -1,10 +1,10 @@
-import AirCookerCore
+import MealfCore
 import Foundation
 import Security
 
 actor KeychainVault: TokenVault {
   private let service: String
-  init(server: String) { service = "ch.cloudcook.aircooker.session." + server }
+  init(server: String) { service = "ch.cloudcook.mealf.session." + server }
   func read() throws -> CredentialState {
     let query: [String: Any] = [
       kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,

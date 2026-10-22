@@ -1,11 +1,11 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 private let demoInstant = ISO8601DateFormatter().date(from: "2026-10-21T12:00:00Z")!
 private func demoRoot() -> URL {
-  FileManager.default.temporaryDirectory.appending(path: "aircooker-demo-\(UUID())")
+  FileManager.default.temporaryDirectory.appending(path: "mealf-demo-\(UUID())")
 }
 
 @Test func demoSeedsActualPlanningDataWithSeparateIdentity() async throws {
@@ -59,7 +59,7 @@ private func demoRoot() -> URL {
 @Test func demoCannotOverwriteRealHouseholdOrItsPendingChanges() async throws {
   let root = demoRoot()
   defer { try? FileManager.default.removeItem(at: root) }
-  let realURL = root.appending(path: "aircooker.sqlite3")
+  let realURL = root.appending(path: "mealf.sqlite3")
   let store = try LocalStore(url: realURL)
   let instance = UUID().uuidString
   try await store.bind(instanceID: instance)

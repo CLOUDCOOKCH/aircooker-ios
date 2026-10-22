@@ -1,13 +1,13 @@
 # Development and verification
 
-`Sources/AirCookerCore` contains wire models, HTTPS API client, SQLite local store, durable
+`Sources/MealfCore` contains wire models, HTTPS API client, SQLite local store, durable
 mutation queue, sync coordinator and file-backed share inbox. App sources use an observable
 main-actor model and SwiftUI. Shared content and widgets use an App Group; no credential is
 placed in the App Group or a QR code. File protection is applied to the app data directory.
 
 ## App Group and extensions
 
-Use the same `AIRCOOKER_APP_GROUP` setting on every target. Share Extension validates public
+Use the same `MEALF_APP_GROUP` setting on every target. Share Extension validates public
 HTTPS URL structure/text size and atomically writes a unique import envelope before it
 completes. The main app acknowledges the file only after backend acceptance and retains the
 job ID before removing the file. Duplicate submissions use the same request ID. Progress

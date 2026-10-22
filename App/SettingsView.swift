@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import SwiftUI
 
 struct SettingsView: View {

@@ -1,4 +1,4 @@
-# aircooker-ios development guidance
+# mealf-ios development guidance
 
 Read README.md and docs/IMPLEMENTATION.md. This is an independent native SwiftUI repository,
 with a tested Swift core and unverified Apple framework sources. Keep those claims separate.

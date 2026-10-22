@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 private let historyInstance = "history-tests"
 private enum InterruptedSnapshot: Error { case network }

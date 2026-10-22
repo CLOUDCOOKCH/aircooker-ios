@@ -164,7 +164,7 @@ public actor APIClient: SyncTransport {
         path, method: method, body: body, authenticated: authenticated, retry: retry))
   }
   public func uploadPhoto(_ photo: PendingPhoto) async throws -> MediaInfo {
-    let boundary = "aircooker-" + UUID().uuidString
+    let boundary = "mealf-" + UUID().uuidString
     var body = Data(
       "--\(boundary)\r\nContent-Disposition: form-data; name=\"file\"; filename=\"photo.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n"
         .utf8)

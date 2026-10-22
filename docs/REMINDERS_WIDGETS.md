@@ -18,7 +18,7 @@ location. A nonexistent spring clock time advances to the next real time; a repe
 hour uses its first occurrence. UTC calendar-trigger components preserve the computed instant.
 
 After a successful local reload, plan edit, sync or settings change, native reconciliation
-updates changed requests and removes obsolete requests in the `aircooker.meal.` namespace.
+updates changed requests and removes obsolete requests in the `mealf.meal.` namespace.
 Other notification IDs are preserved. Reentrant scheduling coalesces toward the latest
 requested plan. OS failures surface as errors rather than a claimed successful schedule.
 No APNs account, external push service or exact background execution is assumed. Opening
@@ -54,9 +54,9 @@ restart; remote session revocation and fuller account/data deletion remain incom
 
 Supported read-only routes:
 
-- `aircooker://recipe/<UUID>`
-- `aircooker://meal/<UUID>?date=YYYY-MM-DD`
-- `aircooker://calendar?date=YYYY-MM-DD`
+- `mealf://recipe/<UUID>`
+- `mealf://meal/<UUID>?date=YYYY-MM-DD`
+- `mealf://calendar?date=YYYY-MM-DD`
 
 Parsing rejects credentials, fragments, extra/duplicate query parameters, malformed UUIDs
 and invalid dates. Routes never configure servers or carry passwords. A link received while

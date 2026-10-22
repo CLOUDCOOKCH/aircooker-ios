@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import SwiftUI
 
 /// Native surfaces and text styles adapt to appearance and Dynamic Type.

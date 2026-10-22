@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import AirCookerCore
+@testable import MealfCore
 
 private func row<T: Encodable>(_ kind: EntityKind, _ value: T, id: UUID = UUID()) throws
   -> LocalEntity

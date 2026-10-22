@@ -1,4 +1,4 @@
-title = "aircooker source scan"
+title = "mealf source scan"
 [extend]
 useDefault = true
 [[allowlists]]

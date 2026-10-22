@@ -6,7 +6,7 @@ public enum DemoWorkspace {
   public static let instanceID = "a1c00000-0000-4000-8000-000000000000"
   public static let photoID = UUID(uuidString: "a1c00000-0000-4000-8000-000000000099")!
   public static func databaseURL(in directory: URL) -> URL {
-    directory.appending(path: "offline-demo/aircooker.sqlite3")
+    directory.appending(path: "offline-demo/mealf.sqlite3")
   }
   private static func id(_ number: Int) -> UUID {
     UUID(uuidString: String(format: "a1c00000-0000-4000-8000-%012d", number))!
@@ -96,8 +96,8 @@ public enum DemoWorkspace {
       recipe.ingredients = ingredients[index]
       recipe.steps = [steps[index]]
       recipe.notes = text(
-        "Sample recipe for exploring aircooker. Check and adapt before cooking.",
-        "Beispielrezept zum Erkunden von aircooker. Vor dem Kochen prüfen und anpassen.")
+        "Sample recipe for exploring mealf. Check and adapt before cooking.",
+        "Beispielrezept zum Erkunden von mealf. Vor dem Kochen prüfen und anpassen.")
       recipe.rating = index < 3 ? 5 - index % 2 : nil
       recipe.provenance = ["origin": "offline-demo", "illustrative": "true"]
       if index == 0 && withPhoto { recipe.imageID = photoID }

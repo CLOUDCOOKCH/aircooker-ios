@@ -5,7 +5,7 @@ Run only in an isolated protected macOS runner.
 import base64,json,os,re,subprocess,sys
 from pathlib import Path
 os.umask(0o077)
-root=Path(os.environ['RUNNER_TEMP'])/'aircooker-signing'
+root=Path(os.environ['RUNNER_TEMP'])/'mealf-signing'
 keychain=root/'temporary.keychain-db'
 profile_root=Path.home()/'Library'/'MobileDevice'/'Provisioning Profiles'
 api_root=Path.home()/'private_keys'

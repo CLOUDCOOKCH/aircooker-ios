@@ -1,4 +1,4 @@
-import AirCookerCore
+import MealfCore
 import SwiftUI
 import WidgetKit
 
@@ -22,7 +22,7 @@ private struct Provider: TimelineProvider {
         policy: .after(now.addingTimeInterval(6 * 3600))))
   }
   private func read() -> MealWidgetSnapshot? {
-    guard let group = Bundle.main.object(forInfoDictionaryKey: "AirCookerAppGroup") as? String,
+    guard let group = Bundle.main.object(forInfoDictionaryKey: "MealfAppGroup") as? String,
       let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
     else { return nil }
     let file = directory.appending(path: "meals-widget-v1.json")
@@ -79,7 +79,7 @@ private struct TodayView: View {
 }
 @main struct TodayWidget: Widget {
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: "aircooker.today", provider: Provider()) { TodayView(entry: $0) }
+    StaticConfiguration(kind: "mealf.today", provider: Provider()) { TodayView(entry: $0) }
       .configurationDisplayName("widget_name").description("widget_description")
       .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }

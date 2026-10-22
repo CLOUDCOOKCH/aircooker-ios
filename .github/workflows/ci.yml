@@ -12,8 +12,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: python3 scripts/check_contract.py
       - run: python3 scripts/check_localization.py
-      - run: docker build -f scripts/Dockerfile.swift-tests -t aircooker-swift-tests .
-      - run: docker run --rm -v "$PWD:/work" -w /work aircooker-swift-tests
+      - run: docker build -f scripts/Dockerfile.swift-tests -t mealf-swift-tests .
+      - run: docker run --rm -v "$PWD:/work" -w /work mealf-swift-tests
       - name: Secret scanning
         run: docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854 dir /repo --config /repo/.gitleaks.toml --redact
   native:
@@ -34,15 +34,15 @@ jobs:
       - run: swift format lint --strict --recursive Sources Tests App ShareExtension WidgetExtension UITests
       - run: swift test
       - name: Build all native targets
-        run: xcodebuild -project aircooker.xcodeproj -scheme aircooker -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project mealf.xcodeproj -scheme mealf -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
       - name: Run onboarding and demo UI checks in light and dark appearance
         run: python3 scripts/run_simulator_tests.py
       - name: Package development simulator app
-        run: ditto -c -k --sequesterRsrc --keepParent build/DerivedData/Build/Products/Debug-iphonesimulator/aircooker.app build/aircooker-simulator.zip
+        run: ditto -c -k --sequesterRsrc --keepParent build/DerivedData/Build/Products/Debug-iphonesimulator/mealf.app build/mealf-simulator.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: simulator-development-build
-          path: build/aircooker-simulator.zip
+          path: build/mealf-simulator.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
