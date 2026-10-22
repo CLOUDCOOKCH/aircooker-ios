@@ -1,5 +1,5 @@
-import MealfCore
 import Foundation
+import MealfCore
 import Security
 
 actor KeychainVault: TokenVault {

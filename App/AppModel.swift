@@ -1,6 +1,6 @@
-import MealfCore
 import Foundation
 import LocalAuthentication
+import MealfCore
 import Observation
 import UserNotifications
 import WidgetKit
