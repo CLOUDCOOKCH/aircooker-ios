@@ -1,5 +1,12 @@
 # Native implementation status
 
+**Recipe ideas contract refresh, 2026-10-22:** deliberately pinned the exact canonical server
+contract at 8a3ef745. Additive authenticated recipe-ideas request/status routes and schemas
+preserve all existing native wire fields, API major 1 and sync protocol 1. Local checksum/
+wire checks and all 296 localisation keys pass. The Recipe ideas interface is PWA-only;
+native UI is unchanged. Swift/Xcode verification for this contract revision is pending CI,
+and live provider/physical-device evidence is not inferred from the server's synthetic tests.
+
 **API contract refresh, 2026-10-21:** deliberately pinned server c97bf16 for the
 primary PWA’s image-import extension and typed import response. Reviewed the existing
 optional planning-export, pantry override and suggestion-checkpoint additions since the
