@@ -1,5 +1,9 @@
 # Changelog
 
+- Pin the canonical server contract at 8a3ef745 for additive ingredient/random recipe-ideas
+  endpoints. Existing native wire fields and sync v1 remain unchanged. Recipe generation
+  UI ships in the primary PWA; this contract refresh adds no native UI.
+
 - Deliberately refresh the canonical v1 server contract pin for optional image imports
   and the typed reviewed-import response. Recipe/Ingredient input/output schema names
   reflect FastAPI decimal serialization. Review earlier additive optional planning-export,

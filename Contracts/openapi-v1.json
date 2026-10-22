@@ -1468,6 +1468,114 @@
         "title": "HouseholdSettings",
         "type": "object"
       },
+      "IdeaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ai_destination": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Ai Destination",
+            "type": "array"
+          },
+          "consent_external_ai": {
+            "const": true,
+            "title": "Consent External Ai",
+            "type": "boolean"
+          },
+          "ingredients": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Ingredients",
+            "type": "string"
+          },
+          "language": {
+            "default": "en",
+            "enum": [
+              "en",
+              "de"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "ingredients",
+              "surprise"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "mode",
+          "consent_external_ai",
+          "ai_destination"
+        ],
+        "title": "IdeaRequest",
+        "type": "object"
+      },
+      "IdeaStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "recipes": {
+            "items": {
+              "$ref": "#/components/schemas/Recipe-Output"
+            },
+            "title": "Recipes",
+            "type": "array"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "ready",
+              "failed",
+              "expired"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state"
+        ],
+        "title": "IdeaStatus",
+        "type": "object"
+      },
       "ImportDiagnostic": {
         "additionalProperties": false,
         "properties": {
@@ -7220,6 +7328,94 @@
           }
         },
         "summary": "Browser Setup"
+      }
+    },
+    "/api/v1/recipe-ideas": {
+      "post": {
+        "operationId": "generate_recipe_ideas_api_v1_recipe_ideas_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdeaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdeaStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Generate Recipe Ideas"
+      }
+    },
+    "/api/v1/recipe-ideas/{request_id}": {
+      "get": {
+        "operationId": "read_recipe_ideas_api_v1_recipe_ideas__request_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdeaStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Recipe Ideas"
       }
     },
     "/api/v1/recipes": {
