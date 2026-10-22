@@ -1,0 +1,31 @@
+{
+  "pull_request": "https://github.com/CLOUDCOOKCH/aircooker-ios/pull/2",
+  "source_commit": "1e8f644d5bcf453163a676a9e9fdb8546be7f11c",
+  "run_id": 39757481143,
+  "url": "https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39757481143",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 119753056706,
+      "name": "core",
+      "conclusion": "success"
+    },
+    {
+      "id": 119753056801,
+      "name": "native",
+      "conclusion": "success"
+    }
+  ],
+  "contract_source_commit": "8a3ef7456e1d5fa470c6686d5eca5eaeaa08e500",
+  "validation": {
+    "swift_tests": 91,
+    "platforms": [
+      "Linux core",
+      "macOS core",
+      "Xcode native targets",
+      "English/German simulator UI"
+    ],
+    "contract": "checksum and unchanged native fields; API/sync major1",
+    "scope": "Contract-only update; no native Recipe ideas UI, live AI or physical-device claim"
+  }
+}

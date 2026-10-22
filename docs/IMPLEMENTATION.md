@@ -4,8 +4,10 @@
 contract at 8a3ef745. Additive authenticated recipe-ideas request/status routes and schemas
 preserve all existing native wire fields, API major 1 and sync protocol 1. Local checksum/
 wire checks and all 296 localisation keys pass. The Recipe ideas interface is PWA-only;
-native UI is unchanged. Swift/Xcode verification for this contract revision is pending CI,
-and live provider/physical-device evidence is not inferred from the server's synthetic tests.
+native UI is unchanged. CI 39757481143 at 1e8f644 passes both jobs: 91 core tests on
+Linux/macOS, Xcode native-target builds and the existing English/German simulator flows.
+See [exact evidence](validation/github-recipe-ideas-contract.json). Live provider and
+physical-device evidence is not inferred from server synthetic tests or simulator checks.
 
 **API contract refresh, 2026-10-21:** deliberately pinned server c97bf16 for the
 primary PWA’s image-import extension and typed import response. Reviewed the existing
