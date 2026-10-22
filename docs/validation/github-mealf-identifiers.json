@@ -1,0 +1,40 @@
+{
+  "recorded_at": "2026-10-22",
+  "repository": "CLOUDCOOKCH/aircooker-ios",
+  "source_commit": "4f1f13c7998a7c7902907845f7bcdeb0683912ad",
+  "pr": "https://github.com/CLOUDCOOKCH/aircooker-ios/pull/1",
+  "run_id": 39742089668,
+  "url": "https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39742089668",
+  "run_attempt": 2,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 119706143861,
+      "name": "native",
+      "conclusion": "success",
+      "head_sha": "4f1f13c7998a7c7902907845f7bcdeb0683912ad"
+    },
+    {
+      "id": 119706145109,
+      "name": "core",
+      "conclusion": "success",
+      "head_sha": "4f1f13c7998a7c7902907845f7bcdeb0683912ad"
+    }
+  ],
+  "evidence": {
+    "core_tests": 91,
+    "localisation_keys": 296,
+    "swift_format": "passed",
+    "apple_toolchain": "Xcode 26.6",
+    "native_build": "app, Share Extension and Widget Extension build succeeded",
+    "simulator": "iPhone Air, iOS 26.5; three light-mode tests and selected dark-mode test passed",
+    "server_contract_source": "753e1ffacc39644bbf4401888081eeb07ee8e888",
+    "contract_sha256": "87feb2b709afa981c2354bb9f5fa3b6164dfbe88560c1c3884ffb82614f71bbd"
+  },
+  "retry_history": "The first main-branch simulator run timed out waiting for demo exit in German. Failed job retried on a clean runner with unchanged source/assertions; all final jobs pass. No test gate suppressed.",
+  "limits": [
+    "No physical Apple device, signing or TestFlight claim.",
+    "New bundle/App Group identifiers require provisioning and a fresh native development install; no cross-bundle sandbox migration claimed.",
+    "PWA-first product acceptance remains separate and incomplete."
+  ]
+}

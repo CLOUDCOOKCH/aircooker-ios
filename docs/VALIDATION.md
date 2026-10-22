@@ -201,3 +201,12 @@ simulator recipe persistence/onboarding/German light and dark navigation. The pr
 focus check/hardware-keyboard setting correction was rerun successfully; this does not make
 the earlier run green. Exact IDs and platform limits: validation/github-mealf-name.json.
 Original supplied artwork, physical devices, signing and live integrations remain open.
+
+## Mealf native identifiers — 2026-10-22
+
+Exact main source 4f1f13c passes the independent Linux and macOS jobs after a clean-runner
+retry of a German demo-exit timeout. 91 core tests, strict Swift format, contract/296-key
+localization checks, Xcode 26.6 app/extensions build, and iPhone Air iOS 26.5 light/dark
+simulator workflows pass. No assertion or gate was removed. See
+[the exact evidence](validation/github-mealf-identifiers.json). Native remains retained
+for later; physical-device/signing/TestFlight and cross-bundle data migration are not claimed.

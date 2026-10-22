@@ -97,5 +97,7 @@ The primary PWA and its data remain independent.
 The canonical server OpenAPI is deliberately pinned to exact source 753e1ff. Optional
 imported recipe/ingredient metadata now round-trips without being cleared by native edits.
 Contract checksum/routes/field sets and 296 English/German localization keys pass locally.
-Swift compilation/format and Apple target/simulator checks await the independent CI run.
+Main-branch CI passes: 91 core tests on Linux/macOS, strict Swift format, Xcode 26.6
+app/Share/Widget builds and iPhone Air iOS 26.5 simulator tests in light/dark appearance.
+See [exact source and retry evidence](validation/github-mealf-identifiers.json).
 GitHub URLs retain their actual repository names until renamed by the owner.
