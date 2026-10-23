@@ -1111,6 +1111,7 @@
           "maxValue": {
             "anyOf": [
               {
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
                 "exclusiveMinimum": 0.0,
                 "maximum": 1000000.0,
                 "type": "number"
@@ -1150,6 +1151,7 @@
           "value": {
             "anyOf": [
               {
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
                 "exclusiveMinimum": 0.0,
                 "maximum": 1000000.0,
                 "type": "number"
@@ -1847,13 +1849,18 @@
           "quantity": {
             "anyOf": [
               {
-                "maximum": 1000000.0,
-                "minimum": 0.0,
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
+                "anyOf": [
+                  {
+                    "maximum": 1000000.0,
+                    "minimum": 0.0,
+                    "type": "number"
+                  },
+                  {
+                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                    "type": "string"
+                  }
+                ],
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros."
               },
               {
                 "type": "null"
@@ -1864,13 +1871,18 @@
           "quantity_max": {
             "anyOf": [
               {
-                "maximum": 1000000.0,
-                "minimum": 0.0,
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
+                "anyOf": [
+                  {
+                    "maximum": 1000000.0,
+                    "minimum": 0.0,
+                    "type": "number"
+                  },
+                  {
+                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                    "type": "string"
+                  }
+                ],
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros."
               },
               {
                 "type": "null"
@@ -1950,6 +1962,7 @@
           "quantity": {
             "anyOf": [
               {
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
                 "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
@@ -1962,6 +1975,7 @@
           "quantity_max": {
             "anyOf": [
               {
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
                 "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
@@ -2102,6 +2116,7 @@
                 "type": "string"
               }
             ],
+            "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
             "title": "Portions"
           },
           "produced_on": {
@@ -2192,6 +2207,7 @@
               }
             ],
             "default": "2",
+            "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
             "title": "Servings"
           }
         },
@@ -2509,13 +2525,18 @@
           "servings": {
             "anyOf": [
               {
-                "exclusiveMinimum": 0.0,
-                "maximum": 100.0,
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
+                "anyOf": [
+                  {
+                    "exclusiveMinimum": 0.0,
+                    "maximum": 100.0,
+                    "type": "number"
+                  },
+                  {
+                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                    "type": "string"
+                  }
+                ],
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros."
               },
               {
                 "type": "null"
@@ -2557,6 +2578,7 @@
           "servings": {
             "anyOf": [
               {
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
                 "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
                 "type": "string"
               },
@@ -3025,6 +3047,7 @@
               }
             ],
             "default": "2",
+            "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
             "title": "Servings"
           },
           "source_platform": {
@@ -3225,6 +3248,7 @@
           },
           "servings": {
             "default": "2",
+            "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Servings",
             "type": "string"
@@ -3621,6 +3645,7 @@
           "quantity": {
             "anyOf": [
               {
+                "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
                 "exclusiveMinimum": 0.0,
                 "maximum": 1000000.0,
                 "type": "number"
@@ -4349,6 +4374,7 @@
                 "type": "string"
               }
             ],
+            "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
             "title": "Servings"
           },
           "weekday": {
@@ -4509,6 +4535,7 @@
           },
           "servings": {
             "default": "2",
+            "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros.",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Servings",
             "type": "string"
@@ -7835,13 +7862,18 @@
             "schema": {
               "anyOf": [
                 {
-                  "exclusiveMinimum": 0.0,
-                  "maximum": 100.0,
-                  "type": "number"
-                },
-                {
-                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                  "type": "string"
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0.0,
+                      "maximum": 100.0,
+                      "type": "number"
+                    },
+                    {
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "At most 100 characters in fixed decimal notation, ignoring insignificant trailing zeros."
                 },
                 {
                   "type": "null"
