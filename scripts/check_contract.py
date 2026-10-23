@@ -73,3 +73,10 @@ assert "preferences" not in schemas["IdeaRequest"].get("required", [])
 for export_name in ("HouseholdExport-Input", "HouseholdExport-Output"):
     assert "food_profile" not in schemas[export_name].get("required", [])
     assert schemas[export_name]["properties"]["version"]["default"] == 4
+
+# Household accounts add resources while keeping retained native wire fields stable.
+for path in ("/api/v1/auth/me", "/api/v1/admin/users", "/api/v1/admin/users/{user_id}", "/api/v1/ai/status", "/api/v1/household/status"):
+    assert path in schema["paths"], path
+assert set(schemas["UserInfo"]["properties"]) == {"id", "username", "role", "active"}
+assert set(schemas["UserInfo"]["properties"]["role"]["enum"]) == {"admin", "user"}
+assert "user" == schemas["UserCreate"]["properties"]["role"]["default"]

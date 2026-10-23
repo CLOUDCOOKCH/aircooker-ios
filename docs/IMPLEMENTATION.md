@@ -1,5 +1,13 @@
 # Native implementation status
 
+**Household accounts contract refresh, 2026-10-23:** pins canonical server commit
+`7054a064d05776084a723516447c6b2f2cc681b7`. The additive UserInfo/account-management,
+app AI-status and household-count resources preserve all retained native wire fields,
+API major 1 and sync protocol 1. Regular accounts receive 403 for admin/configuration APIs;
+account-management UI remains PWA/console-only. Local contract/checksum and localisation
+checks pass; Swift core/Apple build/simulator validation is left to native CI because the
+workspace has no Swift toolchain. No physical-device or live-service claim is made.
+
 **Quantity resource-bound contract refresh, 2026-10-23:** pinned the exact canonical
 server contract at 494ea9b593a9e0feae950e485900687f229ec952. Reviewed the added 100-character
 fixed-decimal rendering descriptions and equivalent nested schema alternatives. Native

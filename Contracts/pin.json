@@ -1,12 +1,12 @@
 {
-  "repository": "CLOUDCOOKCH/aircooker-server",
+  "repository": "CLOUDCOOKCH/mealf",
   "version": "0.1.0-development",
   "api_major": 1,
   "sync_protocol": 1,
-  "sha256": "35b8aa292a9740ccfba797ae4bfb0743f1d86d2a99c8b7ba5100f93c7331dd83",
+  "sha256": "ad549b50902886c8efea0698eb73ce149196bef896394e0ebccc4e1185a507af",
   "source": "contracts/openapi-v1.json",
   "release_commit": null,
-  "source_commit": "58c5930ff22707b128a3eb0c83cd44fbf18caefe",
+  "source_commit": "7054a064d05776084a723516447c6b2f2cc681b7",
   "fixtures": {
     "recommendations-v1": {
       "source": "contracts/fixtures/recommendations-v1.json",
