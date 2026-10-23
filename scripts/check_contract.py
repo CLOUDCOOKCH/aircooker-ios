@@ -70,5 +70,6 @@ food = schema["paths"]["/api/v1/household/food-profile"]
 assert {"get", "put"}.issubset(food)
 assert set(schemas["FoodProfile"]["properties"]) == {"likes", "dislikes", "pantry_setup_done", "taste_setup_done"}
 assert "preferences" not in schemas["IdeaRequest"].get("required", [])
-assert "food_profile" not in schemas["HouseholdExport"]["required"]
-assert schemas["HouseholdExport"]["properties"]["version"]["default"] == 4
+for export_name in ("HouseholdExport-Input", "HouseholdExport-Output"):
+    assert "food_profile" not in schemas[export_name].get("required", [])
+    assert schemas[export_name]["properties"]["version"]["default"] == 4
