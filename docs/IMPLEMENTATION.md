@@ -1,5 +1,12 @@
 # Native implementation status
 
+**Quantity resource-bound contract refresh, 2026-10-23:** pinned the exact canonical
+server contract at 494ea9b593a9e0feae950e485900687f229ec952. Reviewed the added 100-character
+fixed-decimal rendering descriptions and equivalent nested schema alternatives. Native
+wire field sets, Decimal string serialization, API major 1 and sync protocol 1 remain.
+Contract/checksum and all 296 localisation keys pass locally. This contract-only change
+adds no native UI or Apple-framework behavior; Apple device validation is not claimed.
+
 **Recipe ideas contract refresh, 2026-10-22:** deliberately pinned the exact canonical server
 contract at 8a3ef745. Additive authenticated recipe-ideas request/status routes and schemas
 preserve all existing native wire fields, API major 1 and sync protocol 1. Local checksum/

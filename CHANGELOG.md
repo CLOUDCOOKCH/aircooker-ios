@@ -1,5 +1,9 @@
 # Changelog
 
+- Refresh the exact server contract pin to 494ea9b for bounded quantity rendering.
+  Wire fields, decimal string serialization, API major and sync protocol remain unchanged;
+  existing native fraction/quantity input fits the documented bound. No native UI change.
+
 - Pin the canonical server contract at 8a3ef745 for additive ingredient/random recipe-ideas
   endpoints. Existing native wire fields and sync v1 remain unchanged. Recipe generation
   UI ships in the primary PWA; this contract refresh adds no native UI.
