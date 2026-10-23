@@ -1283,6 +1283,191 @@
         "title": "ExtractionResult",
         "type": "object"
       },
+      "FoodProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "dislikes": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Dislikes",
+            "type": "array"
+          },
+          "likes": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Likes",
+            "type": "array"
+          },
+          "pantry_setup_done": {
+            "default": false,
+            "title": "Pantry Setup Done",
+            "type": "boolean"
+          },
+          "taste_setup_done": {
+            "default": false,
+            "title": "Taste Setup Done",
+            "type": "boolean"
+          }
+        },
+        "title": "FoodProfile",
+        "type": "object"
+      },
+      "FoodProfileContext": {
+        "additionalProperties": false,
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/FoodProfile"
+          },
+          "revision": {
+            "minimum": 0.0,
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "profile"
+        ],
+        "title": "FoodProfileContext",
+        "type": "object"
+      },
+      "FoodProfilePatch": {
+        "additionalProperties": false,
+        "properties": {
+          "dislikes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dislikes"
+          },
+          "likes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 12,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Likes"
+          },
+          "pantry_setup_done": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pantry Setup Done"
+          },
+          "taste_setup_done": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taste Setup Done"
+          }
+        },
+        "title": "FoodProfilePatch",
+        "type": "object"
+      },
+      "FoodProfileReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "conflict": {
+            "title": "Conflict",
+            "type": "boolean"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "request_id",
+          "revision",
+          "conflict"
+        ],
+        "title": "FoodProfileReceipt",
+        "type": "object"
+      },
+      "FoodProfileWrite": {
+        "additionalProperties": false,
+        "properties": {
+          "base_revision": {
+            "minimum": 0.0,
+            "title": "Base Revision",
+            "type": "integer"
+          },
+          "patch": {
+            "$ref": "#/components/schemas/FoodProfilePatch"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "base_revision",
+          "patch"
+        ],
+        "title": "FoodProfileWrite",
+        "type": "object"
+      },
+      "FoodTaste": {
+        "additionalProperties": false,
+        "properties": {
+          "dislikes": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Dislikes",
+            "type": "array"
+          },
+          "likes": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Likes",
+            "type": "array"
+          }
+        },
+        "title": "FoodTaste",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1324,6 +1509,16 @@
             "title": "Exported At",
             "type": "string"
           },
+          "food_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FoodProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "format": {
             "default": "mealf-household",
             "title": "Format",
@@ -1355,7 +1550,7 @@
             ]
           },
           "version": {
-            "default": 3,
+            "default": 4,
             "title": "Version",
             "type": "integer"
           }
@@ -1396,6 +1591,16 @@
             "title": "Exported At",
             "type": "string"
           },
+          "food_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FoodProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "format": {
             "default": "mealf-household",
             "title": "Format",
@@ -1427,7 +1632,7 @@
             ]
           },
           "version": {
-            "default": 3,
+            "default": 4,
             "title": "Version",
             "type": "integer"
           }
@@ -1517,6 +1722,16 @@
             ],
             "title": "Mode",
             "type": "string"
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FoodTaste"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "request_id": {
             "format": "uuid",
@@ -5569,6 +5784,70 @@
           }
         ],
         "summary": "Update Household"
+      }
+    },
+    "/api/v1/household/food-profile": {
+      "get": {
+        "operationId": "get_profile_api_v1_household_food_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodProfileContext"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Profile"
+      },
+      "put": {
+        "operationId": "put_profile_api_v1_household_food_profile_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoodProfileWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodProfileReceipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Profile"
       }
     },
     "/api/v1/household/planning-preferences": {
