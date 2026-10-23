@@ -6,6 +6,11 @@ fixed-decimal rendering descriptions and equivalent nested schema alternatives. 
 wire field sets, Decimal string serialization, API major 1 and sync protocol 1 remain.
 Contract/checksum and all 296 localisation keys pass locally. This contract-only change
 adds no native UI or Apple-framework behavior; Apple device validation is not claimed.
+The [contract PR #3](https://github.com/CLOUDCOOKCH/aircooker-ios/pull/3) is merged after
+[both CI jobs](https://github.com/CLOUDCOOKCH/aircooker-ios/actions/runs/39953428285)
+pass at `fb5f789b7ccc17b44509143ac70224dc8460dc3e`: Swift core tests, strict Swift
+formatting, native target builds and the existing light/dark simulator flows. This is
+simulator evidence for the retained client, not physical-device validation.
 
 **Recipe ideas contract refresh, 2026-10-22:** deliberately pinned the exact canonical server
 contract at 8a3ef745. Additive authenticated recipe-ideas request/status routes and schemas
