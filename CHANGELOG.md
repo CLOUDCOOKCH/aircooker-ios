@@ -1,5 +1,7 @@
 # Changelog
 
+- Pin additive household food-profile / Recipe ideas preference API and export-v4 schema; native workflows unchanged.
+
 - Refresh the exact server contract pin to 494ea9b for bounded quantity rendering.
   Wire fields, decimal string serialization, API major and sync protocol remain unchanged;
   existing native fraction/quantity input fits the documented bound. No native UI change.

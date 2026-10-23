@@ -122,3 +122,13 @@ Main-branch CI passes: 91 core tests on Linux/macOS, strict Swift format, Xcode 
 app/Share/Widget builds and iPhone Air iOS 26.5 simulator tests in light/dark appearance.
 See [exact source and retry evidence](validation/github-mealf-identifiers.json).
 GitHub URLs retain their actual repository names until renamed by the owner.
+
+## Pantry/taste API contract — 2026-10-23
+
+The canonical OpenAPI is pinned to server source 58c5930. It adds authenticated
+household food-profile GET/PUT and optional frozen Recipe ideas preferences. Existing
+native entity kinds, sync protocol, recipe fields and mutation identities remain unchanged.
+Portable server exports are now version 4 with non-secret food preferences; older
+v1–v3 imports remain accepted. The retained native client has no food-swiper UI.
+Contract/localisation checks pass locally. Apple and Swift build results for this pin
+must be recorded from CI; no physical-device acceptance is implied.
